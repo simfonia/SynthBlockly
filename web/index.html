@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SynthBlockly</title>
+    <link rel="stylesheet" href="styles.css" />
+    <!-- 小圖示：使用 data URI 避免 404 -->
+    <link rel="icon"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=" />
+    <script src="https://unpkg.com/blockly@12.3.1/blockly.min.js"></script>
+    <script src="https://unpkg.com/blockly@12.3.1/python_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@12.3.1/javascript_compressed.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.min.js"></script>
+    <script type="module" src="main.js"></script>
+    <div id="container">
+        <div id="left">
+            <h2>SynthBlockly</h2>
+            <div id="blocklyDiv"></div>
+        </div>
+        <div id="right">
+            <h2>合成器 + 波形</h2>
+            <div id="controls">
+                <button id="btnStartAudio">Start Audio</button>
+                <button id="btnMidi">Connect MIDI</button>
+                <button id="btnSerial">Connect Serial</button>
+                <button id="btnTestNote">Play Test Note</button>
+                <button id="btnTestDrum">Play Test Drum</button>
+                <button id="btnRunBlocks">Run Blocks</button>
+                <button id="btnExportCode">Export Code</button>
+                <button id="btnClearLog">Clear Log</button>
+            </div>
+            <div id="waveformContainer"></div>
+            <div id="log"></div>
+            <pre id="codeOut"
+                style="display:none;white-space:pre-wrap;background:#f4f4f4;padding:8px;border:1px solid #ddd;margin-top:8px;max-height:20vh;overflow:auto"></pre>
+        </div>
+    </div>
+    </body>
+
+</html>

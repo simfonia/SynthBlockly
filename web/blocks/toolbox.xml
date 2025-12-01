@@ -1,0 +1,23 @@
+<xml id="toolbox" style="display: none">
+    <category name="Logic" colour="210">
+        <block type="controls_if"></block>
+        <block type="logic_compare"></block>
+        <block type="logic_boolean"></block>
+    </category>
+    <category name="Math" colour="230">
+        <block type="math_number"></block>
+        <block type="math_arithmetic"></block>
+    </category>
+    <category name="Text" colour="160">
+        <block type="text"></block>
+        <block type="text_print"></block>
+    </category>
+    <category name="Functions" colour="290">
+        <block type="procedures_defnoreturn"></block>
+    </category>
+    <category name="PiBlockly Synth" colour="260">
+        <block type="pbsx_play_note"></block>
+        <block type="pbsx_play_drum"></block>
+        <block type="pbsx_set_adsr"></block>
+    </category>
+</xml>
