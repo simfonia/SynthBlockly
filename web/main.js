@@ -8,9 +8,10 @@ import { loadModule } from './module_loader.js';
 // Suppress Blockly 12 deprecation warnings by monkey-patching console.warn
 const originalWarn = console.warn;
 console.warn = function (...args) {
-    // Suppress the getAllVariables deprecation warning
-    if (args[0] && typeof args[0] === 'string' && args[0].includes('getAllVariables')) {
-        return; // 不輸出此警告
+    if (args[0] && typeof args[0] === 'string') {
+        // Suppress specific deprecation warnings from Blockly v12
+                    if (args[0].includes('getAllVariables') || args[0].includes('getVariableById') || args[0].includes('getVariable')) {            return; // Do not log this warning
+        }
     }
     originalWarn.apply(console, args);
 };
@@ -54,6 +55,20 @@ async function ensureAudioStarted() {
 // ============================================================================
 // --- MIDI & Serial 連線 ---
 // ============================================================================
+let midiNoteListeners = []; // Array to hold registered MIDI note callbacks
+
+// Function to register MIDI note event listeners for Blockly
+window.registerMidiNoteListener = function (callback) {
+    if (typeof callback === 'function') {
+        midiNoteListeners.push(callback);
+    }
+};
+
+// Function to unregister MIDI note event listeners
+window.unregisterMidiNoteListener = function (callback) {
+    midiNoteListeners = midiNoteListeners.filter(listener => listener !== callback);
+};
+
 async function connectMIDI() {
     if (!navigator.requestMIDIAccess) { log('瀏覽器不支援 Web MIDI'); return; }
     try {
@@ -66,26 +81,67 @@ async function connectMIDI() {
     } catch (e) { log('MIDI 連線失敗: ' + e); }
 }
 
-function onMIDIMessage(msg) {
+async function onMIDIMessage(msg) {
+    const ok = await ensureAudioStarted();
+    if (!ok) return;
+
     const [status, data1, data2] = msg.data;
     const cmd = status & 0xf0;
-    if (cmd === 0x90 && data2 > 0) {
-        const midi = data1;
-        const vel = data2 / 127;
-        const freq = Tone.Frequency(midi, 'midi').toFrequency();
-        synth.triggerAttackRelease(freq, '8n', undefined, vel);
-        log(`Note ON ${midi} vel=${data2}`);
+    const channel = (status & 0x0f) + 1; // Extract MIDI channel (1-16)
+
+    if (cmd === 0x90 && data2 > 0) { // Note ON
+        const midiNote = data1;
+        const velocity = data2; // Keep original 0-127 velocity
+
+        log(`Note ON midi=${midiNote} vel=${velocity} ch=${channel}`);
+
+        // Dispatch to all registered Blockly listeners
+        midiNoteListeners.forEach(listener => {
+            try {
+                listener(midiNote, velocity, channel);
+            } catch (e) {
+                console.error('Error in MIDI listener callback:', e);
+            }
+        });
+
+    } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) { // Note OFF
+        const midiNote = data1;
+        const velocity = 0;
+        const channel = (status & 0x0f) + 1;
+        log(`Note OFF midi=${midiNote} ch=${channel}`);
+        // Optionally, dispatch Note OFF events as well
+        // midiNoteListeners.forEach(listener => {
+        //     try {
+        //         listener(midiNote, velocity, channel);
+        //     } catch (e) {
+        //         console.error('Error in MIDI listener callback:', e);
+        //     }
+        // });
     }
 }
 
 let serialPort = null;
 let serialReader = null;
+let serialBuffer = '';
+let serialDataListeners = []; // Array to hold registered Serial data callbacks
+
+// Function to register Serial data event listeners for Blockly
+window.registerSerialDataListener = function (callback) {
+    if (typeof callback === 'function') {
+        serialDataListeners.push(callback);
+    }
+};
+
+// Function to unregister Serial data event listeners
+window.unregisterSerialDataListener = function (callback) {
+    serialDataListeners = serialDataListeners.filter(listener => listener !== callback);
+};
 
 async function connectSerial() {
     if (!('serial' in navigator)) { log('瀏覽器不支援 Web Serial'); return; }
     try {
         serialPort = await navigator.serial.requestPort();
-        await serialPort.open({ baudRate: 115200 });
+        await serialPort.open({ baudRate: 9600 }); // Match Arduino's baud rate
         log('Serial opened');
         const decoder = new TextDecoderStream();
         serialPort.readable.pipeTo(decoder.writable);
@@ -100,25 +156,42 @@ async function readSerialLoop() {
             const { value, done } = await serialReader.read();
             if (done) break;
             if (value) {
-                const lines = value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-                for (const line of lines) handleSerialLine(line);
+                serialBuffer += value;
+                let newlineIndex;
+                // Process all complete lines in the buffer
+                while ((newlineIndex = serialBuffer.indexOf('\n')) !== -1) {
+                    const line = serialBuffer.substring(0, newlineIndex).trim();
+                    serialBuffer = serialBuffer.substring(newlineIndex + 1);
+                    if (line) { // Don't process empty lines
+                        handleSerialLine(line);
+                    }
+                }
             }
         }
-    } catch (e) { log('Serial read error: ' + e); }
-}
-
-function handleSerialLine(line) {
-    log('Serial: ' + line);
-    if (line.startsWith('DRUM')) {
-        const parts = line.split(':');
-        const id = parts[1] ? parts[1].toLowerCase() : 'kick';
-        if (id.startsWith('1') || id.includes('kick')) playKick();
-        else if (id.includes('hh')) hh.triggerAttackRelease('16n');
-        else playKick();
+    } catch (e) { 
+        log('Serial read error: ' + e); 
+        serialBuffer = ''; // Reset buffer on error
     }
 }
 
+async function handleSerialLine(line) {
+    const ok = await ensureAudioStarted();
+    if (!ok) return;
+
+    log('Serial: ' + line);
+    log('Calling serial listeners...'); // Debug log
+    // Dispatch to all registered Blockly Serial listeners
+    serialDataListeners.forEach(listener => {
+        try {
+            listener(line);
+        } catch (e) {
+            console.error('Error in Serial listener callback:', e);
+        }
+    });
+}
+
 function playKick() {
+    log('playKick() called!'); // Debug log
     drum.triggerAttackRelease('C2', '8n');
 }
 
@@ -247,7 +320,7 @@ async function getBlocksCode() {
         // Ensure custom generators are in forBlock (Blockly 12+ lookup structure)
         try {
             if (Blockly && Blockly.JavaScript && Blockly.JavaScript.forBlock) {
-                const pbsxGens = ['pbsx_play_note', 'pbsx_play_drum', 'pbsx_set_adsr'];
+                const pbsxGens = ['play_note', 'sb_play_drum', 'sb_set_adsr'];
                 for (const name of pbsxGens) {
                     if (Blockly.JavaScript[name] && !Blockly.JavaScript.forBlock[name]) {
                         Blockly.JavaScript.forBlock[name] = Blockly.JavaScript[name];
@@ -267,6 +340,7 @@ async function getBlocksCode() {
         console.warn('原生 Blockly 產生器失敗:', e);
         log('備援模式：手動遍歷積木...');
         try {
+            Blockly.JavaScript.init(workspace); // Re-initialize the generator for the fallback
             const top = workspace.getTopBlocks(true);
             let out = '';
             const genBlock = function (block) {
@@ -275,21 +349,21 @@ async function getBlocksCode() {
                 // 優先嘗試使用 forBlock 中的原生或已註冊產生器
                 try {
                     if (Blockly && Blockly.JavaScript && Blockly.JavaScript.forBlock && typeof Blockly.JavaScript.forBlock[t] === 'function') {
-                        return Blockly.JavaScript.forBlock[t](block) || '';
+                        return Blockly.JavaScript.forBlock[t].call(Blockly.JavaScript, block) || '';
                     }
                 } catch (err) { console.warn('forBlock generator failed for', t, err); }
                 // 備援：手動實現自訂積木
-                if (t === 'pbsx_play_note') {
+                if (t === 'sb_play_note') {
                     const note = block.getFieldValue('NOTE') || 'C4';
                     const dur = block.getFieldValue('DUR') || '8n';
                     return "synth.triggerAttackRelease('" + note + "','" + dur + "');\n";
-                } else if (t === 'pbsx_play_drum') {
+                } else if (t === 'sb_play_drum') {
                     const type = block.getFieldValue('TYPE');
                     if (type === 'KICK') return 'playKick();\n';
                     if (type === 'HH') return "hh.triggerAttackRelease('16n');\n";
                     if (type === 'SNARE') return "(function(){ var sn = new Tone.NoiseSynth({volume:-6}).toDestination(); sn.triggerAttackRelease('8n'); })();\n";
                     return '';
-                } else if (t === 'pbsx_set_adsr') {
+                } else if (t === 'sb_set_adsr') {
                     const a = Number(block.getFieldValue('A')) || 0.01;
                     const d = Number(block.getFieldValue('D')) || 0.1;
                     const s = Number(block.getFieldValue('S')) || 0.5;
@@ -308,6 +382,11 @@ async function getBlocksCode() {
             });
             if (out.trim() === '') log('備援產生器：產生的程式碼為空');
             else log('✓ 備援產生器成功產生程式碼');
+            
+            // Call finish() to prepend definitions and setup code
+            out = Blockly.JavaScript.finish(out);
+            log('✓ 備援產生器完成最終程式碼組合');
+
             return out;
         } catch (err) {
             console.error('備援產生器錯誤', err);
@@ -416,6 +495,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearLogBtn.addEventListener('click', () => {
             const logDiv = document.getElementById('log');
             if (logDiv) logDiv.innerText = '';
+        });
+    }
+
+    // Save Workspace to XML
+    const saveXmlBtn = document.getElementById('btnSaveXml');
+    if (saveXmlBtn) {
+        saveXmlBtn.addEventListener('click', () => {
+            if (!workspace) {
+                log('Workspace not ready.');
+                return;
+            }
+            try {
+                const xml = Blockly.Xml.workspaceToDom(workspace);
+                const xmlText = Blockly.Xml.domToText(xml);
+
+                const blob = new Blob([xmlText], { type: 'text/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const ts = new Date().toISOString().replace(/[:.]/g, '-');
+                a.href = url;
+                a.download = `synthblockly_workspace_${ts}.xml`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                log('Workspace saved to XML file.');
+            } catch (e) {
+                log('Error saving workspace: ' + e);
+                console.error('Error saving workspace', e);
+            }
+        });
+    }
+
+    // Load Workspace from XML
+    const loadXmlBtn = document.getElementById('btnLoadXml');
+    if (loadXmlBtn) {
+        loadXmlBtn.addEventListener('click', () => {
+            if (!workspace) {
+                log('Workspace not ready.');
+                return;
+            }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xml,text/xml';
+            input.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const xmlText = e.target.result;
+                    try {
+                        workspace.clear();
+                        const xml = Blockly.utils.xml.textToDom(xmlText);
+                        Blockly.Xml.domToWorkspace(xml, workspace);
+                        log(`Workspace loaded from ${file.name}`);
+                    } catch (err) {
+                        log(`Error loading workspace: ${err}`);
+                        console.error('Error loading workspace', err);
+                    }
+                };
+                reader.readAsText(file);
+            });
+            input.click();
         });
     }
 

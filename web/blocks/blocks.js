@@ -8,52 +8,164 @@ export function registerBlocks(Blockly) {
     }
 
     // 播放音符
-    Blockly.Blocks['pbsx_play_note'] = {
+    Blockly.Blocks['sb_play_note'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.PBS_PLAY_NOTE_LABEL || 'Play Note')
-                .appendField(new Blockly.FieldTextInput('C4'), 'NOTE')
-                .appendField(Blockly.Msg.PBS_PLAY_NOTE_DUR_LABEL || 'Dur')
-                .appendField(new Blockly.FieldTextInput('8n'), 'DUR');
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(230);
-            this.setTooltip(Blockly.Msg.PBS_PLAY_NOTE_TOOLTIP || 'Play a musical note');
+            this.jsonInit({
+                "message0": "%{BKY_SB_PLAY_NOTE_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NOTE",
+                        "text": "C4"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "DUR",
+                        "text": "8n"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "tooltip": "%{BKY_SB_PLAY_NOTE_TOOLTIP}"
+            });
         }
     };
 
     // 播放鼓聲
-    Blockly.Blocks['pbsx_play_drum'] = {
+    Blockly.Blocks['sb_play_drum'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.PBS_PLAY_DRUM_LABEL || 'Play Drum')
-                .appendField(new Blockly.FieldDropdown([['Kick', 'KICK'], ['Snare', 'SNARE'], ['HiHat', 'HH']]), 'TYPE');
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(20);
-            this.setTooltip(Blockly.Msg.PBS_PLAY_DRUM_TOOLTIP || 'Trigger a drum sound');
+            this.jsonInit({
+                "message0": "%{BKY_SB_PLAY_DRUM_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TYPE",
+                        "options": [['Kick', 'KICK'], ['Snare', 'SNARE'], ['HiHat', 'HH']]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "tooltip": "%{BKY_SB_PLAY_DRUM_TOOLTIP}"
+            });
         }
     };
 
     // 設定 ADSR
-    Blockly.Blocks['pbsx_set_adsr'] = {
+    Blockly.Blocks['sb_set_adsr'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg.PBS_SET_ADSR_LABEL || 'Set ADSR')
-                .appendField(Blockly.Msg.PBS_SET_ADSR_A || 'A')
-                .appendField(new Blockly.FieldNumber(0.01, 0, 10, 0.01), 'A')
-                .appendField(Blockly.Msg.PBS_SET_ADSR_D || 'D')
-                .appendField(new Blockly.FieldNumber(0.1, 0, 10, 0.01), 'D')
-                .appendField(Blockly.Msg.PBS_SET_ADSR_S || 'S')
-                .appendField(new Blockly.FieldNumber(0.5, 0, 1, 0.01), 'S')
-                .appendField(Blockly.Msg.PBS_SET_ADSR_R || 'R')
-                .appendField(new Blockly.FieldNumber(1.0, 0, 10, 0.01), 'R');
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(120);
-            this.setTooltip(Blockly.Msg.PBS_SET_ADSR_TOOLTIP || 'Set ADSR envelope');
+            this.jsonInit({
+                "message0": "%{BKY_SB_SET_ADSR_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_number",
+                        "name": "A",
+                        "value": 0.01,
+                        "min": 0,
+                        "max": 10,
+                        "precision": 0.01
+                    },
+                    {
+                        "type": "field_number",
+                        "name": "D",
+                        "value": 0.1,
+                        "min": 0,
+                        "max": 10,
+                        "precision": 0.01
+                    },
+                    {
+                        "type": "field_number",
+                        "name": "S",
+                        "value": 0.5,
+                        "min": 0,
+                        "max": 1,
+                        "precision": 0.01
+                    },
+                    {
+                        "type": "field_number",
+                        "name": "R",
+                        "value": 1.0,
+                        "min": 0,
+                        "max": 10,
+                        "precision": 0.01
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_SYNTH_COLOR}",
+                "tooltip": "%{BKY_SB_SET_ADSR_TOOLTIP}"
+            });
         }
     };
 
+    // 當收到 MIDI 音符
+    Blockly.Blocks['sb_midi_note_received'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_MIDI_NOTE_RECEIVED_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_variable",
+                        "name": "NOTE",
+                        "variable": "note"
+                    },
+                    {
+                        "type": "field_variable",
+                        "name": "VELOCITY",
+                        "variable": "velocity"
+                    },
+                    {
+                        "type": "field_variable",
+                        "name": "CHANNEL",
+                        "variable": "channel"
+                    }
+                ],
+                "message1": "%{BKY_SB_CONTROLS_DO}",
+                "args1": [
+                    {
+                        "type": "input_statement",
+                        "name": "DO"
+                    }
+                ],
+                "inputsInline": false,
+                "output": null,
+                "previousStatement": null,
+                "nextStatement": true, // Hat blocks that take statements usually have nextStatement: true
+                "colour": "%{BKY_SYNTH_EVENTS_COLOR}",
+                "tooltip": "%{BKY_SB_MIDI_NOTE_RECEIVED_TOOLTIP}",
+                "hat": true
+            });
+        }
+    };
+    // 當收到 Serial 資料
+    Blockly.Blocks['sb_serial_data_received'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_SERIAL_DATA_RECEIVED_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_variable",
+                        "name": "DATA",
+                        "variable": "serial_data"
+                    }
+                ],
+                "message1": "%{BKY_SB_CONTROLS_DO}",
+                "args1": [
+                    {
+                        "type": "input_statement",
+                        "name": "DO"
+                    }
+                ],
+                "inputsInline": false,
+                "output": null,
+                "previousStatement": null,
+                "nextStatement": true,
+                "colour": "%{BKY_SYNTH_EVENTS_COLOR}",
+                "tooltip": "%{BKY_SB_SERIAL_DATA_RECEIVED_TOOLTIP}",
+                "hat": true
+            });
+        }
+    };
     return true;
 }
