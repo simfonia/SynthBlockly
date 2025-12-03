@@ -29,8 +29,8 @@ export function registerGenerators(Blockly) {
     G['sb_play_note'] = function (block) {
         var note = block.getFieldValue('NOTE') || 'C4';
         var dur = block.getFieldValue('DUR') || '8n';
-        return "synth.triggerAttackRelease('" + note + "','" + dur + "');\n";
-    };
+        return "window.audioEngine.synth.triggerAttackRelease('" + note + "','" + dur + "');\n";
+    }.bind(G);
     try { if (Gproto) Gproto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
@@ -39,11 +39,11 @@ export function registerGenerators(Blockly) {
     G['sb_play_drum'] = function (block) {
         var type = block.getFieldValue('TYPE');
         var code = '';
-        if (type === 'KICK') code = 'playKick();\n';
-        else if (type === 'HH') code = "hh.triggerAttackRelease('16n');\n";
-        else if (type === 'SNARE') code = "(function(){ var sn = new Tone.NoiseSynth({volume:-6}).toDestination(); sn.triggerAttackRelease('8n'); })();\n";
+        if (type === 'KICK') code = 'window.audioEngine.playKick();';
+        else if (type === 'SNARE') code = 'window.audioEngine.playSnare();';
+        else if (type === 'HH') code = "window.audioEngine.hh.triggerAttackRelease('16n');";
         return code;
-    };
+    }.bind(G);
     try { if (Gproto) Gproto['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
@@ -54,77 +54,27 @@ export function registerGenerators(Blockly) {
         var d = Number(block.getFieldValue('D')) || 0.1;
         var s = Number(block.getFieldValue('S')) || 0.5;
         var r = Number(block.getFieldValue('R')) || 1.0;
-        return "synth.set({envelope: {attack: " + a + ", decay: " + d + ", sustain: " + s + ", release: " + r + "}});\n";
-    };
+        return "window.audioEngine.synth.set({envelope: {attack: " + a + ", decay: " + d + ", sustain: " + s + ", release: " + r + "}});\n";
+    }.bind(G);
     try { if (Gproto) Gproto['sb_set_adsr'] = G['sb_set_adsr']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_set_adsr'] = G['sb_set_adsr']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_set_adsr'] = G['sb_set_adsr']; } catch (e) { }
     try { G.forBlock['sb_set_adsr'] = G['sb_set_adsr']; } catch (e) { }
 
     G['sb_midi_note_received'] = function (block) {
-        const functionName = this.nameDB_.getName(block.id, Blockly.Names.NameType.PROCEDURE);
-
-        // Correct way to get variable names in Blockly v9+
-        const noteVarId = block.getFieldValue('NOTE');
-        const velocityVarId = block.getFieldValue('VELOCITY');
-        const channelVarId = block.getFieldValue('CHANNEL');
-
-        const noteVar = block.workspace.getVariableMap().getVariableById(noteVarId);
-        const velocityVar = block.workspace.getVariableMap().getVariableById(velocityVarId);
-        const channelVar = block.workspace.getVariableMap().getVariableById(channelVarId);
-
-        if (!noteVar || !velocityVar || !channelVar) {
-            return `// Error: One or more variables not found for MIDI event block.\n`;
-        }
-        
-        const varNote = noteVar.name;
-        const varVelocity = velocityVar.name;
-        const varChannel = channelVar.name;
-
-        const statements = Blockly.JavaScript.statementToCode(block, 'DO');
-
-        const midiEventHandlerCode = `
-var ${functionName} = function(${varNote}, ${varVelocity}, ${varChannel}) {
-    ${statements}
-};
-`;
-        Blockly.JavaScript.definitions_['midi_event_handler_' + block.id] = midiEventHandlerCode;
-        Blockly.JavaScript.setups_['midi_listener_' + block.id] = `window.registerMidiNoteListener(${functionName});`;
-
-        return ''; // Hat blocks usually don't return code themselves
+        // This hat block is handled by a live event listener in main.js.
+        // It should not generate any code for the 'Run Blocks' button.
+        return '';
     }.bind(G);
     try { if (Gproto) Gproto['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { }
-    try { G.forBlock['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { }
 
     G['sb_serial_data_received'] = function (block) {
-        const functionName = this.nameDB_.getName(block.id, Blockly.Names.NameType.PROCEDURE);
-        
-        // Correct way to get variable name in Blockly v9+
-        const variableId = block.getFieldValue('DATA');
-        const variable = block.workspace.getVariableMap().getVariableById(variableId);
-        if (!variable) {
-            return `// Error: variable with ID "${variableId}" not found.\n`;
-        }
-        const varData = variable.name;
-
-        const statements = Blockly.JavaScript.statementToCode(block, 'DO');
-
-        const serialEventHandlerCode = `
-var ${functionName} = function(${varData}) {
-    ${statements}
-};
-`;
-        Blockly.JavaScript.definitions_['serial_event_handler_' + block.id] = serialEventHandlerCode;
-        Blockly.JavaScript.setups_['serial_listener_' + block.id] = `window.registerSerialDataListener(${functionName});`;
-
-        return ''; // Hat blocks usually don't return code themselves
-    }.bind(G);
-    try { if (Gproto) Gproto['sb_serial_data_received'] = G['sb_serial_data_received']; } catch (e) { }
-    try { if (GeneratorProto) GeneratorProto['sb_serial_data_received'] = G['sb_serial_data_received']; } catch (e) { }
-    try { if (JSConstructorProto) JSConstructorProto['sb_serial_data_received'] = G['sb_serial_data_received']; } catch (e) { }
-    try { G.forBlock['sb_serial_data_received'] = G['sb_serial_data_received']; } catch (e) { }
+        // This hat block is handled by a live event listener in main.js.
+        // It should not generate any code for the 'Run Blocks' button.
+        return '';
+    };
     
     // Expose a global fallback for legacy code that expects window.registerSBGenerators
     try { window.registerSBGenerators = function (b) { return registerGenerators(b || Blockly); }; } catch (e) { }

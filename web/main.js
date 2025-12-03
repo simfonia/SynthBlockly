@@ -20,20 +20,54 @@ console.warn = function (...args) {
 // --- 全域變數初始化 ---
 // ============================================================================
 let workspace = null;
-const synth = new Tone.PolySynth(Tone.Synth).toDestination();
 const analyser = new Tone.Analyser('waveform', 1024);
-synth.connect(analyser);
 
-const drum = new Tone.MembraneSynth().toDestination();
-const hh = new Tone.NoiseSynth({ volume: -12 }).toDestination();
+// Connect the analyser to the output destination
+analyser.toDestination();
+
+// Create audio nodes and connect them to the analyser
+const synth = new Tone.PolySynth(Tone.Synth).connect(analyser);
+const drum = new Tone.MembraneSynth().connect(analyser);
+const hh = new Tone.NoiseSynth({ volume: -12 }).connect(analyser);
+const snare = new Tone.NoiseSynth({
+    noise: { type: 'white' },
+    envelope: { attack: 0.005, decay: 0.2, sustain: 0 },
+    volume: -5
+}).connect(analyser);
 
 let audioStarted = false;
 
-function log(msg) {
-    const d = document.getElementById('log');
-    d.innerText += msg + '\n';
-    d.scrollTop = d.scrollHeight;
-}
+// --- Create and expose a single Audio Engine object ---
+const audioEngine = {
+    Tone: Tone,
+    synth: synth,
+    drum: drum,
+    hh: hh,
+    snare: snare,
+    log: function(msg) {
+        const d = document.getElementById('log');
+        if (d) {
+            d.innerText += msg + '\n';
+            d.scrollTop = d.scrollHeight;
+        }
+    },
+    playKick: async function() {
+        const ok = await ensureAudioStarted();
+        if (ok) {
+            // this.log('playKick() called!');
+            this.drum.triggerAttackRelease('C2', '8n');
+        }
+    },
+    playSnare: async function() {
+        const ok = await ensureAudioStarted();
+        if (ok) {
+            this.snare.triggerAttackRelease('8n');
+        }
+    }
+};
+window.audioEngine = audioEngine;
+
+const log = audioEngine.log; // Keep a local reference for functions outside the engine
 
 // ============================================================================
 // --- Audio 管理 ---
@@ -175,11 +209,13 @@ async function readSerialLoop() {
 }
 
 async function handleSerialLine(line) {
-    const ok = await ensureAudioStarted();
-    if (!ok) return;
-
     log('Serial: ' + line);
-    log('Calling serial listeners...'); // Debug log
+    const ok = await ensureAudioStarted();
+    if (!ok) {
+        log('無法處理音效：音訊尚未由使用者手動啟用（請點擊頁面上任一按鈕）。');
+        return;
+    }
+
     // Dispatch to all registered Blockly Serial listeners
     serialDataListeners.forEach(listener => {
         try {
@@ -190,9 +226,125 @@ async function handleSerialLine(line) {
     });
 }
 
-function playKick() {
-    log('playKick() called!'); // Debug log
-    drum.triggerAttackRelease('C2', '8n');
+// --- Workspace Event Handlers (New Architecture) ---
+const blockListeners = {}; // Object to hold listeners for specific blocks, enabling dynamic un-registration
+
+function onWorkspaceChanged(event) {
+    if (!workspace) return;
+    
+    // Event: A new block is created/dragged onto the workspace
+    if (event.type === Blockly.Events.BLOCK_CREATE) {
+        for (const blockId of event.ids) {
+            const block = workspace.getBlockById(blockId);
+            if (block) {
+                if (block.type === 'sb_serial_data_received') {
+                    registerListenerForBlock(block);
+                } else if (block.type === 'sb_midi_note_received') {
+                    registerListenerForMidiBlock(block);
+                }
+            }
+        }
+    }
+
+    // Event: A block is deleted
+    if (event.type === Blockly.Events.BLOCK_DELETE) {
+        for (const blockId of event.ids) {
+            if (blockListeners[blockId]) {
+                if (blockListeners[blockId].type === 'serial') {
+                    unregisterListenerForBlock(blockId);
+                } else if (blockListeners[blockId].type === 'midi') {
+                    unregisterListenerForMidiBlock(blockId);
+                }
+            }
+        }
+    }
+}
+
+function registerListenerForBlock(block) {
+    if (!block || blockListeners[block.id]) return; // Already registered
+
+    // --- FIX: Initialize the generator before use ---
+    Blockly.JavaScript.init(workspace);
+
+    const code = Blockly.JavaScript.statementToCode(block, 'DO');
+    
+    // --- FIX: Clean up the generator state after use ---
+    Blockly.JavaScript.finish(''); 
+
+    if (!code) return; // No blocks inside the hat
+
+    const variableId = block.getFieldValue('DATA');
+    const variable = block.workspace.getVariableMap().getVariableById(variableId);
+    if (!variable) return;
+    const varData = variable.name;
+
+    try {
+        const listenerFunction = new Function(varData, code);
+        window.registerSerialDataListener(listenerFunction);
+        blockListeners[block.id] = { type: 'serial', listener: listenerFunction }; // Store type
+        log(`即時註冊了積木 ${block.id} 的序列埠監聽器。`);
+    } catch (e) {
+        console.error("Failed to create or register listener function:", e);
+        log(`建立監聽器失敗: ${e.message}`);
+    }
+}
+
+function unregisterListenerForBlock(blockId) {
+    const listenerToRemove = blockListeners[blockId];
+    if (listenerToRemove && listenerToRemove.type === 'serial') {
+        window.unregisterSerialDataListener(listenerToRemove.listener);
+        delete blockListeners[blockId];
+        log(`註銷了積木 ${blockId} 的序列埠監聽器。`);
+    }
+}
+
+function registerListenerForMidiBlock(block) {
+    if (!block || blockListeners[block.id]) return; // Already registered
+
+    // Initialize the generator before use
+    Blockly.JavaScript.init(workspace);
+
+    const code = Blockly.JavaScript.statementToCode(block, 'DO');
+    // Clean up the generator state after use
+    Blockly.JavaScript.finish('');
+
+    if (!code) return; // No blocks inside the hat
+
+    const noteVarId = block.getFieldValue('NOTE');
+    const velocityVarId = block.getFieldValue('VELOCITY');
+    const channelVarId = block.getFieldValue('CHANNEL');
+
+    const noteVar = block.workspace.getVariableMap().getVariableById(noteVarId);
+    const velocityVar = block.workspace.getVariableMap().getVariableById(velocityVarId);
+    const channelVar = block.workspace.getVariableMap().getVariableById(channelVarId);
+
+    if (!noteVar || !velocityVar || !channelVar) {
+        log(`建立 MIDI 監聽器失敗: 變數未找到。`);
+        return;
+    }
+    
+    const varNote = noteVar.name;
+    const varVelocity = velocityVar.name;
+    const varChannel = channelVar.name;
+
+    try {
+        const listenerFunction = new Function(varNote, varVelocity, varChannel, code);
+        window.registerMidiNoteListener(listenerFunction);
+        blockListeners[block.id] = { type: 'midi', listener: listenerFunction }; // Store type
+        log(`即時註冊了積木 ${block.id} 的 MIDI 監聽器。`);
+    } catch (e) {
+        console.error("Failed to create or register MIDI listener function:", e);
+        log(`建立 MIDI 監聽器失敗: ${e.message}`);
+    }
+}
+
+function unregisterListenerForMidiBlock(blockId) {
+    const listenerEntry = blockListeners[blockId];
+    if (listenerEntry && listenerEntry.type === 'midi') {
+        window.unregisterMidiNoteListener(listenerEntry.listener);
+        delete blockListeners[blockId];
+        log(`註銷了積木 ${blockId} 的 MIDI 監聽器。`);
+    }
 }
 
 // ============================================================================
@@ -290,6 +442,10 @@ async function initializeBlockly() {
         });
         log('✓ Blockly workspace 已注入');
 
+        // --- NEW ARCHITECTURE: Attach live event listener ---
+        workspace.addChangeListener(onWorkspaceChanged);
+        log('✓ 已附加工作區即時事件監聽器。');
+
     } catch (e) {
         console.error('Blockly initialization failed:', e);
         log('❌ Blockly 初始化失敗: ' + e.message);
@@ -320,7 +476,7 @@ async function getBlocksCode() {
         // Ensure custom generators are in forBlock (Blockly 12+ lookup structure)
         try {
             if (Blockly && Blockly.JavaScript && Blockly.JavaScript.forBlock) {
-                const pbsxGens = ['play_note', 'sb_play_drum', 'sb_set_adsr'];
+                const pbsxGens = ['play_note', 'sb_play_drum', 'sb_set_adsr', 'sb_midi_note_received', 'sb_serial_data_received'];
                 for (const name of pbsxGens) {
                     if (Blockly.JavaScript[name] && !Blockly.JavaScript.forBlock[name]) {
                         Blockly.JavaScript.forBlock[name] = Blockly.JavaScript[name];
@@ -329,7 +485,9 @@ async function getBlocksCode() {
             }
         } catch (e) { console.warn('forBlock sync failed', e); }
 
-        const code = Blockly.JavaScript.workspaceToCode(workspace);
+        let code = Blockly.JavaScript.workspaceToCode(workspace);
+        code = Blockly.JavaScript.finish(code);
+
         if (!code || code.trim() === '') {
             log('產生的程式碼為空');
         } else {
@@ -426,7 +584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btnTestDrum').addEventListener('click', async () => {
         const ok = await ensureAudioStarted();
-        if (ok) playKick();
+        if (ok) audioEngine.playKick();
     });
 
     const startBtn = document.getElementById('btnStartAudio');
@@ -452,9 +610,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const code = await getBlocksCode();
             if (!code) { log('沒有程式碼可執行'); return; }
             log('執行積木程式碼...');
+            // log('--- 產生的程式碼 ---'); // Debug log
+            // log(code);                  // Debug log: print the code
+            // log('--------------------'); // Debug log
             try {
-                const runner = new Function('Tone', 'synth', 'drum', 'hh', 'playKick', 'log', code + '\n');
-                runner(Tone, synth, drum, hh, playKick, log);
+                const runner = new Function(code);
+                runner();
                 log('程式執行完畢');
             } catch (e) {
                 console.error('RunBlocks execution error', e);
