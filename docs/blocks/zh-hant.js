@@ -26,9 +26,9 @@ export const MSG_ZH_HANT = {
 
     // Block Messages
     'SB_PLAY_NOTE_MESSAGE': '播放 音符 %1 時值 %2 力度 %3 (非阻塞)',
-    'SB_PLAY_NOTE_TOOLTIP': '立即播放音符，不等待其結束。力度範圍 0-1 (MIDI 輸入為 0-127)。',
+    'SB_PLAY_NOTE_TOOLTIP': '立即播放音符，不等待其結束。力度範圍 0-1 (MIDI 輸入為 0-127)。時值符號可使用 "4n" (四分音符), "8n." (附點八分音符), "8t" (八分三連音) 等。',
     'SB_PLAY_NOTE_AND_WAIT_MESSAGE': '播放 音符 %1 時值 %2 力度 %3 並等待',
-    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': '播放一個音符，並等待其時值結束後才繼續執行。力度範圍 0-1 (MIDI 輸入為 0-127)。',
+    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': '播放一個音符，並等待其時值結束後才繼續執行。力度範圍 0-1 (MIDI 輸入為 0-127)。時值符號可使用 "4n" (四分音符), "8n." (附點八分音符), "8t" (八分三連音) 等。',
     'SB_PLAY_DRUM_MESSAGE': '播放 鼓聲 %1',
     'SB_PLAY_DRUM_TOOLTIP': '觸發鼓聲 (Kick/Snare/HiHat)',
     'SB_SET_ADSR_MESSAGE': '設定 ADSR A %1 D %2 S %3 R %4',

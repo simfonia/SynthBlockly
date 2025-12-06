@@ -26,9 +26,9 @@ export const MSG_EN = {
 
     // Block Messages
     'SB_PLAY_NOTE_MESSAGE': 'Play Note %1 Duration %2 Velocity %3 (non-blocking)',
-    'SB_PLAY_NOTE_TOOLTIP': 'Plays a note instantly without waiting for it to finish. Velocity is 0-1 (0-127 for MIDI input).',
+    'SB_PLAY_NOTE_TOOLTIP': 'Plays a note instantly without waiting for it to finish. Velocity is 0-1 (0-127 for MIDI input). Duration symbols include "4n" (quarter note), "8n." (dotted eighth note), "8t" (eighth note triplet), etc.',
     'SB_PLAY_NOTE_AND_WAIT_MESSAGE': 'Play Note %1 Duration %2 Velocity %3 and wait',
-    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': 'Plays a note and waits for its duration before continuing. Velocity is 0-1 (0-127 for MIDI input).',
+    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': 'Plays a note and waits for its duration before continuing. Velocity is 0-1 (0-127 for MIDI input). Duration symbols include "4n" (quarter note), "8n." (dotted eighth note), "8t" (eighth note triplet), etc.',
     'SB_PLAY_DRUM_MESSAGE': 'Play Drum %1',
     'SB_PLAY_DRUM_TOOLTIP': 'Trigger a drum sound (Kick / Snare / HiHat)',
     'SB_SET_ADSR_MESSAGE': 'Set ADSR A %1 D %2 S %3 R %4',

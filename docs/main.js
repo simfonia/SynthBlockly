@@ -50,7 +50,7 @@ const jazzKit = new Tone.Sampler({
         'A1': 'HHODA.WAV',        // Open Hi-hat
         'A#1': 'RIDEDA.WAV',       // Ride Cymbal
     },
-    baseUrl: './assets/samples/jazzkit/Roland TR-909/',
+    baseUrl: './assets/samples/jazzkit/Roland_TR-909/',
     onload: () => {
         console.log('Jazz Kit samples loaded.');
     }

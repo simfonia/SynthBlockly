@@ -132,8 +132,8 @@
         <block type="procedures_defnoreturn"></block>
     </category>
     <category name="SynthBlockly" colour="260">
-      <category name="樂器 (Instruments)" colour="270">
-        <category name="合成器 (Synthesizers)" colour="280">
+      <category name="Instruments" colour="270">
+        <category name="Synthesizers" colour="280">
           <block type="sb_play_note">
             <value name="NOTE">
               <shadow type="text">
@@ -161,18 +161,18 @@
           <block type="sb_play_drum"></block>
           <block type="sb_set_adsr"></block>
         </category>
-        <category name="取樣器 (Samplers)" colour="290">
+        <category name="Samplers" colour="290">
           <block type="jazzkit_play_drum"></block>
         </category>
       </category>
-      <category name="指揮 (Transport)" colour="300">
+      <category name="Transport" colour="300">
         <block type="sb_transport_set_bpm"></block>
         <block type="sb_transport_start_stop"></block>
         <block type="sb_wait_musical"></block>
       </category>
-      <category name="效果器 (Effects)" colour="310">
+      <category name="Effects" colour="310">
       </category>
-      <category name="事件 (Events)" colour="320">
+      <category name="Events" colour="320">
         <block type="sb_midi_note_received"></block>
         <block type="sb_serial_data_received"></block>
       </category>
