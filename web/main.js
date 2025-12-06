@@ -91,6 +91,39 @@ window.audioEngine = audioEngine;
 
 const log = audioEngine.log; // Keep a local reference for functions outside the engine
 
+// --- Resizer Global Variables ---
+let isHResizing = false;
+
+// --- Resizer Helper Functions ---
+function onHMouseMove(e) {
+    if (!isHResizing) return;
+    const container = document.getElementById('container');
+    const leftPanel = document.getElementById('left');
+    const hResizer = document.getElementById('h-resizer');
+
+    const containerWidth = container.offsetWidth;
+    let newLeftWidth = e.clientX - container.getBoundingClientRect().left;
+
+    // Add constraints for minimum panel widths
+    const minWidth = 150; // Minimum width for left and right panels
+    if (newLeftWidth < minWidth) newLeftWidth = minWidth;
+    if (containerWidth - newLeftWidth - hResizer.offsetWidth < minWidth) {
+        newLeftWidth = containerWidth - minWidth - hResizer.offsetWidth;
+    }
+
+    leftPanel.style.flexBasis = `${newLeftWidth}px`;
+    if (workspace) {
+        // Let Blockly and p5 know that a resize happened.
+        window.dispatchEvent(new Event('resize'));
+    }
+}
+
+function onHMouseUp() {
+    isHResizing = false;
+    document.removeEventListener('mousemove', onHMouseMove);
+    document.removeEventListener('mouseup', onHMouseUp);
+}
+
 // ============================================================================
 // --- Audio 管理 ---
 // ============================================================================
@@ -608,6 +641,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 初始化 Blockly（包含 5-pass 加載）
     await initializeBlockly();
 
+    // --- Language & UI ---
+    // Update tooltips after modules are loaded and DOM is ready
+    function updateUITranslations() {
+        const userLang = navigator.language || navigator.userLanguage;
+        const messages = (userLang.includes('zh')) ? Blockly.Msg : Blockly.Msg; // Assuming MSG_EN is the default
+        
+        const elements = document.querySelectorAll('[data-lang-title]');
+        elements.forEach(el => {
+            const key = el.getAttribute('data-lang-title');
+            if (messages[key]) {
+                el.title = messages[key];
+            }
+        });
+    }
+    updateUITranslations();
+
+    // Handle icon button hover effects
+    const iconButtons = document.querySelectorAll('.icon-button');
+    iconButtons.forEach(button => {
+        const img = button.querySelector('img');
+        if (img) {
+            const originalSrc = img.src;
+            const hoverSrc = originalSrc.replace('_1F1F1F.png', '_FE2F89.png');
+            
+            button.addEventListener('mouseover', () => { img.src = hoverSrc; });
+            button.addEventListener('mouseout', () => { img.src = originalSrc; });
+        }
+    });
+
+    // --- Resizer Event Listeners ---
+    const hResizer = document.getElementById('h-resizer');
+    hResizer.addEventListener('mousedown', (e) => {
+        isHResizing = true;
+        document.addEventListener('mousemove', onHMouseMove);
+        document.addEventListener('mouseup', onHMouseUp);
+        e.preventDefault();
+    });
+
     // Resize handler
     window.addEventListener('resize', () => {
         if (workspace && workspace.svgResize) workspace.svgResize();
@@ -627,11 +698,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnTestNote').addEventListener('click', async () => {
         const ok = await ensureAudioStarted();
         if (ok) synth.triggerAttackRelease('C4', '8n');
-    });
-
-    document.getElementById('btnTestDrum').addEventListener('click', async () => {
-        const ok = await ensureAudioStarted();
-        if (ok) audioEngine.playKick();
     });
 
     const startBtn = document.getElementById('btnStartAudio');

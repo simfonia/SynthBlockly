@@ -1,5 +1,16 @@
 // blocks/en.js — English messages
 export const MSG_EN = {
+    // --- UI Button Tooltips ---
+    'UI_BTN_START_AUDIO': 'Start Audio Context',
+    'UI_BTN_CONNECT_MIDI': 'Connect MIDI Device',
+    'UI_BTN_CONNECT_SERIAL': 'Connect Serial Device',
+    'UI_BTN_PLAY_TEST_NOTE': 'Play Test Note (C4)',
+    'UI_BTN_SAVE_PROJECT': 'Save Project (XML)',
+    'UI_BTN_LOAD_PROJECT': 'Load Project (XML)',
+    'UI_BTN_RUN_BLOCKS': 'Run Blocks',
+    'UI_BTN_EXPORT_CODE': 'Export Code to File & Clipboard',
+    'UI_BTN_CLEAR_LOG': 'Clear Log',
+    
     // Category Colors (Hex values)
     'SYNTH_ACTIONS_COLOR': '#5CB85C', // Green
     'SYNTH_SYNTH_COLOR': '#5BC0DE',   // Blue
@@ -26,7 +37,7 @@ export const MSG_EN = {
 
     // Add Jazz Kit specific messages
     'JAZZKIT_COLOR': '#E74C3C', // Reddish
-    'JAZZKIT_PLAY_DRUM_MESSAGE': 'Jazz Drum: %1',
+    'JAZZKIT_PLAY_DRUM_MESSAGE': 'Jazz Drum(Roland TR-909): %1',
     'JAZZKIT_PLAY_DRUM_TOOLTIP': 'Play a selected jazz drum sound',
 
     // Jazz Kit Drum Type Options

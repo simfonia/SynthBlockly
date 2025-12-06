@@ -1,5 +1,16 @@
 // blocks/zh-hant.js — 正體中文訊息
 export const MSG_ZH_HANT = {
+    // --- UI Button Tooltips ---
+    'UI_BTN_START_AUDIO': '啟動音訊',
+    'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
+    'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
+    'UI_BTN_PLAY_TEST_NOTE': '播放測試音 (C4)',
+    'UI_BTN_SAVE_PROJECT': '儲存專案 (XML)',
+    'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
+    'UI_BTN_RUN_BLOCKS': '執行積木',
+    'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
+    'UI_BTN_CLEAR_LOG': '清除日誌',
+
     // Category Colors (Hex values)
     'SYNTH_ACTIONS_COLOR': '#5CB85C', // 綠色
     'SYNTH_SYNTH_COLOR': '#5BC0DE',   // 藍色
@@ -26,7 +37,7 @@ export const MSG_ZH_HANT = {
 
     // Add Jazz Kit specific messages
     'JAZZKIT_COLOR': '#E74C3C', // 紅橙色 (Reddish)
-    'JAZZKIT_PLAY_DRUM_MESSAGE': '爵士鼓: %1',
+    'JAZZKIT_PLAY_DRUM_MESSAGE': '爵士鼓(Roland TR-909): %1',
     'JAZZKIT_PLAY_DRUM_TOOLTIP': '播放選定的爵士鼓音效',
 
     // Jazz Kit Drum Type Options (Using English as per user request)

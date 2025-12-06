@@ -1,6 +1,45 @@
 // PiBlockly Synth — web/app.js
 // 簡易範例：初始化 Blockly、Tone.js 合成器、Web MIDI 與 Web Serial 連線 (基本示範)
 
+import { MSG_EN } from './blocks/en.js';
+import { MSG_ZH_HANT } from './blocks/zh-hant.js';
+
+// --- Language Management ---
+let currentLanguage = 'en';
+let currentMessages = MSG_EN;
+
+// Determine initial language
+const userLang = navigator.language || navigator.userLanguage;
+if (userLang.includes('zh')) {
+    currentLanguage = 'zh-hant';
+    currentMessages = MSG_ZH_HANT;
+} else {
+    currentLanguage = 'en';
+    currentMessages = MSG_EN;
+}
+
+function updateUITranslations() {
+    const elements = document.querySelectorAll('[data-lang-title]');
+    elements.forEach(el => {
+        const key = el.getAttribute('data-lang-title');
+        if (currentMessages[key]) {
+            el.title = currentMessages[key];
+        }
+    });
+}
+
+// Function to switch language (can be triggered by a button later)
+window.setLanguage = (lang) => {
+    currentLanguage = lang;
+    if (lang === 'zh-hant') {
+        currentMessages = MSG_ZH_HANT;
+    } else {
+        currentMessages = MSG_EN;
+    }
+    updateUITranslations();
+    // TODO: Also update Blockly toolbox labels if needed
+};
+
 // --- Blockly 初始化（等 DOM 載入後注入 toolbox）
 let workspace = null;
 
@@ -156,10 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const ok = await ensureAudioStarted();
         if (ok) synth.triggerAttackRelease('C4', '8n');
     });
-    document.getElementById('btnTestDrum').addEventListener('click', async () => {
-        const ok = await ensureAudioStarted();
-        if (ok) playKick();
-    });
 
     // 明確的 Start Audio 按鈕：確保在使用者手勢中直接呼叫 Tone.start()
     const startBtn = document.getElementById('btnStartAudio');
@@ -175,6 +210,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Handle icon button hover effects
+    const iconButtons = document.querySelectorAll('.icon-button');
+    iconButtons.forEach(button => {
+        const img = button.querySelector('img');
+        if (img) {
+            const originalSrc = img.src;
+            // Assuming icon names follow _1F1F1F.png (default) and _FE2F89.png (hover) pattern
+            const hoverSrc = originalSrc.replace('_1F1F1F.png', '_FE2F89.png');
+
+            button.addEventListener('mouseover', () => {
+                img.src = hoverSrc;
+            });
+            button.addEventListener('mouseout', () => {
+                img.src = originalSrc;
+            });
+        }
+    });
+
+    // Update UI text based on current language
+    updateUITranslations();
 
     // --- Blockly 產生/執行/匯出處理
     // 產生程式碼：嘗試使用 Blockly.JavaScript 產生器，失敗時使用備援產生器

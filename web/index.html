@@ -17,22 +17,30 @@
     <script type="module" src="main.js"></script>
     <div id="container">
         <div id="left">
-            <h2>SynthBlockly</h2>
             <div id="blocklyDiv"></div>
         </div>
+        <div id="h-resizer"></div> <!-- Horizontal resizer -->
         <div id="right">
-            <h2>合成器 + 波形</h2>
             <div id="controls">
-                <button id="btnStartAudio">Start Audio</button>
-                <button id="btnMidi">Connect MIDI</button>
-                <button id="btnSerial">Connect Serial</button>
-                <button id="btnTestNote">Play Test Note</button>
-                <button id="btnTestDrum">Play Test Drum</button>
-                <button id="btnSaveXml">Save Project</button>
-                <button id="btnLoadXml">Load Project</button>
-                <button id="btnRunBlocks">Run Blocks</button>
-                <button id="btnExportCode">Export Code</button>
-                <button id="btnClearLog">Clear Log</button>
+                <div class="button-panel">
+                    <button id="btnStartAudio" class="icon-button" data-lang-title="UI_BTN_START_AUDIO"><img src="./assets/icons/start_audio_24dp_1F1F1F.png" alt="Start Audio"></button>
+                    <button id="btnTestNote" class="icon-button" data-lang-title="UI_BTN_PLAY_TEST_NOTE"><img src="./assets/icons/play_test_note_24dp_1F1F1F.png" alt="Play Test Note"></button>
+                </div>
+                <div class="button-panel">
+                    <button id="btnSaveXml" class="icon-button" data-lang-title="UI_BTN_SAVE_PROJECT"><img src="./assets/icons/save_24dp_1F1F1F.png" alt="Save Project"></button>
+                    <button id="btnLoadXml" class="icon-button" data-lang-title="UI_BTN_LOAD_PROJECT"><img src="./assets/icons/load_project_24dp_1F1F1F.png" alt="Load Project"></button>
+                </div>
+                <div class="button-panel">
+                    <button id="btnSerial" class="icon-button" data-lang-title="UI_BTN_CONNECT_SERIAL"><img src="./assets/icons/connect_serial_24dp_1F1F1F.png" alt="Connect Serial"></button>
+                    <button id="btnMidi" class="icon-button" data-lang-title="UI_BTN_CONNECT_MIDI"><img src="./assets/icons/connect_midi_24dp_1F1F1F.png" alt="Connect MIDI"></button>
+                </div>
+                <div class="button-panel">
+                    <button id="btnRunBlocks" class="icon-button" data-lang-title="UI_BTN_RUN_BLOCKS"><img src="./assets/icons/run_blocks_24dp_1F1F1F.png" alt="Run Blocks"></button>
+                    <button id="btnExportCode" class="icon-button" data-lang-title="UI_BTN_EXPORT_CODE"><img src="./assets/icons/export_code_24dp_1F1F1F.png" alt="Export Code"></button>
+                </div>
+                <div class="button-panel">
+                    <button id="btnClearLog" class="icon-button" data-lang-title="UI_BTN_CLEAR_LOG"><img src="./assets/icons/clear_log_24dp_1F1F1F.png" alt="Clear Log"></button>
+                </div>
             </div>
             <div id="waveformContainer"></div>
             <div id="log"></div>
