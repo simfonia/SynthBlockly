@@ -35,6 +35,27 @@ const snare = new Tone.NoiseSynth({
     volume: -5
 }).connect(analyser);
 
+// --- NEW: Jazz Kit Sampler ---
+const jazzKit = new Tone.Sampler({
+    urls: {
+        'C1': 'BT0A0D0.WAV',      // Kick
+        'C#1': 'RIM127.WAV',       // Rimshot
+        'D1': 'ST7T7S7.WAV',      // Snare
+        'D#1': 'HANDCLP2.WAV',     // Handclap
+        'E1': 'LTAD0.WAV',        // Low Tom
+        'F1': 'HHCDA.WAV',        // Closed Hi-hat
+        'F#1': 'MTAD0.WAV',        // Mid Tom
+        'G1': 'HTAD0.WAV',        // High Tom
+        'G#1': 'CSHDA.WAV',        // Crash Cymbal
+        'A1': 'HHODA.WAV',        // Open Hi-hat
+        'A#1': 'RIDEDA.WAV',       // Ride Cymbal
+    },
+    baseUrl: './assets/samples/jazzkit/Roland TR-909/',
+    onload: () => {
+        console.log('Jazz Kit samples loaded.');
+    }
+}).connect(analyser);
+
 let audioStarted = false;
 
 // --- Create and expose a single Audio Engine object ---
@@ -44,6 +65,7 @@ const audioEngine = {
     drum: drum,
     hh: hh,
     snare: snare,
+    jazzKit: jazzKit, // Expose the new sampler
     log: function(msg) {
         const d = document.getElementById('log');
         if (d) {
@@ -231,33 +253,53 @@ const blockListeners = {}; // Object to hold listeners for specific blocks, enab
 
 function onWorkspaceChanged(event) {
     if (!workspace) return;
-    
-    // Event: A new block is created/dragged onto the workspace
-    if (event.type === Blockly.Events.BLOCK_CREATE) {
-        for (const blockId of event.ids) {
-            const block = workspace.getBlockById(blockId);
-            if (block) {
-                if (block.type === 'sb_serial_data_received') {
-                    registerListenerForBlock(block);
-                } else if (block.type === 'sb_midi_note_received') {
-                    registerListenerForMidiBlock(block);
-                }
-            }
-        }
-    }
+    if (event.isUiEvent) return; // Don't run on UI events like zoom or selection
 
-    // Event: A block is deleted
-    if (event.type === Blockly.Events.BLOCK_DELETE) {
-        for (const blockId of event.ids) {
-            if (blockListeners[blockId]) {
-                if (blockListeners[blockId].type === 'serial') {
-                    unregisterListenerForBlock(blockId);
-                } else if (blockListeners[blockId].type === 'midi') {
-                    unregisterListenerForMidiBlock(blockId);
-                }
+    // A block was changed, moved, created, or deleted.
+    // This is a broad but effective net to catch any changes that might
+    // affect the code inside a hat block.
+    // Let's find all hat blocks and re-sync their listeners.
+
+    // Find all hat blocks on the workspace
+    const serialHats = workspace.getBlocksByType('sb_serial_data_received', false);
+    const midiHats = workspace.getBlocksByType('sb_midi_note_received', false);
+
+    // Get a list of all currently registered listener block IDs
+    const registeredIds = Object.keys(blockListeners);
+
+    // Combine all current hat blocks
+    const allCurrentHats = [...serialHats, ...midiHats];
+    const allCurrentHatIds = allCurrentHats.map(b => b.id);
+
+    // Unregister listeners for any hat blocks that have been deleted
+    registeredIds.forEach(blockId => {
+        if (!allCurrentHatIds.includes(blockId)) {
+            if (blockListeners[blockId].type === 'serial') {
+                unregisterListenerForBlock(blockId);
+            } else if (blockListeners[blockId].type === 'midi') {
+                unregisterListenerForMidiBlock(blockId);
             }
         }
-    }
+    });
+
+    // Re-register all current hat blocks to update their code
+    allCurrentHats.forEach(block => {
+        // Unregister the old listener for this block ID before registering the new one
+        if (blockListeners[block.id]) {
+            if (blockListeners[block.id].type === 'serial') {
+                unregisterListenerForBlock(block.id);
+            } else if (blockListeners[block.id].type === 'midi') {
+                unregisterListenerForMidiBlock(block.id);
+            }
+        }
+        
+        // Register the new listener
+        if (block.type === 'sb_serial_data_received') {
+            registerListenerForBlock(block);
+        } else if (block.type === 'sb_midi_note_received') {
+            registerListenerForMidiBlock(block);
+        }
+    });
 }
 
 function registerListenerForBlock(block) {
@@ -279,7 +321,8 @@ function registerListenerForBlock(block) {
     const varData = variable.name;
 
     try {
-        const listenerFunction = new Function(varData, code);
+        // Wrap the code in an async IIFE to allow await inside the listener
+        const listenerFunction = new Function(varData, `(async () => { ${code} })();`);
         window.registerSerialDataListener(listenerFunction);
         blockListeners[block.id] = { type: 'serial', listener: listenerFunction }; // Store type
         log(`即時註冊了積木 ${block.id} 的序列埠監聽器。`);
@@ -328,7 +371,11 @@ function registerListenerForMidiBlock(block) {
     const varChannel = channelVar.name;
 
     try {
-        const listenerFunction = new Function(varNote, varVelocity, varChannel, code);
+        // Wrap the code in an async IIFE to allow await inside the listener
+        const listenerFunction = new Function(varNote, '_rawVelocity', varChannel, `(async () => {
+            const ${varVelocity} = _rawVelocity / 127; // Normalize velocity from 0-127 to 0-1 for Tone.js
+            ${code}
+        })();`);
         window.registerMidiNoteListener(listenerFunction);
         blockListeners[block.id] = { type: 'midi', listener: listenerFunction }; // Store type
         log(`即時註冊了積木 ${block.id} 的 MIDI 監聽器。`);
@@ -610,11 +657,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const code = await getBlocksCode();
             if (!code) { log('沒有程式碼可執行'); return; }
             log('執行積木程式碼...');
-            // log('--- 產生的程式碼 ---'); // Debug log
-            // log(code);                  // Debug log: print the code
-            // log('--------------------'); // Debug log
+            log('--- 產生的程式碼 ---'); // Debug log
+            log(code);                  // Debug log: print the code
+            log('--------------------'); // Debug log
             try {
-                const runner = new Function(code);
+                // Wrap the user's code in an async IIFE to allow top-level await
+                const runner = new Function(`(async () => { ${code} })();`);
                 runner();
                 log('程式執行完畢');
             } catch (e) {

@@ -27,14 +27,45 @@ export function registerGenerators(Blockly) {
     if (!G.forBlock) G.forBlock = {};
 
     G['sb_play_note'] = function (block) {
-        var note = block.getFieldValue('NOTE') || 'C4';
+        var note = Blockly.JavaScript.valueToCode(block, 'NOTE', Blockly.JavaScript.ORDER_ATOMIC) || "60"; // Default to MIDI number 60 for Tone.Midi
         var dur = block.getFieldValue('DUR') || '8n';
-        return "window.audioEngine.synth.triggerAttackRelease('" + note + "','" + dur + "');\n";
+        var velocity = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC) || 1;
+
+        // Always convert note input to musical notation string using Tone.Midi().toNote()
+        var processedNote = `Tone.Midi(${note}).toNote()`;
+
+        // Ensure velocity is always a number
+        velocity = `Number(${velocity})`;
+
+        return `window.audioEngine.synth.triggerAttackRelease(${processedNote}, '${dur}', Tone.now(), ${velocity});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { G.forBlock['sb_play_note'] = G['sb_play_note']; } catch (e) { }
+
+    // --- NEW: Play Note and Wait (Blocking) Generator ---
+    G['sb_play_note_and_wait'] = function (block) {
+        var note = Blockly.JavaScript.valueToCode(block, 'NOTE', Blockly.JavaScript.ORDER_ATOMIC) || "60"; // Default to MIDI number 60 for Tone.Midi
+        var dur = block.getFieldValue('DUR') || '4n';
+        var velocity = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC) || 1;
+
+        // Always convert note input to musical notation string using Tone.Midi().toNote()
+        var processedNote = `Tone.Midi(${note}).toNote()`;
+
+        // Ensure velocity is always a number
+        velocity = `Number(${velocity})`;
+
+        var code = `
+window.audioEngine.synth.triggerAttackRelease(${processedNote}, '${dur}', Tone.now(), ${velocity});
+await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('${dur}').toMilliseconds()));
+`;
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_play_note_and_wait'] = G['sb_play_note_and_wait']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_play_note_and_wait'] = G['sb_play_note_and_wait']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_play_note_and_wait'] = G['sb_play_note_and_wait']; } catch (e) { }
+    try { G.forBlock['sb_play_note_and_wait'] = G['sb_play_note_and_wait']; } catch (e) { }
 
     G['sb_play_drum'] = function (block) {
         var type = block.getFieldValue('TYPE');
@@ -75,6 +106,51 @@ export function registerGenerators(Blockly) {
         // It should not generate any code for the 'Run Blocks' button.
         return '';
     };
+
+    // NEW: Jazz Kit Play Drum Generator
+    G['jazzkit_play_drum'] = function (block) {
+        var drumNote = block.getFieldValue('DRUM_TYPE');
+        // Play for a fixed duration, e.g., '8n' (eighth note)
+        return "window.audioEngine.jazzKit.triggerAttackRelease('" + drumNote + "', '8n');\n";
+    }.bind(G);
+    try { if (Gproto) Gproto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
+    try { G.forBlock['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
+
+    // --- NEW: Transport Generators ---
+    G['sb_transport_set_bpm'] = function (block) {
+        var bpm = Number(block.getFieldValue('BPM')) || 120;
+        return `window.audioEngine.Tone.Transport.bpm.value = ${bpm};\n`;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_transport_set_bpm'] = G['sb_transport_set_bpm']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_transport_set_bpm'] = G['sb_transport_set_bpm']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_transport_set_bpm'] = G['sb_transport_set_bpm']; } catch (e) { }
+    try { G.forBlock['sb_transport_set_bpm'] = G['sb_transport_set_bpm']; } catch (e) { }
+
+    G['sb_transport_start_stop'] = function (block) {
+        var action = block.getFieldValue('ACTION');
+        if (action === 'START') {
+            return 'window.audioEngine.Tone.Transport.start();\n';
+        } else {
+            return 'window.audioEngine.Tone.Transport.stop();\n';
+        }
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_transport_start_stop'] = G['sb_transport_start_stop']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_transport_start_stop'] = G['sb_transport_start_stop']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_transport_start_stop'] = G['sb_transport_start_stop']; } catch (e) { }
+    try { G.forBlock['sb_transport_start_stop'] = G['sb_transport_start_stop']; } catch (e) { }
+
+    // --- NEW: Musical Wait Generator ---
+    G['sb_wait_musical'] = function (block) {
+        var duration = block.getFieldValue('DURATION');
+        // The conversion to milliseconds must happen at runtime, because BPM can change.
+        return `await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('${duration}').toMilliseconds()));\n`;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
+    try { G.forBlock['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
     
     // Expose a global fallback for legacy code that expects window.registerSBGenerators
     try { window.registerSBGenerators = function (b) { return registerGenerators(b || Blockly); }; } catch (e) { }

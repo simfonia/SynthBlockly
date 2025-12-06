@@ -132,16 +132,47 @@
         <block type="procedures_defnoreturn"></block>
     </category>
     <category name="SynthBlockly" colour="260">
-      <category name="Actions" colour="270">
-        <block type="sb_play_note"></block>
-        <block type="sb_play_drum"></block>
+      <category name="樂器 (Instruments)" colour="270">
+        <category name="合成器 (Synthesizers)" colour="280">
+          <block type="sb_play_note">
+            <value name="NOTE">
+              <shadow type="text">
+                <field name="TEXT">C4</field>
+              </shadow>
+            </value>
+            <value name="VELOCITY">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+          </block>
+          <block type="sb_play_note_and_wait">
+            <value name="NOTE">
+              <shadow type="text">
+                <field name="TEXT">C4</field>
+              </shadow>
+            </value>
+            <value name="VELOCITY">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+          </block>
+          <block type="sb_play_drum"></block>
+          <block type="sb_set_adsr"></block>
+        </category>
+        <category name="取樣器 (Samplers)" colour="290">
+          <block type="jazzkit_play_drum"></block>
+        </category>
       </category>
-      <category name="Synth" colour="280">
-        <block type="sb_set_adsr"></block>
+      <category name="指揮 (Transport)" colour="300">
+        <block type="sb_transport_set_bpm"></block>
+        <block type="sb_transport_start_stop"></block>
+        <block type="sb_wait_musical"></block>
       </category>
-      <category name="Effects" colour="290">
+      <category name="效果器 (Effects)" colour="310">
       </category>
-      <category name="Events" colour="300">
+      <category name="事件 (Events)" colour="320">
         <block type="sb_midi_note_received"></block>
         <block type="sb_serial_data_received"></block>
       </category>

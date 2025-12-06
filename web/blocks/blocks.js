@@ -14,20 +14,57 @@ export function registerBlocks(Blockly) {
                 "message0": "%{BKY_SB_PLAY_NOTE_MESSAGE}",
                 "args0": [
                     {
-                        "type": "field_input",
+                        "type": "input_value",
                         "name": "NOTE",
-                        "text": "C4"
+                        "check": ["Number", "String"] // Allow either a number (MIDI note) or a string (e.g., "C4")
                     },
                     {
                         "type": "field_input",
                         "name": "DUR",
                         "text": "8n"
+                    },
+                    { // NEW: Velocity input
+                        "type": "input_value",
+                        "name": "VELOCITY",
+                        "check": "Number"
                     }
                 ],
+                "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Play Note and Wait (Blocking) ---
+    Blockly.Blocks['sb_play_note_and_wait'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_PLAY_NOTE_AND_WAIT_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "NOTE",
+                        "check": ["Number", "String"] // Allow either a number (MIDI note) or a string (e.g., "C4")
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "DUR",
+                        "text": "4n"
+                    },
+                    { // NEW: Velocity input
+                        "type": "input_value",
+                        "name": "VELOCITY",
+                        "check": "Number"
+                    }
+                ],
+                "inputsInline": true,
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "tooltip": "%{BKY_SB_PLAY_NOTE_AND_WAIT_TOOLTIP}"
             });
         }
     };
@@ -167,5 +204,108 @@ export function registerBlocks(Blockly) {
             });
         }
     };
+
+    // NEW: Jazz Kit Play Drum Block
+    Blockly.Blocks['jazzkit_play_drum'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_JAZZKIT_PLAY_DRUM_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "DRUM_TYPE",
+                        "options": [
+                            ['%{BKY_JAZZKIT_DRUM_KICK}', 'C1'],
+                            ['%{BKY_JAZZKIT_DRUM_RIMSHOT}', 'C#1'],
+                            ['%{BKY_JAZZKIT_DRUM_SNARE}', 'D1'],
+                            ['%{BKY_JAZZKIT_DRUM_HANDCLAP}', 'D#1'],
+                            ['%{BKY_JAZZKIT_DRUM_LOW_TOM}', 'E1'],
+                            ['%{BKY_JAZZKIT_DRUM_CLOSED_HIHAT}', 'F1'],
+                            ['%{BKY_JAZZKIT_DRUM_MID_TOM}', 'F#1'],
+                            ['%{BKY_JAZZKIT_DRUM_HIGH_TOM}', 'G1'],
+                            ['%{BKY_JAZZKIT_DRUM_CRASH_CYMBAL}', 'G#1'],
+                            ['%{BKY_JAZZKIT_DRUM_OPEN_HIHAT}', 'A1'],
+                            ['%{BKY_JAZZKIT_DRUM_RIDE_CYMBAL}', 'A#1']
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_JAZZKIT_COLOR}",
+                "tooltip": "%{BKY_JAZZKIT_PLAY_DRUM_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Transport Blocks ---
+    Blockly.Blocks['sb_transport_set_bpm'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_TRANSPORT_SET_BPM_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_number",
+                        "name": "BPM",
+                        "value": 120,
+                        "min": 20,
+                        "max": 300
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_TRANSPORT_COLOR}",
+                "tooltip": "%{BKY_SB_TRANSPORT_SET_BPM_TOOLTIP}"
+            });
+        }
+    };
+
+    Blockly.Blocks['sb_transport_start_stop'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_TRANSPORT_START_STOP_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "ACTION",
+                        "options": [
+                            ['%{BKY_SB_TRANSPORT_ACTION_START}', 'START'],
+                            ['%{BKY_SB_TRANSPORT_ACTION_STOP}', 'STOP']
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_TRANSPORT_COLOR}",
+                "tooltip": "%{BKY_SB_TRANSPORT_START_STOP_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Musical Wait Block ---
+    Blockly.Blocks['sb_wait_musical'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_WAIT_MUSICAL_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "DURATION",
+                        "options": [
+                            ['%{BKY_SB_DUR_1M}', '1m'],
+                            ['%{BKY_SB_DUR_2N}', '2n'],
+                            ['%{BKY_SB_DUR_4N}', '4n'],
+                            ['%{BKY_SB_DUR_8N}', '8n'],
+                            ['%{BKY_SB_DUR_16N}', '16n']
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_TRANSPORT_COLOR}",
+                "tooltip": "%{BKY_SB_WAIT_MUSICAL_TOOLTIP}"
+            });
+        }
+    };
+
     return true;
 }
