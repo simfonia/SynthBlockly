@@ -65,6 +65,17 @@ export const MSG_ZH_HANT = {
     // --- Wait Block Messages ---
     'SB_WAIT_MUSICAL_MESSAGE': '等待 %1',
     'SB_WAIT_MUSICAL_TOOLTIP': '等待一段音樂時值（例如 4n = 四分音符），時間長度依據主速度而定。',
+
+    // --- New Tone.Loop Block ---
+    'SB_TONE_LOOP_MESSAGE': '每 %1 執行 %2',
+        'SB_TONE_LOOP_TOOLTIP': '當主時鐘運行時，重複執行內部的積木。',
+        
+        // --- NEW: Schedule At Offset Block ---
+        'SB_SCHEDULE_AT_OFFSET_MESSAGE': '在循環時間偏移 %1 執行 %2',
+        'SB_SCHEDULE_AT_OFFSET_TOOLTIP': '排程內部積木在循環的指定時間偏移處執行。必須放在「每 [時值] 執行 [積木]」循環積木內部。',
+    
+        // --- NEW: Stop All Blockly Loops Block ---
+        'SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE': '停止所有循環 (Blockly)',    'SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP': '停止並清除所有由 Blockly 循環積木建立的音樂循環。',
     
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 小節 (1m)',

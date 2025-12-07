@@ -37,7 +37,7 @@ export function registerGenerators(Blockly) {
         // Ensure velocity is always a number
         velocity = `Number(${velocity})`;
 
-        return `window.audioEngine.synth.triggerAttackRelease(${processedNote}, '${dur}', Tone.now(), ${velocity});\n`;
+        return `window.audioEngine.synth.triggerAttackRelease(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
@@ -69,11 +69,20 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
 
     G['sb_play_drum'] = function (block) {
         var type = block.getFieldValue('TYPE');
+        var velocity = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC) || 1; // Default to 1 (full velocity)
+
+        // Ensure velocity is always a number
+        velocity = `Number(${velocity})`;
+        
         var code = '';
-        if (type === 'KICK') code = 'window.audioEngine.playKick();';
-        else if (type === 'SNARE') code = 'window.audioEngine.playSnare();';
-        else if (type === 'HH') code = "window.audioEngine.hh.triggerAttackRelease('16n');";
-        return code;
+        if (type === 'KICK') {
+            code = `window.audioEngine.playKick(${velocity}, (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()));`;
+        } else if (type === 'SNARE') {
+            code = `window.audioEngine.playSnare(${velocity}, (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()));`;
+        } else if (type === 'HH') {
+            code = `window.audioEngine.hh.triggerAttackRelease('16n', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});`;
+        }
+        return code + '\n'; // Add newline for consistency
     }.bind(G);
     try { if (Gproto) Gproto['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
@@ -110,8 +119,12 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     // NEW: Jazz Kit Play Drum Generator
     G['jazzkit_play_drum'] = function (block) {
         var drumNote = block.getFieldValue('DRUM_TYPE');
-        // Play for a fixed duration, e.g., '8n' (eighth note)
-        return "window.audioEngine.jazzKit.triggerAttackRelease('" + drumNote + "', '8n');\n";
+        var velocity = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC) || 1; // Default to 1 (full velocity)
+
+        // Ensure velocity is always a number
+        velocity = `Number(${velocity})`;
+
+        return `window.audioEngine.jazzKit.triggerAttackRelease('${drumNote}', '8n', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
@@ -152,6 +165,85 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     try { if (JSConstructorProto) JSConstructorProto['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
     try { G.forBlock['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
     
+    // --- NEW: Tone.Loop Generator ---
+    G['sb_tone_loop'] = function (block) {
+        var loopId = 'loop_' + block.id; // Unique ID for each loop instance
+        var interval = block.getFieldValue('INTERVAL');
+        var doCode = Blockly.JavaScript.statementToCode(block, 'DO');
+
+        // Ensure the global loops object exists in the definitions_ section
+        G.definitions_['loops_global_init'] = 'window.blocklyLoops = window.blocklyLoops || {};';
+
+        // Generate code to create and start the loop
+        var code = `
+// Clear existing loop for this block ID if it exists
+if (window.blocklyLoops['${loopId}']) {
+    window.blocklyLoops['${loopId}'].dispose();
+}
+window.blocklyLoops['${loopId}'] = new window.audioEngine.Tone.Loop(async (time) => {
+    // Make 'time' available to inner blocks if they need it (e.g., for scheduling children)
+    // Note: Inner blocks usually trigger instantly relative to the callback,
+    //       but 'time' could be used for advanced relative scheduling.
+    ${doCode}
+}, '${interval}');
+window.blocklyLoops['${loopId}'].start(0); // Start the loop from the beginning of the Transport
+`;
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_tone_loop'] = G['sb_tone_loop']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_tone_loop'] = G['sb_tone_loop']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_tone_loop'] = G['sb_tone_loop']; } catch (e) { }
+    try { G.forBlock['sb_tone_loop'] = G['sb_tone_loop']; } catch (e) { }
+
+    // --- NEW: Stop All Blockly Loops Generator ---
+    G['sb_stop_all_blockly_loops'] = function (block) {
+        var code = `
+if (window.blocklyLoops) {
+    for (const loopId in window.blocklyLoops) {
+        if (window.blocklyLoops.hasOwnProperty(loopId) && window.blocklyLoops[loopId] instanceof window.audioEngine.Tone.Loop) {
+            window.blocklyLoops[loopId].dispose();
+        }
+    }
+    window.blocklyLoops = {}; // Clear the object
+}
+`;
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
+    try { G.forBlock['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
+
+    // --- NEW: Schedule At Offset Generator ---
+    G['sb_schedule_at_offset'] = function (block) {
+        var offset = block.getFieldValue('OFFSET');
+        var doCode = Blockly.JavaScript.statementToCode(block, 'DO');
+
+        var code = `
+{ // Create a new scope for scheduledTime
+    // 'time' (from Tone.Loop callback) is a number (seconds)
+    // 'offset' (from block field) is a string (e.g., '8n', '0:0:2')
+
+    // First, convert the string offset into seconds.
+    // This requires creating a Tone.Time object and then calling .toSeconds().
+    // We confirmed 'new Tone.Time()' creates an object, even if .add() is missing.
+    // We assume .toSeconds() will work correctly.
+    const offsetInSeconds = (new window.audioEngine.Tone.Time('${offset}')).toSeconds(); 
+    
+    // Calculate the scheduled time by adding the base time (in seconds) and the offset (in seconds).
+    const scheduledTime = time + offsetInSeconds;
+    
+    // Original code, assuming scheduledTime is a number (seconds)
+    ${doCode}
+}
+`;
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
+    try { G.forBlock['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
+
     // Expose a global fallback for legacy code that expects window.registerSBGenerators
     try { window.registerSBGenerators = function (b) { return registerGenerators(b || Blockly); }; } catch (e) { }
     return true;

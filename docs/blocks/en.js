@@ -64,10 +64,20 @@ export const MSG_EN = {
 
     // --- Wait Block Messages ---
     'SB_WAIT_MUSICAL_MESSAGE': 'Wait for %1',
-    'SB_WAIT_MUSICAL_TOOLTIP': 'Waits for a musical duration (e.g., 4n = quarter note), dependent on the master tempo.',
-
-    // --- Musical Duration Options ---
-    'SB_DUR_1M': '1 Measure',
+        'SB_WAIT_MUSICAL_TOOLTIP': 'Waits for a musical duration (e.g., 4n = quarter note), dependent on the master tempo.',
+    
+        // --- New Tone.Loop Block ---
+        'SB_TONE_LOOP_MESSAGE': 'Every %1 do %2',
+            'SB_TONE_LOOP_TOOLTIP': 'Repeats the inner blocks at the specified interval when the master transport is running.',
+        
+            // --- NEW: Schedule At Offset Block ---
+            'SB_SCHEDULE_AT_OFFSET_MESSAGE': 'At loop offset %1 do %2',
+            'SB_SCHEDULE_AT_OFFSET_TOOLTIP': 'Schedules inner blocks to execute at the specified time offset within the loop callback. Must be placed inside a "Loop: every [duration] do [blocks]" block.',
+        
+            // --- NEW: Stop All Blockly Loops Block ---
+            'SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE': 'Stop All Loops (Blockly)',    'SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP': 'Stops and disposes all Tone.Loop instances created by Blockly loop blocks.',
+        
+        // --- Musical Duration Options ---    'SB_DUR_1M': '1 Measure',
     'SB_DUR_2N': 'Half Note',
     'SB_DUR_4N': 'Quarter Note',
     'SB_DUR_8N': 'Eighth Note',

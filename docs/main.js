@@ -73,17 +73,17 @@ const audioEngine = {
             d.scrollTop = d.scrollHeight;
         }
     },
-    playKick: async function() {
+    playKick: async function(velocity = 1, time = Tone.now()) {
         const ok = await ensureAudioStarted();
         if (ok) {
             // this.log('playKick() called!');
-            this.drum.triggerAttackRelease('C2', '8n');
+            this.drum.triggerAttackRelease('C2', '8n', time, velocity);
         }
     },
-    playSnare: async function() {
+    playSnare: async function(velocity = 1, time = Tone.now()) {
         const ok = await ensureAudioStarted();
         if (ok) {
-            this.snare.triggerAttackRelease('8n');
+            this.snare.triggerAttackRelease('8n', time, velocity);
         }
     }
 };
