@@ -838,6 +838,123 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- NEW: PC Keyboard as MIDI Controller ---
+    const KEY_TO_NOTE_MAP = {
+        // Main Octave (e.g., C4 to B4)
+        'KeyQ': 'C', 'Digit2': 'C#', 'KeyW': 'D', 'Digit3': 'D#', 'KeyE': 'E',
+        'KeyR': 'F', 'Digit5': 'F#', 'KeyT': 'G', 'Digit6': 'G#', 'KeyY': 'A',
+        'Digit7': 'A#', 'KeyU': 'B',
+
+        // Next octave relative to currentOctave + 1
+        'KeyI': 'C',      // C of next octave
+        'Digit9': 'C#',   // C# of next octave
+        'KeyO': 'D',      // D of next octave
+        'Digit0': 'D#',   // D# of next octave
+        'KeyP': 'E'       // E of next octave
+    };
+    // const HIGH_C_KEY = 'KeyI'; // No longer needed
+
+    const pressedKeys = new Set();
+    let isPcKeyboardMidiEnabled = false;
+    let currentOctave = 4; // Starting octave
+    const MIN_OCTAVE = 0;
+    const MAX_OCTAVE = 8; // Tone.js usually supports C0 to C8
+
+    const updateLogOctave = () => {
+        log(`當前八度: ${currentOctave}`);
+    };
+
+    const shiftOctave = (direction) => { // direction: 1 for up, -1 for down
+        currentOctave += direction;
+        if (currentOctave < MIN_OCTAVE) currentOctave = MIN_OCTAVE;
+        if (currentOctave > MAX_OCTAVE) currentOctave = MAX_OCTAVE;
+        updateLogOctave();
+    };
+
+    const getNoteForKeyCode = (keyCode) => {
+        const baseNote = KEY_TO_NOTE_MAP[keyCode];
+        if (!baseNote) return null;
+
+        let noteOctave = currentOctave;
+        
+        // Determine if the key belongs to the base octave block or the next octave block
+        const baseOctaveKeys = ['KeyQ', 'Digit2', 'KeyW', 'Digit3', 'KeyE', 'KeyR', 'Digit5', 'KeyT', 'Digit6', 'KeyY', 'Digit7', 'KeyU'];
+        const nextOctaveKeys = ['KeyI', 'Digit9', 'KeyO', 'Digit0', 'KeyP']; // Keys for the next octave
+
+        if (nextOctaveKeys.includes(keyCode)) {
+            noteOctave = currentOctave + 1;
+        }
+
+        return `${baseNote}${noteOctave}`;
+    };
+
+    const handleKeyDown = async (e) => {
+        if (!isPcKeyboardMidiEnabled || e.repeat) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        if ((e.code === 'KeyZ' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) { // Shift octave down
+            shiftOctave(-1);
+            e.preventDefault();
+            return;
+        }
+        if ((e.code === 'KeyX' || e.code === 'Equal' || e.code === 'NumpadAdd') && currentOctave < MAX_OCTAVE) { // Shift octave up
+            shiftOctave(1);
+            e.preventDefault();
+            return;
+        }
+
+        const note = getNoteForKeyCode(e.code);
+        if (note && !pressedKeys.has(e.code)) {
+            const ok = await ensureAudioStarted();
+            if (!ok) return;
+
+            const velocity = 0.7;
+            window.audioEngine.synth.triggerAttack(note, Tone.now(), velocity);
+            pressedKeys.add(e.code);
+            log(`Keyboard ON: ${e.code} -> ${note}`);
+            e.preventDefault();
+        }
+    };
+
+    const handleKeyUp = (e) => {
+        if (!isPcKeyboardMidiEnabled) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        // Prevent release for octave shift keys
+        if (e.code === 'KeyZ' || e.code === 'KeyX' || e.code === 'Minus' || e.code === 'Equal' || e.code === 'NumpadSubtract' || e.code === 'NumpadAdd') return;
+
+        const note = getNoteForKeyCode(e.code);
+        if (note && pressedKeys.has(e.code)) {
+            window.audioEngine.synth.triggerRelease(note, Tone.now());
+            pressedKeys.delete(e.code);
+            log(`Keyboard OFF: ${e.code} -> ${note}`);
+            e.preventDefault();
+        }
+    };
+
+    // Expose functions to enable/disable PC Keyboard MIDI
+    window.audioEngine.enablePcKeyboardMidi = () => {
+        if (!isPcKeyboardMidiEnabled) {
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+            isPcKeyboardMidiEnabled = true;
+            log('PC 鍵盤 MIDI 功能已開啟');
+            updateLogOctave(); // Log current octave when enabled
+        }
+    };
+
+    window.audioEngine.disablePcKeyboardMidi = () => {
+        if (isPcKeyboardMidiEnabled) {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
+            isPcKeyboardMidiEnabled = false;
+            log('PC 鍵盤 MIDI 功能已關閉');
+            pressedKeys.clear(); // Clear any lingering pressed keys
+        }
+    };
+    
+    // Default to disabled
+    window.audioEngine.disablePcKeyboardMidi(); 
     // p5.js 波形
     new p5((p) => {
         p.setup = function () {

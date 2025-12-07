@@ -76,6 +76,12 @@ export const MSG_ZH_HANT = {
     
         // --- NEW: Stop All Blockly Loops Block ---
         'SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE': '停止所有循環 (Blockly)',    'SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP': '停止並清除所有由 Blockly 循環積木建立的音樂循環。',
+
+    // --- NEW: Toggle PC Keyboard MIDI Block ---
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC 鍵盤作為 MIDI %1',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': '啟用或禁用電腦鍵盤作為 MIDI 鍵盤的功能。',
+    'SB_ACTION_ON': '開啟',
+    'SB_ACTION_OFF': '關閉',
     
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 小節 (1m)',

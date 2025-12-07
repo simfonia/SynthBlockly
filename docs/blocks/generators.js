@@ -244,6 +244,22 @@ if (window.blocklyLoops) {
     try { if (JSConstructorProto) JSConstructorProto['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
     try { G.forBlock['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
 
+    // --- NEW: Toggle PC Keyboard MIDI Generator ---
+    G['sb_toggle_pc_keyboard_midi'] = function (block) {
+        var action = block.getFieldValue('ACTION');
+        var code = '';
+        if (action === 'ON') {
+            code = 'window.audioEngine.enablePcKeyboardMidi();\n';
+        } else { // 'OFF'
+            code = 'window.audioEngine.disablePcKeyboardMidi();\n';
+        }
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
+    try { G.forBlock['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
+
     // Expose a global fallback for legacy code that expects window.registerSBGenerators
     try { window.registerSBGenerators = function (b) { return registerGenerators(b || Blockly); }; } catch (e) { }
     return true;

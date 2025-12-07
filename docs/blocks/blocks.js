@@ -212,48 +212,48 @@ export function registerBlocks(Blockly) {
     };
 
     // NEW: Jazz Kit Play Drum Block
-        Blockly.Blocks['jazzkit_play_drum'] = {
-            init: function () {
-                this.jsonInit({
-                                "message0": "%{BKY_JAZZKIT_PLAY_DRUM_MESSAGE} 力度 %2",
-                                    "args0": [
-                                        {
-                                            "type": "field_dropdown",
-                                            "name": "DRUM_TYPE",
-                                            "options": [
-                                                ['%{BKY_JAZZKIT_DRUM_KICK}', 'C1'],
-                                                ['%{BKY_JAZZKIT_DRUM_RIMSHOT}', 'C#1'],
-                                                ['%{BKY_JAZZKIT_DRUM_SNARE}', 'D1'],
-                                                ['%{BKY_JAZZKIT_DRUM_HANDCLAP}', 'D#1'],
-                                                ['%{BKY_JAZZKIT_DRUM_LOW_TOM}', 'E1'],
-                                                ['%{BKY_JAZZKIT_DRUM_CLOSED_HIHAT}', 'F1'],
-                                                ['%{BKY_JAZZKIT_DRUM_MID_TOM}', 'F#1'],
-                                                ['%{BKY_JAZZKIT_DRUM_HIGH_TOM}', 'G1'],
-                                                ['%{BKY_JAZZKIT_DRUM_CRASH_CYMBAL}', 'G#1'],
-                                                ['%{BKY_JAZZKIT_DRUM_OPEN_HIHAT}', 'A1'],
-                                                ['%{BKY_JAZZKIT_DRUM_RIDE_CYMBAL}', 'A#1'] // Correctly added this back
-                                            ]
-                                        }, // <-- Comma for args0 separator
-                                        { // NEW: Velocity input - Correctly placed as a new item in args0
-                                            "type": "input_value",
-                                            "name": "VELOCITY",
-                                            "check": "Number",
-                                            "shadow": {
-                                                "type": "math_number",
-                                                "fields": {
-                                                    "NUM": 1
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    "inputsInline": true, // Often helpful for blocks with many fields
-                                    "previousStatement": null,
-                                    "nextStatement": null,
-                                    "colour": "%{BKY_JAZZKIT_COLOR}",
-                                    "tooltip": "%{BKY_JAZZKIT_PLAY_DRUM_TOOLTIP}"
-                                });
+    Blockly.Blocks['jazzkit_play_drum'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_JAZZKIT_PLAY_DRUM_MESSAGE} 力度 %2",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "DRUM_TYPE",
+                        "options": [
+                            ['%{BKY_JAZZKIT_DRUM_KICK}', 'C1'],
+                            ['%{BKY_JAZZKIT_DRUM_RIMSHOT}', 'C#1'],
+                            ['%{BKY_JAZZKIT_DRUM_SNARE}', 'D1'],
+                            ['%{BKY_JAZZKIT_DRUM_HANDCLAP}', 'D#1'],
+                            ['%{BKY_JAZZKIT_DRUM_LOW_TOM}', 'E1'],
+                            ['%{BKY_JAZZKIT_DRUM_CLOSED_HIHAT}', 'F1'],
+                            ['%{BKY_JAZZKIT_DRUM_MID_TOM}', 'F#1'],
+                            ['%{BKY_JAZZKIT_DRUM_HIGH_TOM}', 'G1'],
+                            ['%{BKY_JAZZKIT_DRUM_CRASH_CYMBAL}', 'G#1'],
+                            ['%{BKY_JAZZKIT_DRUM_OPEN_HIHAT}', 'A1'],
+                            ['%{BKY_JAZZKIT_DRUM_RIDE_CYMBAL}', 'A#1'] // Correctly added this back
+                        ]
+                    }, // <-- Comma for args0 separator
+                    { // NEW: Velocity input - Correctly placed as a new item in args0
+                        "type": "input_value",
+                        "name": "VELOCITY",
+                        "check": "Number",
+                        "shadow": {
+                            "type": "math_number",
+                            "fields": {
+                                "NUM": 1
                             }
-                        };
+                        }
+                    }
+                ],
+                "inputsInline": true, // Often helpful for blocks with many fields
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_JAZZKIT_COLOR}",
+                "tooltip": "%{BKY_JAZZKIT_PLAY_DRUM_TOOLTIP}"
+            });
+        }
+    };
     // --- NEW: Transport Blocks ---
     Blockly.Blocks['sb_transport_set_bpm'] = {
         init: function () {
@@ -350,45 +350,72 @@ export function registerBlocks(Blockly) {
                 "nextStatement": null,
                 "colour": "%{BKY_TRANSPORT_COLOR}",
                 "tooltip": "%{BKY_SB_TONE_LOOP_TOOLTIP}",
-                        "hat": true // Often used for top-level event listeners / continuous processes
-                    });
+                "hat": true // Often used for top-level event listeners / continuous processes
+            });
+        }
+    };
+
+    // --- NEW: Schedule At Offset Block (for Tone.Loop) ---
+    Blockly.Blocks['sb_schedule_at_offset'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_SCHEDULE_AT_OFFSET_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "OFFSET",
+                        "text": "0" // Default offset at the start of the loop interval
+                    },
+                    {
+                        "type": "input_statement",
+                        "name": "DO"
                     }
-                    };
-                    
-                        // --- NEW: Schedule At Offset Block (for Tone.Loop) ---
-                        Blockly.Blocks['sb_schedule_at_offset'] = {
-                            init: function () {
-                                this.jsonInit({
-                                    "message0": "%{BKY_SB_SCHEDULE_AT_OFFSET_MESSAGE}",
-                                    "args0": [
-                                        {
-                                            "type": "field_input",
-                                            "name": "OFFSET",
-                                            "text": "0" // Default offset at the start of the loop interval
-                                        },
-                                        {
-                                            "type": "input_statement",
-                                            "name": "DO"
-                                        }
-                                    ],
-                                    "previousStatement": null, // It can be chained within a loop callback
-                                    "nextStatement": null,     // It can be chained within a loop callback
-                                    "colour": "%{BKY_TRANSPORT_COLOR}",
-                                    "tooltip": "%{BKY_SB_SCHEDULE_AT_OFFSET_TOOLTIP}"
-                                });
-                            }
-                        };
-                    
-                        // --- NEW: Stop All Blockly Loops Block ---
-                        Blockly.Blocks['sb_stop_all_blockly_loops'] = {                        init: function () {
-                            this.jsonInit({
-                                "message0": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE}",
-                                "previousStatement": null,
-                                "nextStatement": null,
-                                "colour": "%{BKY_TRANSPORT_COLOR}",
-                                "tooltip": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP}"
-                            });
-                        }
-                    };
-                
-                    return true;}
+                ],
+                "previousStatement": null, // It can be chained within a loop callback
+                "nextStatement": null,     // It can be chained within a loop callback
+                "colour": "%{BKY_TRANSPORT_COLOR}",
+                "tooltip": "%{BKY_SB_SCHEDULE_AT_OFFSET_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Stop All Blockly Loops Block ---
+
+    Blockly.Blocks['sb_stop_all_blockly_loops'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE}",
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_TRANSPORT_COLOR}",
+                "tooltip": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP}"
+            });
+        }
+    };
+
+
+    // --- NEW: Toggle PC Keyboard MIDI Block ---
+    Blockly.Blocks['sb_toggle_pc_keyboard_midi'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "ACTION",
+                        "options": [
+                            ["%{BKY_SB_ACTION_ON}", "ON"],
+                            ["%{BKY_SB_ACTION_OFF}", "OFF"]
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "tooltip": "%{BKY_SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP}"
+            });
+        }
+    };
+
+    return true;
+}

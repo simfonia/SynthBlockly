@@ -190,6 +190,7 @@
       <category name="Events" colour="320">
         <block type="sb_midi_note_received"></block>
         <block type="sb_serial_data_received"></block>
+        <block type="sb_toggle_pc_keyboard_midi"></block>
       </category>
     </category>
 </xml>

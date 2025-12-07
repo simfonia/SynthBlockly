@@ -76,6 +76,12 @@ export const MSG_EN = {
         
             // --- NEW: Stop All Blockly Loops Block ---
             'SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE': 'Stop All Loops (Blockly)',    'SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP': 'Stops and disposes all Tone.Loop instances created by Blockly loop blocks.',
+
+    // --- NEW: Toggle PC Keyboard MIDI Block ---
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC Keyboard as MIDI %1',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': 'Enables or disables the PC keyboard as a MIDI keyboard.',
+    'SB_ACTION_ON': 'ON',
+    'SB_ACTION_OFF': 'OFF',
         
         // --- Musical Duration Options ---    'SB_DUR_1M': '1 Measure',
     'SB_DUR_2N': 'Half Note',
