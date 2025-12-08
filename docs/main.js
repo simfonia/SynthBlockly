@@ -61,11 +61,15 @@ let audioStarted = false;
 // --- Create and expose a single Audio Engine object ---
 const audioEngine = {
     Tone: Tone,
-    synth: synth,
+    synth: synth, // Keep reference to original synth, but will be primarily accessed via instruments['預設合成器']
     drum: drum,
     hh: hh,
     snare: snare,
     jazzKit: jazzKit, // Expose the new sampler
+    instruments: {}, // NEW: Object to store dynamically created instruments
+    currentInstrumentName: 'DefaultSynth', // NEW: Name of the currently selected instrument
+    pressedKeys: new Map(), // NEW: Moved pressedKeys into audioEngine
+
     log: function(msg) {
         const d = document.getElementById('log');
         if (d) {
@@ -73,10 +77,56 @@ const audioEngine = {
             d.scrollTop = d.scrollHeight;
         }
     },
+    // NEW: Helper to create and store instruments
+    createInstrument: function(name, type) {
+        if (!name) {
+            this.log('錯誤: 樂器名稱不能為空。');
+            return;
+        }
+        if (this.instruments[name]) {
+            this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
+            this.instruments[name].dispose(); // Dispose old instance
+        }
+        let newInstrument;
+        try {
+            switch(type) {
+                case 'PolySynth':
+                    newInstrument = new Tone.PolySynth(Tone.Synth).connect(analyser).toDestination();
+                    break;
+                case 'AMSynth':
+                    newInstrument = new Tone.PolySynth(Tone.AMSynth).connect(analyser).toDestination();
+                    break;
+                case 'FMSynth':
+                    newInstrument = new Tone.PolySynth(Tone.FMSynth).connect(analyser).toDestination();
+                    break;
+                case 'DuoSynth':
+                    newInstrument = new Tone.PolySynth(Tone.DuoSynth).connect(analyser).toDestination();
+                    break;
+                case 'Sampler': // Limited Sampler for now, no complex URL input
+                    newInstrument = new Tone.Sampler({
+                        urls: {
+                            "C4": "C4.mp3", // Make this relative to baseUrl
+                        },
+                        release: 1,
+                        baseUrl: "https://tonejs.github.io/audio/salamander/"
+                    }).connect(analyser).toDestination();
+                    // Sampler needs to load, so log when loaded
+                    newInstrument.onload = () => this.log(`樂器 "${name}" (Sampler) 樣本已載入。`);
+                    break;
+                default:
+                    this.log(`錯誤: 未知的樂器類型 "${type}"。`);
+                    return;
+            }
+            this.instruments[name] = newInstrument;
+            this.log(`成功創建樂器 "${name}" (${type})。`);
+        } catch (e) {
+            this.log(`創建樂器 "${name}" (${type}) 失敗: ${e.message}`); // Changed this line
+            console.error(e); // Keep console.error for developers
+        }
+    },
     playKick: async function(velocity = 1, time = Tone.now()) {
         const ok = await ensureAudioStarted();
         if (ok) {
-            // this.log('playKick() called!');
             this.drum.triggerAttackRelease('C2', '8n', time, velocity);
         }
     },
@@ -85,9 +135,36 @@ const audioEngine = {
         if (ok) {
             this.snare.triggerAttackRelease('8n', time, velocity);
         }
+    },
+    // NEW: Function to clear pressed keys from the PC keyboard controller
+    clearPressedKeys: function() {
+        this.pressedKeys.clear();
+        this.log('PC 鍵盤按下狀態已清除。');
+    },
+    // NEW: Function to play a note on the currently selected instrument
+    playCurrentInstrumentNote: async function(note, dur, time, velocity) {
+        const ok = await ensureAudioStarted();
+        if (ok) {
+            const currentInstrument = this.instruments[this.currentInstrumentName];
+            if (currentInstrument && currentInstrument.triggerAttackRelease) {
+                // NEW: If it's a Sampler, ensure it's loaded before triggering
+                // Tone.Sampler's 'loaded' property is a boolean.
+                if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
+                    this.log(`警告: 樂器 "${this.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+                    return;
+                }
+                currentInstrument.triggerAttackRelease(note, dur, time, velocity);
+            } else {
+                this.log(`錯誤: 無法播放音符。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerAttackRelease。`);
+            }
+        }
     }
 };
 window.audioEngine = audioEngine;
+
+// NEW: Initialize default synth as an instrument and set it as current
+audioEngine.instruments['DefaultSynth'] = synth;
+audioEngine.currentInstrumentName = 'DefaultSynth';
 
 const log = audioEngine.log; // Keep a local reference for functions outside the engine
 
@@ -854,7 +931,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     // const HIGH_C_KEY = 'KeyI'; // No longer needed
 
-    const pressedKeys = new Set();
+
     let isPcKeyboardMidiEnabled = false;
     let currentOctave = 4; // Starting octave
     const MIN_OCTAVE = 0;
@@ -892,42 +969,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!isPcKeyboardMidiEnabled || e.repeat) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-        if ((e.code === 'KeyZ' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) { // Shift octave down
+        if ((e.code === 'KeyZ' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) {
             shiftOctave(-1);
             e.preventDefault();
             return;
         }
-        if ((e.code === 'KeyX' || e.code === 'Equal' || e.code === 'NumpadAdd') && currentOctave < MAX_OCTAVE) { // Shift octave up
+        if ((e.code === 'KeyX' || e.code === 'Equal' || e.code === 'NumpadAdd') && currentOctave < MAX_OCTAVE) {
             shiftOctave(1);
             e.preventDefault();
             return;
         }
 
         const note = getNoteForKeyCode(e.code);
-        if (note && !pressedKeys.has(e.code)) {
+        if (note && !window.audioEngine.pressedKeys.has(e.code)) {
             const ok = await ensureAudioStarted();
             if (!ok) return;
 
+            const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
+            if (!currentInstrument || !currentInstrument.triggerAttack) {
+                window.audioEngine.log(`錯誤: PC鍵盤無法播放。樂器 "${window.audioEngine.currentInstrumentName}" 不存在或不支持 triggerAttack。`);
+                return;
+            }
+            // NEW: Sampler loaded check
+            if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
+                window.audioEngine.log(`警告: PC鍵盤無法播放。樂器 "${window.audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+                return;
+            }
+
             const velocity = 0.7;
-            window.audioEngine.synth.triggerAttack(note, Tone.now(), velocity);
-            pressedKeys.add(e.code);
-            log(`Keyboard ON: ${e.code} -> ${note}`);
+            currentInstrument.triggerAttack(note, Tone.now(), velocity);
+            window.audioEngine.pressedKeys.set(e.code, note);
+            window.audioEngine.log(`Keyboard ON: ${e.code} -> ${note}`);
             e.preventDefault();
         }
     };
 
-    const handleKeyUp = (e) => {
+    const handleKeyUp = async (e) => {
         if (!isPcKeyboardMidiEnabled) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
         // Prevent release for octave shift keys
         if (e.code === 'KeyZ' || e.code === 'KeyX' || e.code === 'Minus' || e.code === 'Equal' || e.code === 'NumpadSubtract' || e.code === 'NumpadAdd') return;
 
-        const note = getNoteForKeyCode(e.code);
-        if (note && pressedKeys.has(e.code)) {
-            window.audioEngine.synth.triggerRelease(note, Tone.now());
-            pressedKeys.delete(e.code);
-            log(`Keyboard OFF: ${e.code} -> ${note}`);
+        const note = window.audioEngine.pressedKeys.get(e.code);
+        if (note) {
+            const ok = await ensureAudioStarted();
+            if (!ok) {
+                window.audioEngine.pressedKeys.delete(e.code);
+                return;
+            }
+
+            const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
+            if (!currentInstrument || !currentInstrument.triggerRelease) {
+                window.audioEngine.log(`錯誤: PC鍵盤無法釋放。樂器 "${window.audioEngine.currentInstrumentName}" 不存在或不支持 triggerRelease。`);
+                window.audioEngine.pressedKeys.delete(e.code); // Clear the pressed key even if release fails
+                return;
+            }
+            // NEW: Sampler loaded check
+            if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
+                window.audioEngine.log(`警告: PC鍵盤無法釋放。樂器 "${window.audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+                window.audioEngine.pressedKeys.delete(e.code); // Clear the pressed key even if release fails
+                return;
+            }
+
+            currentInstrument.triggerRelease(note, Tone.now());
+            window.audioEngine.pressedKeys.delete(e.code);
+            window.audioEngine.log(`Keyboard OFF: ${e.code} -> ${note}`);
             e.preventDefault();
         }
     };

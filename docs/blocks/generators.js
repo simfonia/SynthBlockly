@@ -37,7 +37,7 @@ export function registerGenerators(Blockly) {
         // Ensure velocity is always a number
         velocity = `Number(${velocity})`;
 
-        return `window.audioEngine.synth.triggerAttackRelease(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});\n`;
+        return `window.audioEngine.playCurrentInstrumentNote(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { }
@@ -57,7 +57,7 @@ export function registerGenerators(Blockly) {
         velocity = `Number(${velocity})`;
 
         var code = `
-window.audioEngine.synth.triggerAttackRelease(${processedNote}, '${dur}', Tone.now(), ${velocity});
+await window.audioEngine.playCurrentInstrumentNote(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});
 await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('${dur}').toMilliseconds()));
 `;
         return code;
@@ -94,7 +94,36 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
         var d = Number(block.getFieldValue('D')) || 0.1;
         var s = Number(block.getFieldValue('S')) || 0.5;
         var r = Number(block.getFieldValue('R')) || 1.0;
-        return "window.audioEngine.synth.set({envelope: {attack: " + a + ", decay: " + d + ", sustain: " + s + ", release: " + r + "}});\n";
+        
+        var code = `
+            const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
+            if (!currentInstrument) {
+                window.audioEngine.log('錯誤: 無法設定 ADSR。樂器 "${window.audioEngine.currentInstrumentName}" 不存在。');
+            } else if (currentInstrument instanceof Tone.PolySynth) {
+                // All our synths (PolySynth, AMSynth, FMSynth, DuoSynth) are wrapped in PolySynth
+                // PolySynth has a .set() method that takes envelope options
+                // For DuoSynth wrapped in PolySynth, we need to target its internal voices' envelopes.
+                if (currentInstrument.get().voice0 && currentInstrument.get().voice1) { // Check if it's likely a DuoSynth structure
+                    currentInstrument.set({
+                        voice0: {envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}},
+                        voice1: {envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}}
+                    });
+                } else {
+                    // For standard Synths (PolySynth(Tone.Synth), AMSynth, FMSynth)
+                    currentInstrument.set({envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}});
+                }
+                window.audioEngine.log('ADSR 已設定到當前樂器: ' + window.audioEngine.currentInstrumentName);
+            } else if (currentInstrument instanceof Tone.Sampler) {
+                // Samplers don't have a direct 'envelope' property to set ADSR like synths.
+                // Their 'attack' and 'release' can be set, but not full ADSR curve with sustain/decay.
+                currentInstrument.set({attack: ${a}, release: ${r}}); // Set attack and release directly
+                window.audioEngine.log('警告: Sampler 的 ADSR 僅支援設定 Attack 和 Release。');
+                // For full ADSR on Sampler, it needs to be routed through an AmplitudeEnvelope.
+            } else {
+                window.audioEngine.log('錯誤: 無法設定 ADSR。樂器 "${window.audioEngine.currentInstrumentName}" 不支援 ADSR 設定。');
+            }
+        `;
+        return code + '\n';
     }.bind(G);
     try { if (Gproto) Gproto['sb_set_adsr'] = G['sb_set_adsr']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_set_adsr'] = G['sb_set_adsr']; } catch (e) { }
@@ -130,6 +159,19 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     try { if (GeneratorProto) GeneratorProto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
     try { G.forBlock['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
+
+    // --- NEW: Create Synth Instrument Generator ---
+    G['sb_create_synth_instrument'] = function (block) {
+        var name = Blockly.JavaScript.quote_(block.getFieldValue('NAME')); // Quote the name for string literal
+        var type = block.getFieldValue('TYPE');
+        
+        var code = `window.audioEngine.createInstrument(${name}, '${type}');\n`;
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
+    try { G.forBlock['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
 
     // --- NEW: Transport Generators ---
     G['sb_transport_set_bpm'] = function (block) {
@@ -213,6 +255,26 @@ if (window.blocklyLoops) {
     try { if (GeneratorProto) GeneratorProto['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
     try { G.forBlock['sb_stop_all_blockly_loops'] = G['sb_stop_all_blockly_loops']; } catch (e) { }
+
+    // --- NEW: Select Current Instrument Generator ---
+    G['sb_select_current_instrument'] = function (block) {
+        var name = Blockly.JavaScript.quote_(block.getFieldValue('NAME')); // Quote the name for string literal
+        
+        var code = `
+if (window.audioEngine.instruments[${name}]) {
+    window.audioEngine.currentInstrumentName = ${name};
+    window.audioEngine.log('當前樂器已設定為: ' + ${name});
+    window.audioEngine.clearPressedKeys(); // NEW: Clear pressed keys on instrument switch
+} else {
+    window.audioEngine.log('錯誤: 樂器 ' + ${name} + ' 不存在。');
+}
+`;
+        return code;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { }
+    try { G.forBlock['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { }
 
     // --- NEW: Schedule At Offset Generator ---
     G['sb_schedule_at_offset'] = function (block) {

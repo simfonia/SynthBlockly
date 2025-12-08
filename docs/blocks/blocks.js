@@ -254,6 +254,59 @@ export function registerBlocks(Blockly) {
             });
         }
     };
+
+    // --- NEW: Create Synth Instrument Block ---
+    Blockly.Blocks['sb_create_synth_instrument'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_CREATE_SYNTH_INSTRUMENT_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NAME",
+                        "text": "DefaultSynth"
+                    },
+                    {
+                        "type": "field_dropdown",
+                        "name": "TYPE",
+                        "options": [
+                            ["PolySynth", "PolySynth"],
+                            ["AMSynth", "AMSynth"],
+                            ["FMSynth", "FMSynth"],
+                            ["DuoSynth", "DuoSynth"],
+                            ["Sampler", "Sampler"]
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_SYNTH_COLOR}",
+                "tooltip": "%{BKY_SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Select Current Instrument Block ---
+    Blockly.Blocks['sb_select_current_instrument'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NAME",
+                        "text": "DefaultSynth"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_SYNTH_COLOR}",
+                "tooltip": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP}"
+            });
+        }
+    };
+
+
     // --- NEW: Transport Blocks ---
     Blockly.Blocks['sb_transport_set_bpm'] = {
         init: function () {

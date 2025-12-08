@@ -132,7 +132,12 @@
         <block type="procedures_defnoreturn"></block>
     </category>
     <category name="SynthBlockly" colour="260">
+
       <category name="Instruments" colour="270">
+        <category name="Instrument Control" colour="275">
+          <block type="sb_create_synth_instrument"></block>
+          <block type="sb_select_current_instrument"></block>
+        </category>
         <category name="Synthesizers" colour="280">
           <block type="sb_play_note">
             <value name="NOTE">

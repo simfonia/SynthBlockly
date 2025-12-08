@@ -82,6 +82,14 @@ export const MSG_EN = {
     'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': 'Enables or disables the PC keyboard as a MIDI keyboard.',
     'SB_ACTION_ON': 'ON',
     'SB_ACTION_OFF': 'OFF',
+
+    // --- NEW: Create Synth Instrument Block ---
+    'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': 'Create Instrument %1 Type %2',
+    'SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP': 'Creates a named synthesizer or sampler instrument of a specified type for later use.',
+
+    // --- NEW: Select Current Instrument Block ---
+    'SB_SELECT_CURRENT_INSTRUMENT_MESSAGE': 'Select Current Instrument as %1',
+    'SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP': 'Sets the default instrument to be used for subsequent note playback.',
         
         // --- Musical Duration Options ---    'SB_DUR_1M': '1 Measure',
     'SB_DUR_2N': 'Half Note',

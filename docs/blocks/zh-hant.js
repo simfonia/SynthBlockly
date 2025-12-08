@@ -82,6 +82,14 @@ export const MSG_ZH_HANT = {
     'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': '啟用或禁用電腦鍵盤作為 MIDI 鍵盤的功能。',
     'SB_ACTION_ON': '開啟',
     'SB_ACTION_OFF': '關閉',
+
+    // --- NEW: Create Synth Instrument Block ---
+    'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': '創建樂器 %1 型態 %2',
+    'SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP': '創建一個指定名稱和類型的合成器或取樣器樂器，可供後續播放音符使用。',
+
+    // --- NEW: Select Current Instrument Block ---
+    'SB_SELECT_CURRENT_INSTRUMENT_MESSAGE': '選擇目前樂器為 %1',
+    'SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP': '設定之後播放音符時預設使用的樂器。',
     
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 小節 (1m)',
