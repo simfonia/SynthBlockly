@@ -173,6 +173,67 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     try { if (JSConstructorProto) JSConstructorProto['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
     try { G.forBlock['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
 
+    // --- NEW: Define Chord Generator ---
+    G['sb_define_chord'] = function (block) {
+        var name = Blockly.JavaScript.quote_(block.getFieldValue('NAME')); // Quote the chord name
+        var notesString = Blockly.JavaScript.quote_(block.getFieldValue('NOTES_STRING')); // Quote the note string
+        
+        var code = `
+        const chordNotesArray = ${notesString}.split(',').map(note => note.trim());
+        if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+            window.audioEngine.chords[${name}] = chordNotesArray;
+            window.audioEngine.log('和弦 ' + ${name} + ' 已定義: ' + chordNotesArray.join(', '));
+        } else {
+            window.audioEngine.log('錯誤: 無法定義和弦 ' + ${name} + '。請提供有效的音符列表。');
+        }
+    `;
+        return code + '\n';
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
+    try { G.forBlock['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
+
+    // --- NEW: Map PC Keyboard Key to Chord Generator ---
+    G['sb_map_key_to_chord'] = function (block) {
+        var keyCode = Blockly.JavaScript.quote_(block.getFieldValue('KEY_CODE')); // Quote the key code
+        var chordName = Blockly.JavaScript.quote_(block.getFieldValue('CHORD_NAME')); // Quote the chord name
+        
+        var code = `
+        if (window.audioEngine.chords[${chordName}]) {
+            window.audioEngine.keyboardChordMap[${keyCode}] = ${chordName};
+            window.audioEngine.log('鍵盤按鍵 ' + ${keyCode} + ' 已映射到和弦 ' + ${chordName} + '。');
+        } else {
+            window.audioEngine.log('錯誤: 和弦 ' + ${chordName} + ' 不存在。無法映射按鍵 ' + ${keyCode} + '。');
+        }
+    `;
+        return code + '\n';
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
+    try { G.forBlock['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
+
+    // --- NEW: Map MIDI Note to Chord Generator ---
+    G['sb_map_midi_to_chord'] = function (block) {
+        var midiNote = block.getFieldValue('MIDI_NOTE'); // MIDI Note number (0-127)
+        var chordName = Blockly.JavaScript.quote_(block.getFieldValue('CHORD_NAME')); // Quote the chord name
+        
+        var code = `
+        if (window.audioEngine.chords[${chordName}]) {
+            window.audioEngine.midiChordMap[${midiNote}] = ${chordName};
+            window.audioEngine.log('MIDI 音符 ' + ${midiNote} + ' 已映射到和弦 ' + ${chordName} + '。');
+        } else {
+            window.audioEngine.log('錯誤: 和弦 ' + ${chordName} + ' 不存在。無法映射 MIDI 音符 ' + ${midiNote} + '。');
+        }
+    `;
+        return code + '\n';
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_map_midi_to_chord'] = G['sb_map_midi_to_chord']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_map_midi_to_chord'] = G['sb_map_midi_to_chord']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_map_midi_to_chord'] = G['sb_map_midi_to_chord']; } catch (e) { }
+    try { G.forBlock['sb_map_midi_to_chord'] = G['sb_map_midi_to_chord']; } catch (e) { }
+
     // --- NEW: Transport Generators ---
     G['sb_transport_set_bpm'] = function (block) {
         var bpm = Number(block.getFieldValue('BPM')) || 120;

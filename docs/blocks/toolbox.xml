@@ -137,6 +137,10 @@
         <category name="Instrument Control" colour="275">
           <block type="sb_create_synth_instrument"></block>
           <block type="sb_select_current_instrument"></block>
+          <block type="sb_set_adsr"></block>
+          <block type="sb_define_chord"></block>
+          <block type="sb_map_key_to_chord"></block>
+          <block type="sb_map_midi_to_chord"></block>
         </category>
         <category name="Synthesizers" colour="280">
           <block type="sb_play_note">
@@ -170,7 +174,6 @@
               </shadow>
             </value>
           </block>
-          <block type="sb_set_adsr"></block>
         </category>
         <category name="Samplers" colour="290">
           <block type="jazzkit_play_drum">

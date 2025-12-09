@@ -69,6 +69,10 @@ const audioEngine = {
     instruments: {}, // NEW: Object to store dynamically created instruments
     currentInstrumentName: 'DefaultSynth', // NEW: Name of the currently selected instrument
     pressedKeys: new Map(), // NEW: Moved pressedKeys into audioEngine
+    chords: {}, // NEW: Object to store user-defined chords
+    keyboardChordMap: {}, // NEW: Object to store PC keyboard key-to-chord mappings
+    midiChordMap: {}, // NEW: Object to store MIDI note-to-chord mappings
+    midiPressedNotes: new Map(), // NEW: Map to store notes/chords currently pressed via MIDI
 
     log: function(msg) {
         const d = document.getElementById('log');
@@ -139,7 +143,8 @@ const audioEngine = {
     // NEW: Function to clear pressed keys from the PC keyboard controller
     clearPressedKeys: function() {
         this.pressedKeys.clear();
-        this.log('PC 鍵盤按下狀態已清除。');
+        this.midiPressedNotes.clear(); // NEW: Clear MIDI pressed notes
+        this.log('PC 鍵盤及 MIDI 按下狀態已清除。');
     },
     // NEW: Function to play a note on the currently selected instrument
     playCurrentInstrumentNote: async function(note, dur, time, velocity) {
@@ -253,36 +258,68 @@ async function onMIDIMessage(msg) {
 
     const [status, data1, data2] = msg.data;
     const cmd = status & 0xf0;
+    const midiNoteNumber = data1; // MIDI note number (0-127)
+    const velocityNormalized = data2 / 127; // Normalize velocity to 0-1
     const channel = (status & 0x0f) + 1; // Extract MIDI channel (1-16)
 
-    if (cmd === 0x90 && data2 > 0) { // Note ON
-        const midiNote = data1;
-        const velocity = data2; // Keep original 0-127 velocity
+    const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
+    if (!currentInstrument || !currentInstrument.triggerAttack || !currentInstrument.triggerRelease) {
+        window.audioEngine.log(`錯誤: MIDI 事件無法播放。樂器 "${window.audioEngine.currentInstrumentName}" 不存在或不支持 triggerAttack/Release。`);
+        return;
+    }
+    if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
+        window.audioEngine.log(`警告: MIDI 事件無法播放。樂器 "${window.audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+        return;
+    }
 
-        log(`Note ON midi=${midiNote} vel=${velocity} ch=${channel}`);
+    // Check for MIDI Chord Mapping
+    const chordName = window.audioEngine.midiChordMap[midiNoteNumber];
+    let notesToPlay = null; // Can be a string (single note) or an array of strings (chord)
+    let notePlayedType = 'Single';
 
-        // Dispatch to all registered Blockly listeners
+    if (chordName) {
+        notesToPlay = window.audioEngine.chords[chordName];
+        notePlayedType = 'Chord';
+        if (!notesToPlay) {
+            window.audioEngine.log(`錯誤: 和弦 "${chordName}" 未定義。`);
+            return;
+        }
+    } else {
+        // If not a Chord, play single note
+        notesToPlay = Tone.Midi(midiNoteNumber).toNote(); // Convert MIDI number to note string
+    }
+
+    if (cmd === 0x90 && data2 > 0) { // Note ON (data1 > 0 means note on, data1 = 0 is a special note off)
+        window.audioEngine.log(`MIDI ON (${notePlayedType}): midi=${midiNoteNumber} vel=${velocityNormalized.toFixed(2)} ch=${channel} -> ${Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay}`);
+        
+        currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
+        window.audioEngine.midiPressedNotes.set(midiNoteNumber, notesToPlay); // Store played notes/chord
+
+        // Dispatch to all registered Blockly listeners (for MIDI note events)
         midiNoteListeners.forEach(listener => {
             try {
-                listener(midiNote, velocity, channel);
+                // Pass the original midiNoteNumber, normalized velocity, and channel
+                listener(midiNoteNumber, velocityNormalized, channel);
             } catch (e) {
                 console.error('Error in MIDI listener callback:', e);
             }
         });
 
-    } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) { // Note OFF
-        const midiNote = data1;
-        const velocity = 0;
-        const channel = (status & 0x0f) + 1;
-        log(`Note OFF midi=${midiNote} ch=${channel}`);
-        // Optionally, dispatch Note OFF events as well
-        // midiNoteListeners.forEach(listener => {
-        //     try {
-        //         listener(midiNote, velocity, channel);
-        //     } catch (e) {
-        //         console.error('Error in MIDI listener callback:', e);
-        //     }
-        // });
+    } else if (cmd === 0x80 || (cmd === 0x90 && data1 === 0)) { // Note OFF (data1 === 0 for note on with velocity 0)
+        // Retrieve the exact notes that were attacked for this midiNoteNumber
+        const notesToRelease = window.audioEngine.midiPressedNotes.get(midiNoteNumber);
+
+        if (notesToRelease) {
+            window.audioEngine.log(`MIDI OFF: midi=${midiNoteNumber} ch=${channel} -> ${Array.isArray(notesToRelease) ? notesToRelease.join(', ') : notesToRelease}`);
+            currentInstrument.triggerRelease(notesToRelease, Tone.now());
+            window.audioEngine.midiPressedNotes.delete(midiNoteNumber); // Remove from pressed map
+        } else {
+            // If notesToRelease not found, it might be a single note that wasn't chord-mapped.
+            // In this case, calculate the single note.
+            const singleNote = Tone.Midi(midiNoteNumber).toNote();
+            window.audioEngine.log(`MIDI OFF (single fallback): midi=${midiNoteNumber} ch=${channel} -> ${singleNote}`);
+            currentInstrument.triggerRelease(singleNote, Tone.now());
+        }
     }
 }
 
@@ -927,7 +964,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         'Digit9': 'C#',   // C# of next octave
         'KeyO': 'D',      // D of next octave
         'Digit0': 'D#',   // D# of next octave
-        'KeyP': 'E'       // E of next octave
+        'KeyP': 'E',      // E of next octave
+        'BracketLeft': 'F', // F of next octave
+        'BracketRight': 'G', // G of next octave
+        'Backslash': 'A'    // A of next octave
     };
     // const HIGH_C_KEY = 'KeyI'; // No longer needed
 
@@ -956,7 +996,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Determine if the key belongs to the base octave block or the next octave block
         const baseOctaveKeys = ['KeyQ', 'Digit2', 'KeyW', 'Digit3', 'KeyE', 'KeyR', 'Digit5', 'KeyT', 'Digit6', 'KeyY', 'Digit7', 'KeyU'];
-        const nextOctaveKeys = ['KeyI', 'Digit9', 'KeyO', 'Digit0', 'KeyP']; // Keys for the next octave
+        const nextOctaveKeys = ['KeyI', 'Digit9', 'KeyO', 'Digit0', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash']; // Keys for the next octave
 
         if (nextOctaveKeys.includes(keyCode)) {
             noteOctave = currentOctave + 1;
@@ -969,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!isPcKeyboardMidiEnabled || e.repeat) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+        // Octave Shift Keys
         if ((e.code === 'KeyZ' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) {
             shiftOctave(-1);
             e.preventDefault();
@@ -980,8 +1021,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const note = getNoteForKeyCode(e.code);
-        if (note && !window.audioEngine.pressedKeys.has(e.code)) {
+        let notesToPlay = null; // Can be a string (single note) or an array of strings (chord)
+        let notePlayedType = 'Single';
+
+        // 1. Check for Chord Mapping first
+        const chordName = window.audioEngine.keyboardChordMap[e.code];
+        if (chordName) {
+            notesToPlay = window.audioEngine.chords[chordName];
+            notePlayedType = 'Chord';
+            if (!notesToPlay) {
+                window.audioEngine.log(`錯誤: 和弦 "${chordName}" 未定義。`);
+                return;
+            }
+        } else {
+            // 2. If not a Chord, check for Single Note Mapping
+            notesToPlay = getNoteForKeyCode(e.code); // This returns a single note string
+            if (!notesToPlay) return; // Not a mapped key
+        }
+
+        // Only proceed if a note/chord is found and not already pressed
+        if (notesToPlay && !window.audioEngine.pressedKeys.has(e.code)) {
             const ok = await ensureAudioStarted();
             if (!ok) return;
 
@@ -990,16 +1049,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.audioEngine.log(`錯誤: PC鍵盤無法播放。樂器 "${window.audioEngine.currentInstrumentName}" 不存在或不支持 triggerAttack。`);
                 return;
             }
-            // NEW: Sampler loaded check
             if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
                 window.audioEngine.log(`警告: PC鍵盤無法播放。樂器 "${window.audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
                 return;
             }
 
             const velocity = 0.7;
-            currentInstrument.triggerAttack(note, Tone.now(), velocity);
-            window.audioEngine.pressedKeys.set(e.code, note);
-            window.audioEngine.log(`Keyboard ON: ${e.code} -> ${note}`);
+            currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocity); // Trigger attack with note or array of notes
+            window.audioEngine.pressedKeys.set(e.code, notesToPlay); // Store the note/chord with the key code
+            window.audioEngine.log(`Keyboard ON (${notePlayedType}): ${Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay}`);
             e.preventDefault();
         }
     };

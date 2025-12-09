@@ -307,6 +307,91 @@ export function registerBlocks(Blockly) {
     };
 
 
+    // --- NEW: Define Chord Block ---
+    Blockly.Blocks['sb_define_chord'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_DEFINE_CHORD_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NAME",
+                        "text": "C Major"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "NOTES_STRING",
+                        "text": "C4,E4,G4"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_SYNTH_COLOR}",
+                "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Map PC Keyboard Key to Chord Block ---
+    Blockly.Blocks['sb_map_key_to_chord'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_MAP_KEY_TO_CHORD_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "KEY_CODE",
+                        "options": [
+                            ["A", "KeyA"], ["S", "KeyS"], ["D", "KeyD"], ["F", "KeyF"], ["G", "KeyG"],
+                            ["H", "KeyH"], ["J", "KeyJ"], ["K", "KeyK"], ["L", "KeyL"],
+                            [";", "Semicolon"], ["'", "Quote"],
+                            [",", "Comma"], [".", "Period"], ["/", "Slash"],
+                            ["C", "KeyC"], ["V", "KeyV"], ["B", "KeyB"], ["N", "KeyN"], ["M", "KeyM"]
+                        ]
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "CHORD_NAME",
+                        "text": "C Major"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "tooltip": "%{BKY_SB_MAP_KEY_TO_CHORD_TOOLTIP}"
+            });
+        }
+    };
+
+    // --- NEW: Map MIDI Note to Chord Block ---
+    Blockly.Blocks['sb_map_midi_to_chord'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_MAP_MIDI_TO_CHORD_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_number",
+                        "name": "MIDI_NOTE",
+                        "value": 60, // C4
+                        "min": 0,
+                        "max": 127,
+                        "precision": 1
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "CHORD_NAME",
+                        "text": "C Major"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "tooltip": "%{BKY_SB_MAP_MIDI_TO_CHORD_TOOLTIP}"
+            });
+        }
+    };
+
+
     // --- NEW: Transport Blocks ---
     Blockly.Blocks['sb_transport_set_bpm'] = {
         init: function () {

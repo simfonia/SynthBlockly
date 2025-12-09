@@ -90,6 +90,18 @@ export const MSG_ZH_HANT = {
     // --- NEW: Select Current Instrument Block ---
     'SB_SELECT_CURRENT_INSTRUMENT_MESSAGE': '選擇目前樂器為 %1',
     'SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP': '設定之後播放音符時預設使用的樂器。',
+
+    // --- NEW: Define Chord Block ---
+    'SB_DEFINE_CHORD_MESSAGE': '定義和弦 %1 音符為 %2',
+    'SB_DEFINE_CHORD_TOOLTIP': '定義一個指定名稱的和弦，其中包含用逗號分隔的音符列表 (例如 C4,E4,G4)。',
+
+    // --- NEW: Map PC Keyboard Key to Chord Block ---
+    'SB_MAP_KEY_TO_CHORD_MESSAGE': '映射鍵盤按鍵 %1 到和弦 %2',
+    'SB_MAP_KEY_TO_CHORD_TOOLTIP': '將一個 PC 鍵盤按鍵映射到一個已定義的和弦名稱，按下該鍵將觸發和弦。',
+
+    // --- NEW: Map MIDI Note to Chord Block ---
+    'SB_MAP_MIDI_TO_CHORD_MESSAGE': '映射 MIDI 音符 %1 到和弦 %2',
+    'SB_MAP_MIDI_TO_CHORD_TOOLTIP': '將一個 MIDI 音符映射到一個已定義的和弦名稱，按下該 MIDI 音符將觸發和弦。',
     
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 小節 (1m)',

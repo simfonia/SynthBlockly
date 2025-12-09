@@ -90,6 +90,18 @@ export const MSG_EN = {
     // --- NEW: Select Current Instrument Block ---
     'SB_SELECT_CURRENT_INSTRUMENT_MESSAGE': 'Select Current Instrument as %1',
     'SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP': 'Sets the default instrument to be used for subsequent note playback.',
+
+    // --- NEW: Define Chord Block ---
+    'SB_DEFINE_CHORD_MESSAGE': 'Define Chord %1 Notes as %2',
+    'SB_DEFINE_CHORD_TOOLTIP': 'Defines a named chord containing a comma-separated list of notes (e.g., C4,E4,G4).',
+
+    // --- NEW: Map PC Keyboard Key to Chord Block ---
+    'SB_MAP_KEY_TO_CHORD_MESSAGE': 'Map Keyboard Key %1 to Chord %2',
+    'SB_MAP_KEY_TO_CHORD_TOOLTIP': 'Maps a PC keyboard key to a defined chord name. Pressing the key will trigger the chord.',
+
+    // --- NEW: Map MIDI Note to Chord Block ---
+    'SB_MAP_MIDI_TO_CHORD_MESSAGE': 'Map MIDI Note %1 to Chord %2',
+    'SB_MAP_MIDI_TO_CHORD_TOOLTIP': 'Maps a MIDI note number to a defined chord name. Pressing the MIDI note will trigger the chord.',
         
         // --- Musical Duration Options ---    'SB_DUR_1M': '1 Measure',
     'SB_DUR_2N': 'Half Note',
