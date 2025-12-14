@@ -43,6 +43,31 @@ export const MSG_ZH_HANT = {
     'TRANSPORT_HUE': '#16A085',
     'MSG_EFFECTS_CATEGORY': 'Effects',
     'EFFECTS_HUE': '#9B59B6',
+
+// --- NEW: Effect Block Messages ---
+    'SB_SETUP_EFFECT_MESSAGE': '設定 %1 效果 濕度 %2',
+    'SB_SETUP_EFFECT_TOOLTIP': `設定特定的音訊效果及其參數。
+---
+通用參數:
+- Wet (濕度): 控制效果的乾濕混合比例 (0-1)。0 為無效果，1 為完全效果聲。
+
+DISTORTION (失真):
+- Amount (量): 失真的程度 (0-1)。
+- Oversample (超取樣): 減少高頻混疊，讓聲音更平滑 ('none', '2x', '4x')。
+
+REVERB (混響):
+- Decay (衰減): 混響的持續時間（秒）。
+- Predelay (預延遲): 原始聲音與第一個反射音之間的時間差（秒），可增加聲音清晰度。
+
+FEEDBACK DELAY (回饋延遲):
+- Delay Time (延遲時間): 回音的間隔時間 (例如 '8n', '0.5')。
+- Feedback (回饋): 回音的強度 (0-1)。0.25 表示每次回音的音量是上一次的 25%。`,
+    'SB_EFFECT_DISTORTION_AMOUNT_FIELD': '量',
+    'SB_EFFECT_OVERSAMPLE_FIELD': '超取樣',
+    'SB_EFFECT_DECAY_FIELD': '衰減',
+    'SB_EFFECT_PREDELAY_FIELD': '預延遲',
+    'SB_EFFECT_DELAY_TIME_FIELD': '延遲時間',
+    'SB_EFFECT_FEEDBACK_FIELD': '回饋',
     'MSG_MIDI_CATEGORY': 'MIDI',
     'MIDI_HUE': '#5B67E7',
     'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
@@ -50,10 +75,10 @@ export const MSG_ZH_HANT = {
     'MSG_SERIAL_CATEGORY': 'Serial',
     'SERIAL_HUE': '#D9534F',
     
-    // Legacy Color definitions (can be deprecated later)
-    'SYNTH_ACTIONS_COLOR': '#5CB85C',
-    'SYNTH_SYNTH_COLOR': '#5BC0DE',
-    'JAZZKIT_COLOR': '#E74C3C',
+    // Legacy Color definitions are now removed.
+    // 'SYNTH_ACTIONS_COLOR': '#5CB85C',
+    // 'SYNTH_SYNTH_COLOR': '#5BC0DE',
+    // 'JAZZKIT_COLOR': '#E74C3C',
 
     // Block Messages (Events)
     'SB_MIDI_NOTE_RECEIVED_MESSAGE': '當 MIDI 音符 %1 力度 %2 頻道 %3 接收時',
@@ -62,6 +87,10 @@ export const MSG_ZH_HANT = {
     // 新的 MIDI 播放積木
     'SB_MIDI_PLAY_MESSAGE': '觸發 MIDI 聲音 %1 力度 %2 頻道 %3',
     'SB_MIDI_PLAY_TOOLTIP': '根據傳入的 MIDI 音符編號觸發對應的聲音。如果該音符已被映射到一個和弦，則會播放整個和弦；否則，播放單音。',
+
+    // --- NEW: Stop Default MIDI Action Block ---
+    'SB_STOP_DEFAULT_MIDI_ACTION_MESSAGE': '停止預設 MIDI 行為',
+    'SB_STOP_DEFAULT_MIDI_ACTION_TOOLTIP': '阻止傳入的 MIDI 音符觸發預設的單音或和弦映射播放。當您希望完全在「當 MIDI 音符接收時」積木中處理 MIDI 音符時很有用。',
 
     // 新的 MIDI 類別名稱
     'MSG_MIDI_CATEGORY': 'MIDI',

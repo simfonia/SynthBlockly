@@ -43,6 +43,31 @@ export const MSG_EN = {
     'TRANSPORT_HUE': '#16A085',
     'MSG_EFFECTS_CATEGORY': 'Effects',
     'EFFECTS_HUE': '#9B59B6',
+
+// --- NEW: Effect Block Messages ---
+    'SB_SETUP_EFFECT_MESSAGE': 'Set %1 effect Wet %2',
+    'SB_SETUP_EFFECT_TOOLTIP': `Configures a specific audio effect and its parameters.
+---
+GENERAL:
+- Wet: Controls the dry/wet mix (0-1). 0 is no effect, 1 is full effect.
+
+DISTORTION:
+- Amount: The intensity of the distortion (0-1).
+- Oversample: Reduces aliasing for a smoother sound ('none', '2x', '4x').
+
+REVERB:
+- Decay: The length of the reverb tail in seconds.
+- Predelay: The time in seconds before the reverb starts, adding clarity.
+
+FEEDBACK DELAY:
+- Delay Time: The time between echoes (e.g., '8n', '0.5').
+- Feedback: The strength of the echoes (0-1). 0.25 means each echo is 25% of the previous one's volume.`,
+    'SB_EFFECT_DISTORTION_AMOUNT_FIELD': 'Amount',
+    'SB_EFFECT_OVERSAMPLE_FIELD': 'Oversample',
+    'SB_EFFECT_DECAY_FIELD': 'Decay',
+    'SB_EFFECT_PREDELAY_FIELD': 'Predelay',
+    'SB_EFFECT_DELAY_TIME_FIELD': 'Delay Time',
+    'SB_EFFECT_FEEDBACK_FIELD': 'Feedback',
     'MSG_MIDI_CATEGORY': 'MIDI',
     'MIDI_HUE': '#5B67E7',
     'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
@@ -50,10 +75,10 @@ export const MSG_EN = {
     'MSG_SERIAL_CATEGORY': 'Serial',
     'SERIAL_HUE': '#D9534F',
     
-    // Legacy Color definitions (can be deprecated later)
-    'SYNTH_ACTIONS_COLOR': '#5CB85C',
-    'SYNTH_SYNTH_COLOR': '#5BC0DE',
-    'JAZZKIT_COLOR': '#E74C3C',
+    // Legacy Color definitions are now removed.
+    // 'SYNTH_ACTIONS_COLOR': '#5CB85C',
+    // 'SYNTH_SYNTH_COLOR': '#5BC0DE',
+    // 'JAZZKIT_COLOR': '#E74C3C',
 
     // Block Messages (Events)
     'SB_MIDI_NOTE_RECEIVED_MESSAGE': 'When MIDI Note %1 Velocity %2 Channel %3 Received',
@@ -62,6 +87,10 @@ export const MSG_EN = {
     // NEW MIDI Play Block
     'SB_MIDI_PLAY_MESSAGE': 'Trigger MIDI Sound %1 Velocity %2 Channel %3',
     'SB_MIDI_PLAY_TOOLTIP': 'Triggers sound based on the incoming MIDI note number. If the note has been mapped to a chord, the entire chord will be played; otherwise, a single note will be played.',
+
+    // --- NEW: Stop Default MIDI Action Block ---
+    'SB_STOP_DEFAULT_MIDI_ACTION_MESSAGE': 'Stop Default MIDI Action',
+    'SB_STOP_DEFAULT_MIDI_ACTION_TOOLTIP': 'Prevents the incoming MIDI note from triggering the default single note or chord mapping playback. Useful when you want to handle the MIDI note entirely within the \'When MIDI Note Received\' block.',
 
     // NEW MIDI Category Name
     'MSG_MIDI_CATEGORY': 'MIDI',

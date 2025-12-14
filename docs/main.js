@@ -35,7 +35,31 @@ const snare = new Tone.NoiseSynth({
     noise: { type: 'white' },
     envelope: { attack: 0.005, decay: 0.2, sustain: 0 },
     volume: -5
-}).connect(analyser);
+}).connect(analyser); // This needs to be changed to connect to the effect chain instead of analyser
+
+// --- NEW CODE STARTS HERE ---
+
+// Create effect instances
+// Tone.Distortion: 失真效果
+const distortionEffect = new Tone.Distortion(0.0);
+// Tone.Reverb: 混響效果
+const reverbEffect = new Tone.Reverb(1.5);
+// Tone.FeedbackDelay: 延遲效果
+const feedbackDelayEffect = new Tone.FeedbackDelay("8n", 0.25);
+
+// Set initial wetness to 0, meaning effects are bypassed by default.
+// Use .wet.value for enabling/disabling the effect without breaking the chain.
+distortionEffect.wet.value = 0;
+reverbEffect.wet.value = 0;
+feedbackDelayEffect.wet.value = 0;
+
+// Chain the main synthesizers/samplers through the effects.
+// All instruments will pass through this common effects chain.
+// Order: Distortion -> FeedbackDelay -> Reverb -> Analyser -> Destination
+synth.chain(distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+drum.chain(distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+hh.chain(distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+snare.chain(distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
 
 // --- NEW: Jazz Kit Sampler ---
 const jazzKit = new Tone.Sampler({
@@ -56,7 +80,9 @@ const jazzKit = new Tone.Sampler({
     onload: () => {
         console.log('Jazz Kit samples loaded.');
     }
-}).connect(analyser);
+}).chain(distortionEffect, feedbackDelayEffect, reverbEffect, analyser); // Also chain jazzKit
+
+// --- END NEW CODE ---
 
 let audioStarted = false;
 
@@ -67,7 +93,13 @@ const audioEngine = {
     drum: drum,
     hh: hh,
     snare: snare,
-    jazzKit: jazzKit, // Expose the new sampler
+    jazzKit: jazzKit,
+    // Store the effects within audioEngine as well
+    effects: {
+        distortion: distortionEffect,
+        reverb: reverbEffect,
+        feedbackDelay: feedbackDelayEffect
+    },
     instruments: {}, // NEW: Object to store dynamically created instruments
     currentInstrumentName: 'DefaultSynth', // NEW: Name of the currently selected instrument
     pressedKeys: new Map(), // NEW: Moved pressedKeys into audioEngine
@@ -76,6 +108,7 @@ const audioEngine = {
     midiChordMap: {}, // NEW: Object to store MIDI note-to-chord mappings
     midiPressedNotes: new Map(), // NEW: Map to store notes/chords currently pressed via MIDI
     midiPlayingNotes: new Map(), // NEW: Map to store notes started via Blockly MIDI Play block
+    isDefaultMidiActionCancelled: false, // NEW: Flag to allow hat blocks to cancel default playback
 
     log: function(msg) {
         const d = document.getElementById('log');
@@ -383,18 +416,21 @@ async function onMIDIMessage(msg) {
     if (cmd === 0x90 && data2 > 0) { // Note ON
         const velocityNormalized = data2 / 127;
         
-        // If hat blocks are listening, let them handle the event exclusively.
-        if (midiNoteListeners.length > 0) {
-            midiNoteListeners.forEach(listener => {
-                try {
-                    // The listener function contains the generated code from the hat block.
-                    listener(midiNoteNumber, data2, channel);
-                } catch (e) {
-                    console.error('Error in MIDI listener callback:', e);
-                }
-            });
-        } else {
-            // Otherwise, perform the default action (live play).
+        // NEW LOGIC: Reset flag, execute hat blocks, then conditionally perform default attack.
+        window.audioEngine.isDefaultMidiActionCancelled = false; // Reset the flag for this event
+
+        // Always execute hat blocks first. They might set isDefaultMidiActionCancelled.
+        midiNoteListeners.forEach(listener => {
+            try {
+                // The listener function contains the generated code from the hat block.
+                listener(midiNoteNumber, data2, channel);
+            } catch (e) {
+                console.error('Error in MIDI listener callback:', e);
+            }
+        });
+
+        // If hat blocks did not cancel the default action, perform midiAttack
+        if (!window.audioEngine.isDefaultMidiActionCancelled) {
             window.audioEngine.midiAttack(midiNoteNumber, velocityNormalized, channel);
         }
 

@@ -157,6 +157,11 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     try { G.forBlock['sb_midi_play'] = G['sb_midi_play']; } catch (e) { }
     try { G.forBlock['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { } // Ensure sb_midi_note_received is also in forBlock if it wasn't already
 
+    // --- NEW: Stop Default MIDI Action Generator ---
+    G['sb_stop_default_midi_action'] = function (block) {
+        return 'window.audioEngine.isDefaultMidiActionCancelled = true;\n';
+    }.bind(G);
+
     G['sb_serial_data_received'] = function (block) {
         // This hat block is handled by a live event listener in main.js.
         // It should not generate any code for the 'Run Blocks' button.
@@ -407,6 +412,45 @@ if (window.audioEngine.instruments[${name}]) {
     try { if (GeneratorProto) GeneratorProto['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
     try { G.forBlock['sb_toggle_pc_keyboard_midi'] = G['sb_toggle_pc_keyboard_midi']; } catch (e) { }
+
+    // --- NEW: Setup Effect Generator ---
+    G['sb_setup_effect'] = function (block) {
+        var effectType = block.getFieldValue('EFFECT_TYPE');
+        var wet = Blockly.JavaScript.valueToCode(block, 'WET', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+
+        var code = '';
+        if (!effectType) return '';
+
+        // Set wet value (always present)
+        code += `window.audioEngine.effects.${effectType}.wet.value = ${wet};\n`;
+
+        if (effectType === 'distortion') {
+            var distortionAmount = Blockly.JavaScript.valueToCode(block, 'DISTORTION_AMOUNT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+            var oversample = block.getFieldValue('OVERSAMPLE_VALUE');
+            code += `window.audioEngine.effects.distortion.distortion = ${distortionAmount};\n`;
+            code += `window.audioEngine.effects.distortion.oversample = '${oversample}';\n`;
+            code += `window.audioEngine.log('Distortion 效果已設定。');\n`;
+        } else if (effectType === 'reverb') {
+            var decay = Blockly.JavaScript.valueToCode(block, 'DECAY', Blockly.JavaScript.ORDER_ATOMIC) || '1.5';
+            var predelay = Blockly.JavaScript.valueToCode(block, 'PREDELAY', Blockly.JavaScript.ORDER_ATOMIC) || '0.01';
+            // Reverb needs to be stopped and started for decay and predelay to take effect
+            code += `
+                window.audioEngine.effects.reverb.decay = ${decay};
+                window.audioEngine.effects.reverb.preDelay = ${predelay};
+                window.audioEngine.effects.reverb.stop();
+                window.audioEngine.effects.reverb.start();
+            `; // Reverb starts on its own after setting decay
+            code += `window.audioEngine.log('Reverb 效果已設定。');\n`;
+        } else if (effectType === 'feedbackDelay') {
+            var delayTime = Blockly.JavaScript.valueToCode(block, 'DELAY_TIME', Blockly.JavaScript.ORDER_ATOMIC) || '"8n"';
+            var feedback = Blockly.JavaScript.valueToCode(block, 'FEEDBACK', Blockly.JavaScript.ORDER_ATOMIC) || '0.25';
+            code += `window.audioEngine.effects.feedbackDelay.delayTime.value = ${delayTime};\n`;
+            code += `window.audioEngine.effects.feedbackDelay.feedback.value = ${feedback};\n`;
+            code += `window.audioEngine.log('FeedbackDelay 效果已設定。');\n`;
+        }
+
+        return code;
+    }.bind(G);
 
     // Expose a global fallback for legacy code that expects window.registerSBGenerators
     try { window.registerSBGenerators = function (b) { return registerGenerators(b || Blockly); }; } catch (e) { }
