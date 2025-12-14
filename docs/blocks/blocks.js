@@ -175,10 +175,54 @@ export function registerBlocks(Blockly) {
                 "output": null,
                 "previousStatement": null,
                 "nextStatement": true, // Hat blocks that take statements usually have nextStatement: true
-                "colour": "%{BKY_SYNTH_EVENTS_COLOR}",
+                "colour": "%{BKY_MIDI_HUE}",
                 "tooltip": "%{BKY_SB_MIDI_NOTE_RECEIVED_TOOLTIP}",
                 "hat": true
             });
+        }
+    };
+    // NEW MIDI Play Block
+    Blockly.Blocks['sb_midi_play'] = {
+        init: function() {
+            this.jsonInit({
+                "message0": "%{BKY_SB_MIDI_PLAY_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "NOTE",
+                        "check": ["Number", "String"],
+                        "align": "RIGHT"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "VELOCITY",
+                        "check": "Number",
+                        "align": "RIGHT"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "CHANNEL",
+                        "check": "Number",
+                        "align": "RIGHT"
+                    }
+                ],
+                "inputsInline": true,
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_MIDI_HUE}", // Use the new MIDI HUE
+                "tooltip": "%{BKY_SB_MIDI_PLAY_TOOLTIP}"
+            });
+            // Add shadow blocks for variables
+            // Ensure these variable names match those provided by sb_midi_note_received
+            this.getInput('NOTE').setShadowDom(Blockly.utils.xml.textToDom(
+                '<shadow type="variables_get"><field name="VAR" id="NOTE_VAR_ID">note</field></shadow>'
+            ));
+            this.getInput('VELOCITY').setShadowDom(Blockly.utils.xml.textToDom(
+                '<shadow type="variables_get"><field name="VAR" id="VELOCITY_VAR_ID">velocity</field></shadow>'
+            ));
+            this.getInput('CHANNEL').setShadowDom(Blockly.utils.xml.textToDom(
+                '<shadow type="variables_get"><field name="VAR" id="CHANNEL_VAR_ID">channel</field></shadow>'
+            ));
         }
     };
     // 當收到 Serial 資料
@@ -204,7 +248,7 @@ export function registerBlocks(Blockly) {
                 "output": null,
                 "previousStatement": null,
                 "nextStatement": true,
-                "colour": "%{BKY_SYNTH_EVENTS_COLOR}",
+                "colour": "%{BKY_SERIAL_HUE}",
                 "tooltip": "%{BKY_SB_SERIAL_DATA_RECEIVED_TOOLTIP}",
                 "hat": true
             });
@@ -357,7 +401,7 @@ export function registerBlocks(Blockly) {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "colour": "%{BKY_PC_KEYBOARD_HUE}",
                 "tooltip": "%{BKY_SB_MAP_KEY_TO_CHORD_TOOLTIP}"
             });
         }
@@ -385,7 +429,7 @@ export function registerBlocks(Blockly) {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "colour": "%{BKY_MIDI_HUE}",
                 "tooltip": "%{BKY_SB_MAP_MIDI_TO_CHORD_TOOLTIP}"
             });
         }
@@ -549,7 +593,7 @@ export function registerBlocks(Blockly) {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SYNTH_ACTIONS_COLOR}",
+                "colour": "%{BKY_PC_KEYBOARD_HUE}",
                 "tooltip": "%{BKY_SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP}"
             });
         }

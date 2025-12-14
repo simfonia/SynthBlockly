@@ -11,15 +11,68 @@ export const MSG_EN = {
     'UI_BTN_EXPORT_CODE': 'Export Code to File & Clipboard',
     'UI_BTN_CLEAR_LOG': 'Clear Log',
     
-    // Category Colors (Hex values)
-    'SYNTH_ACTIONS_COLOR': '#5CB85C', // Green
-    'SYNTH_SYNTH_COLOR': '#5BC0DE',   // Blue
-    'SYNTH_EFFECTS_COLOR': '#9B59B6', // Purple
-    'SYNTH_EVENTS_COLOR': '#F0AD4E',  // Orange
+    // --- Category Names and Colors ---
+    // Standard Blockly Categories
+    'MSG_LOGIC_CATEGORY': 'Logic',
+    'LOGIC_HUE': '#5C81A6',
+    'MSG_LOOPS_CATEGORY': 'Loops',
+    'LOOPS_HUE': '#5CA65C',
+    'MSG_MATH_CATEGORY': 'Math',
+    'MATH_HUE': '#5C68A6',
+    'MSG_TEXT_CATEGORY': 'Text',
+    'TEXT_HUE': '#A65C81',
+    'MSG_LISTS_CATEGORY': 'Lists',
+    'LISTS_HUE': '#745CA6',
+    'MSG_VARIABLES_CATEGORY': 'Variables',
+    'VARIABLES_HUE': '#A6745C',
+    'MSG_FUNCTIONS_CATEGORY': 'Functions',
+    'FUNCTIONS_HUE': '#995CA6',
+
+    // SynthBlockly Custom Categories
+    'MSG_SYNTHBLOCKLY_CATEGORY': 'SynthBlockly',
+    'SYNTHBLOCKLY_HUE': '#5CA6A6',
+    'MSG_INSTRUMENTS_CATEGORY': 'Instruments',
+    'INSTRUMENTS_HUE': '#685CA6',
+    'MSG_INSTRUMENT_CONTROL_CATEGORY': 'Instrument Control',
+    'INSTRUMENT_CONTROL_HUE': '#5BC0DE', // Same as SYNTH_SYNTH_COLOR
+    'MSG_SYNTHESIZERS_CATEGORY': 'Synthesizers',
+    'SYNTHESIZERS_HUE': '#5CB85C', // Same as SYNTH_ACTIONS_COLOR
+    'MSG_SAMPLERS_CATEGORY': 'Samplers',
+    'SAMPLERS_HUE': '#E74C3C', // Same as JAZZKIT_COLOR
+    'MSG_TRANSPORT_CATEGORY': 'Transport',
+    'TRANSPORT_HUE': '#16A085',
+    'MSG_EFFECTS_CATEGORY': 'Effects',
+    'EFFECTS_HUE': '#9B59B6',
+    'MSG_MIDI_CATEGORY': 'MIDI',
+    'MIDI_HUE': '#5B67E7',
+    'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
+    'PC_KEYBOARD_HUE': '#F0B429',
+    'MSG_SERIAL_CATEGORY': 'Serial',
+    'SERIAL_HUE': '#D9534F',
+    
+    // Legacy Color definitions (can be deprecated later)
+    'SYNTH_ACTIONS_COLOR': '#5CB85C',
+    'SYNTH_SYNTH_COLOR': '#5BC0DE',
+    'JAZZKIT_COLOR': '#E74C3C',
 
     // Block Messages (Events)
     'SB_MIDI_NOTE_RECEIVED_MESSAGE': 'When MIDI Note %1 Velocity %2 Channel %3 Received',
     'SB_MIDI_NOTE_RECEIVED_TOOLTIP': 'Triggers when a MIDI note is received. Provides the note number, velocity, and channel.',
+
+    // NEW MIDI Play Block
+    'SB_MIDI_PLAY_MESSAGE': 'Trigger MIDI Sound %1 Velocity %2 Channel %3',
+    'SB_MIDI_PLAY_TOOLTIP': 'Triggers sound based on the incoming MIDI note number. If the note has been mapped to a chord, the entire chord will be played; otherwise, a single note will be played.',
+
+    // NEW MIDI Category Name
+    'MSG_MIDI_CATEGORY': 'MIDI',
+
+    // NEW PC Keyboard Category Name and Color
+    'PC_KEYBOARD_HUE': '#F0B429', // Yellow for PC Keyboard
+    'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
+
+    // NEW Serial Category Name and Color
+    'SERIAL_HUE': '#D9534F', // Red/Orange for Serial (reusing a hue for a distinct category)
+    'MSG_SERIAL_CATEGORY': 'Serial',
 
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': 'When Serial Data %1 Received',
     'SB_SERIAL_DATA_RECEIVED_TOOLTIP': 'Triggers when a line of serial data is received. Provides the received text.',

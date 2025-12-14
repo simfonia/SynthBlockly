@@ -11,15 +11,68 @@ export const MSG_ZH_HANT = {
     'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
     'UI_BTN_CLEAR_LOG': '清除日誌',
 
-    // Category Colors (Hex values)
-    'SYNTH_ACTIONS_COLOR': '#5CB85C', // 綠色
-    'SYNTH_SYNTH_COLOR': '#5BC0DE',   // 藍色
-    'SYNTH_EFFECTS_COLOR': '#9B59B6', // 紫色
-    'SYNTH_EVENTS_COLOR': '#F0AD4E',  // 橘色
+    // --- Category Names and Colors ---
+    // Standard Blockly Categories
+    'MSG_LOGIC_CATEGORY': 'Logic',
+    'LOGIC_HUE': '#5C81A6',
+    'MSG_LOOPS_CATEGORY': 'Loops',
+    'LOOPS_HUE': '#5CA65C',
+    'MSG_MATH_CATEGORY': 'Math',
+    'MATH_HUE': '#5C68A6',
+    'MSG_TEXT_CATEGORY': 'Text',
+    'TEXT_HUE': '#A65C81',
+    'MSG_LISTS_CATEGORY': 'Lists',
+    'LISTS_HUE': '#745CA6',
+    'MSG_VARIABLES_CATEGORY': 'Variables',
+    'VARIABLES_HUE': '#A6745C',
+    'MSG_FUNCTIONS_CATEGORY': 'Functions',
+    'FUNCTIONS_HUE': '#995CA6',
+
+    // SynthBlockly Custom Categories
+    'MSG_SYNTHBLOCKLY_CATEGORY': 'SynthBlockly',
+    'SYNTHBLOCKLY_HUE': '#5CA6A6',
+    'MSG_INSTRUMENTS_CATEGORY': 'Instruments',
+    'INSTRUMENTS_HUE': '#685CA6',
+    'MSG_INSTRUMENT_CONTROL_CATEGORY': 'Instrument Control',
+    'INSTRUMENT_CONTROL_HUE': '#5BC0DE', // 與 SYNTH_SYNTH_COLOR 相同
+    'MSG_SYNTHESIZERS_CATEGORY': 'Synthesizers',
+    'SYNTHESIZERS_HUE': '#5CB85C', // 與 SYNTH_ACTIONS_COLOR 相同
+    'MSG_SAMPLERS_CATEGORY': 'Samplers',
+    'SAMPLERS_HUE': '#E74C3C', // 與 JAZZKIT_COLOR 相同
+    'MSG_TRANSPORT_CATEGORY': 'Transport',
+    'TRANSPORT_HUE': '#16A085',
+    'MSG_EFFECTS_CATEGORY': 'Effects',
+    'EFFECTS_HUE': '#9B59B6',
+    'MSG_MIDI_CATEGORY': 'MIDI',
+    'MIDI_HUE': '#5B67E7',
+    'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
+    'PC_KEYBOARD_HUE': '#F0B429',
+    'MSG_SERIAL_CATEGORY': 'Serial',
+    'SERIAL_HUE': '#D9534F',
+    
+    // Legacy Color definitions (can be deprecated later)
+    'SYNTH_ACTIONS_COLOR': '#5CB85C',
+    'SYNTH_SYNTH_COLOR': '#5BC0DE',
+    'JAZZKIT_COLOR': '#E74C3C',
 
     // Block Messages (Events)
     'SB_MIDI_NOTE_RECEIVED_MESSAGE': '當 MIDI 音符 %1 力度 %2 頻道 %3 接收時',
     'SB_MIDI_NOTE_RECEIVED_TOOLTIP': '當收到 MIDI 音符時觸發。提供音符編號、力度和頻道。',
+
+    // 新的 MIDI 播放積木
+    'SB_MIDI_PLAY_MESSAGE': '觸發 MIDI 聲音 %1 力度 %2 頻道 %3',
+    'SB_MIDI_PLAY_TOOLTIP': '根據傳入的 MIDI 音符編號觸發對應的聲音。如果該音符已被映射到一個和弦，則會播放整個和弦；否則，播放單音。',
+
+    // 新的 MIDI 類別名稱
+    'MSG_MIDI_CATEGORY': 'MIDI',
+
+    // 新的 PC 鍵盤類別名稱與顏色
+    'PC_KEYBOARD_HUE': '#F0B429', // 黃色，用於 PC 鍵盤
+    'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
+
+    // 新的序列埠類別名稱與顏色
+    'SERIAL_HUE': '#D9534F', // 紅色/橘色，用於序列埠
+    'MSG_SERIAL_CATEGORY': 'Serial',
 
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': '當 Serial 資料 %1 接收時',
     'SB_SERIAL_DATA_RECEIVED_TOOLTIP': '當收到一行序列埠資料時觸發。提供收到的文字。',

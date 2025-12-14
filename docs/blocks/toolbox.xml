@@ -1,10 +1,10 @@
 <xml id="toolbox" style="display: none">
-    <category name="Logic" colour="210">
+    <category name="%{BKY_MSG_LOGIC_CATEGORY}" colour="%{BKY_LOGIC_HUE}">
         <block type="controls_if"></block>
         <block type="logic_compare"></block>
         <block type="logic_boolean"></block>
     </category>
-    <category name="Loops" colour="120">
+    <category name="%{BKY_MSG_LOOPS_CATEGORY}" colour="%{BKY_LOOPS_HUE}">
       <block type="controls_repeat_ext">
         <value name="TIMES">
           <shadow type="math_number">
@@ -32,7 +32,7 @@
       </block>
       <block type="controls_flow_statements"></block>
     </category>
-    <category name="Math" colour="230">
+    <category name="%{BKY_MSG_MATH_CATEGORY}" colour="%{BKY_MATH_HUE}">
         <block type="math_number"></block>
         <block type="math_arithmetic"></block>
         <block type="math_single">
@@ -107,11 +107,11 @@
         </block>
         <block type="math_random_float"></block>
     </category>
-    <category name="Text" colour="160">
+    <category name="%{BKY_MSG_TEXT_CATEGORY}" colour="%{BKY_TEXT_HUE}">
         <block type="text"></block>
         <block type="text_print"></block>
     </category>
-    <category name="Lists" colour="260">
+    <category name="%{BKY_MSG_LISTS_CATEGORY}" colour="%{BKY_LISTS_HUE}">
       <block type="lists_create_with">
         <mutation items="3"></mutation>
       </block>
@@ -127,22 +127,18 @@
       <block type="lists_getIndex"></block>
       <block type="lists_setIndex"></block>
     </category>
-    <category name="Variables" colour="330" custom="VARIABLE"></category>
-    <category name="Functions" colour="290">
-        <block type="procedures_defnoreturn"></block>
-    </category>
-    <category name="SynthBlockly" colour="260">
+    <category name="%{BKY_MSG_VARIABLES_CATEGORY}" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
+    <category name="%{BKY_MSG_FUNCTIONS_CATEGORY}" colour="%{BKY_FUNCTIONS_HUE}" custom="PROCEDURE"></category>
+    <category name="%{BKY_MSG_SYNTHBLOCKLY_CATEGORY}" colour="%{BKY_SYNTHBLOCKLY_HUE}">
 
-      <category name="Instruments" colour="270">
-        <category name="Instrument Control" colour="275">
+      <category name="%{BKY_MSG_INSTRUMENTS_CATEGORY}" colour="%{BKY_INSTRUMENTS_HUE}">
+        <category name="%{BKY_MSG_INSTRUMENT_CONTROL_CATEGORY}" colour="%{BKY_INSTRUMENT_CONTROL_HUE}">
           <block type="sb_create_synth_instrument"></block>
           <block type="sb_select_current_instrument"></block>
           <block type="sb_set_adsr"></block>
           <block type="sb_define_chord"></block>
-          <block type="sb_map_key_to_chord"></block>
-          <block type="sb_map_midi_to_chord"></block>
         </category>
-        <category name="Synthesizers" colour="280">
+        <category name="%{BKY_MSG_SYNTHESIZERS_CATEGORY}" colour="%{BKY_SYNTHESIZERS_HUE}">
           <block type="sb_play_note">
             <value name="NOTE">
               <shadow type="text">
@@ -175,7 +171,7 @@
             </value>
           </block>
         </category>
-        <category name="Samplers" colour="290">
+        <category name="%{BKY_MSG_SAMPLERS_CATEGORY}" colour="%{BKY_SAMPLERS_HUE}">
           <block type="jazzkit_play_drum">
             <value name="VELOCITY">
               <shadow type="math_number">
@@ -185,7 +181,7 @@
           </block>
         </category>
       </category>
-      <category name="Transport" colour="300">
+      <category name="%{BKY_MSG_TRANSPORT_CATEGORY}" colour="%{BKY_TRANSPORT_HUE}">
         <block type="sb_transport_set_bpm"></block>
         <block type="sb_transport_start_stop"></block>
         <block type="sb_wait_musical"></block>
@@ -193,12 +189,19 @@
         <block type="sb_stop_all_blockly_loops"></block>
         <block type="sb_schedule_at_offset"></block>
       </category>
-      <category name="Effects" colour="310">
+      <category name="%{BKY_MSG_EFFECTS_CATEGORY}" colour="%{BKY_EFFECTS_HUE}">
       </category>
-      <category name="Events" colour="320">
+      <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">
         <block type="sb_midi_note_received"></block>
-        <block type="sb_serial_data_received"></block>
+        <block type="sb_midi_play"></block>
+        <block type="sb_map_midi_to_chord"></block>
+      </category>
+      <category name="%{BKY_MSG_PC_KEYBOARD_CATEGORY}" colour="%{BKY_PC_KEYBOARD_HUE}">
+        <block type="sb_map_key_to_chord"></block>
         <block type="sb_toggle_pc_keyboard_midi"></block>
+      </category>
+      <category name="%{BKY_MSG_SERIAL_CATEGORY}" colour="%{BKY_SERIAL_HUE}">
+        <block type="sb_serial_data_received"></block>
       </category>
     </category>
 </xml>

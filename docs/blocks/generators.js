@@ -139,6 +139,24 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     try { if (GeneratorProto) GeneratorProto['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { }
 
+    // NEW: MIDI Play Generator
+    G['sb_midi_play'] = function(block) {
+        var note = Blockly.JavaScript.valueToCode(block, 'NOTE', Blockly.JavaScript.ORDER_ATOMIC) || "60"; // Default to MIDI number 60
+        var velocity = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC) || "1"; // Default to 1 (full velocity)
+        var channel = Blockly.JavaScript.valueToCode(block, 'CHANNEL', Blockly.JavaScript.ORDER_ATOMIC) || "1"; // Default to MIDI channel 1
+
+        // Ensure velocity is always a number (normalized 0-1)
+        velocity = `Number(${velocity})`;
+
+        // The midiAttack function in audioEngine will handle note/chord mapping and actual Tone.js attack
+        return `window.audioEngine.midiAttack(${note}, ${velocity}, ${channel});\n`;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_midi_play'] = G['sb_midi_play']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_midi_play'] = G['sb_midi_play']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_midi_play'] = G['sb_midi_play']; } catch (e) { }
+    try { G.forBlock['sb_midi_play'] = G['sb_midi_play']; } catch (e) { }
+    try { G.forBlock['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { } // Ensure sb_midi_note_received is also in forBlock if it wasn't already
+
     G['sb_serial_data_received'] = function (block) {
         // This hat block is handled by a live event listener in main.js.
         // It should not generate any code for the 'Run Blocks' button.
@@ -148,12 +166,19 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     // NEW: Jazz Kit Play Drum Generator
     G['jazzkit_play_drum'] = function (block) {
         var drumNote = block.getFieldValue('DRUM_TYPE');
-        var velocity = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC) || 1; // Default to 1 (full velocity)
+        
+        // Check if a velocity value is explicitly provided to the block.
+        var velocityOverride = Blockly.JavaScript.valueToCode(block, 'VELOCITY', Blockly.JavaScript.ORDER_ATOMIC);
+        var velocityOverrideCode = velocityOverride ? `Number(${velocityOverride})` : 'null'; // Pass null if not provided
 
-        // Ensure velocity is always a number
-        velocity = `Number(${velocity})`;
+        // Check if we are in a context that provides 'note' and 'velocity' variables.
+        var contextNoteCode = `(typeof note !== 'undefined' ? note : null)`;
+        var contextVelocityCode = `(typeof velocity !== 'undefined' ? velocity : null)`;
 
-        return `window.audioEngine.jazzKit.triggerAttackRelease('${drumNote}', '8n', (typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now()), ${velocity});\n`;
+        var timeCode = `(typeof scheduledTime !== 'undefined' ? scheduledTime : Tone.now())`;
+
+        return `window.audioEngine.playJazzKitNote('${drumNote}', ${velocityOverrideCode}, ${timeCode}, ${contextNoteCode}, ${contextVelocityCode});
+`;
     }.bind(G);
     try { if (Gproto) Gproto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }

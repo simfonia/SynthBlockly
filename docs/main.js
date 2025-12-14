@@ -20,6 +20,8 @@ console.warn = function (...args) {
 // --- 全域變數初始化 ---
 // ============================================================================
 let workspace = null;
+let midiAccess = null;
+let lastReportedDeviceCount = -1;
 const analyser = new Tone.Analyser('waveform', 1024);
 
 // Connect the analyser to the output destination
@@ -73,6 +75,7 @@ const audioEngine = {
     keyboardChordMap: {}, // NEW: Object to store PC keyboard key-to-chord mappings
     midiChordMap: {}, // NEW: Object to store MIDI note-to-chord mappings
     midiPressedNotes: new Map(), // NEW: Map to store notes/chords currently pressed via MIDI
+    midiPlayingNotes: new Map(), // NEW: Map to store notes started via Blockly MIDI Play block
 
     log: function(msg) {
         const d = document.getElementById('log');
@@ -140,10 +143,28 @@ const audioEngine = {
             this.snare.triggerAttackRelease('8n', time, velocity);
         }
     },
+    // NEW: Function to play Jazz Kit with logging
+    playJazzKitNote: async function(drumNote, velocityOverride, time, contextNote, contextVelocity) {
+        const ok = await ensureAudioStarted();
+        if (!ok) return;
+
+        // Determine the final velocity. Prioritize the override from the block input.
+        // If no override, use context velocity. If no context, default to 1.
+        const finalVelocity = velocityOverride !== null ? velocityOverride : (contextVelocity !== null ? contextVelocity : 1);
+
+        let logMessage = `Jazz Kit Play: note=${drumNote} vel=${finalVelocity.toFixed(2)}`;
+        if (contextNote !== null) {
+            logMessage += ` (triggered by MIDI ${contextNote})`;
+        }
+        this.log(logMessage);
+
+        this.jazzKit.triggerAttackRelease(drumNote, '8n', time, finalVelocity);
+    },
     // NEW: Function to clear pressed keys from the PC keyboard controller
     clearPressedKeys: function() {
         this.pressedKeys.clear();
         this.midiPressedNotes.clear(); // NEW: Clear MIDI pressed notes
+        this.midiPlayingNotes.clear(); // NEW: Clear notes played via MIDI Blockly blocks
         this.log('PC 鍵盤及 MIDI 按下狀態已清除。');
     },
     // NEW: Function to play a note on the currently selected instrument
@@ -162,6 +183,69 @@ const audioEngine = {
             } else {
                 this.log(`錯誤: 無法播放音符。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerAttackRelease。`);
             }
+        }
+    },
+    // NEW: Function to handle MIDI note attack from Blockly
+    midiAttack: async function(midiNoteNumber, velocityNormalized = 1, channel) {
+        const ok = await ensureAudioStarted();
+        if (!ok) return;
+
+        const currentInstrument = this.instruments[this.currentInstrumentName];
+        if (!currentInstrument || !currentInstrument.triggerAttack || !currentInstrument.triggerRelease) {
+            this.log(`錯誤: MIDI 播放失敗。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerAttack/Release。`);
+            return;
+        }
+        if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
+            this.log(`警告: MIDI 播放失敗。樂器 "${this.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+            return;
+        }
+
+        // Check for MIDI Chord Mapping
+        const chordName = this.midiChordMap[midiNoteNumber];
+        let notesToPlay = null; // Can be a string (single note) or an array of strings (chord)
+        let notePlayedType = 'Single';
+
+        if (chordName) {
+            notesToPlay = this.chords[chordName];
+            notePlayedType = 'Chord';
+            if (!notesToPlay) {
+                this.log(`錯誤: 和弦 "${chordName}" 未定義。`);
+                return;
+            }
+        } else {
+            // If not a Chord, play single note
+            notesToPlay = Tone.Midi(midiNoteNumber).toNote(); // Convert MIDI number to note string
+        }
+
+        if (notesToPlay) {
+            currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
+            this.midiPlayingNotes.set(midiNoteNumber, notesToPlay); // Store the notes that were attacked
+            this.log(`MIDI In ON (${notePlayedType}): midi=${midiNoteNumber} vel=${(velocityNormalized*127).toFixed(0)} ch=${channel} -> ${Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay}`);
+        }
+    },
+
+    // NEW: Function to handle MIDI note release (called by onMIDIMessage)
+    midiRelease: async function(midiNoteNumber) {
+        const ok = await ensureAudioStarted();
+        if (!ok) return;
+
+        const currentInstrument = this.instruments[this.currentInstrumentName];
+        if (!currentInstrument || !currentInstrument.triggerRelease) {
+            // Log this error, but don't stop execution. It might be a release for a note not attacked by Blockly.
+            this.log(`警告: MIDI 釋放失敗。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerRelease。`);
+            return;
+        }
+        if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
+            this.log(`警告: MIDI 釋放失敗。樂器 "${this.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+            return;
+        }
+
+        const notesToRelease = this.midiPlayingNotes.get(midiNoteNumber);
+
+        if (notesToRelease) {
+            currentInstrument.triggerRelease(notesToRelease, Tone.now());
+            this.midiPlayingNotes.delete(midiNoteNumber); // Remove from playing map
+            this.log(`MIDI In OFF: midi=${midiNoteNumber} -> ${Array.isArray(notesToRelease) ? notesToRelease.join(', ') : notesToRelease}`);
         }
     }
 };
@@ -240,17 +324,52 @@ window.unregisterMidiNoteListener = function (callback) {
     midiNoteListeners = midiNoteListeners.filter(listener => listener !== callback);
 };
 
-async function connectMIDI() {
-    if (!navigator.requestMIDIAccess) { log('瀏覽器不支援 Web MIDI'); return; }
-    try {
-        const midi = await navigator.requestMIDIAccess();
-        for (let input of midi.inputs.values()) {
+/**
+ * Updates the MIDI connection button UI and input listeners based on the current state.
+ * @param {MIDIAccess} midi - The global MIDIAccess object.
+ */
+function _updateMIDIConnectionState(midi) {
+    const btnMidi = document.getElementById('btnMidi');
+    if (!btnMidi) return; // UI not ready
+
+    if (!midi) {
+        btnMidi.disabled = false;
+        btnMidi.title = '連接 MIDI';
+        log('錯誤: MIDIAccess 物件不存在。');
+        return;
+    }
+
+    // Clean up all previous onmidimessage handlers to avoid duplicates
+    for (const input of midi.inputs.values()) {
+        input.onmidimessage = null;
+    }
+
+    const connectedInputs = Array.from(midi.inputs.values()).filter(input => input.state === 'connected');
+
+    const hasStateChanged = connectedInputs.length !== lastReportedDeviceCount;
+    lastReportedDeviceCount = connectedInputs.length;
+
+    if (connectedInputs.length > 0) {
+        connectedInputs.forEach(input => {
+            if (hasStateChanged) {
+                log(`正在為裝置附加監聽器: ${input.name}`);
+            }
             input.onmidimessage = onMIDIMessage;
-            log('MIDI input ready: ' + input.name);
+        });
+        if (hasStateChanged) {
+            log(`${connectedInputs.length} 個 MIDI 裝置已連接。`);
         }
-        midi.onstatechange = (e) => log('MIDI state: ' + e.port.name + ' ' + e.port.state);
-    } catch (e) { log('MIDI 連線失敗: ' + e); }
+        btnMidi.disabled = true;
+        btnMidi.title = `${connectedInputs.length} 個 MIDI 裝置已連接。`;
+    } else {
+        if (hasStateChanged) {
+            log('沒有偵測到 MIDI 裝置。');
+        }
+        btnMidi.disabled = false;
+        btnMidi.title = '連接 MIDI';
+    }
 }
+
 
 async function onMIDIMessage(msg) {
     const ok = await ensureAudioStarted();
@@ -259,67 +378,29 @@ async function onMIDIMessage(msg) {
     const [status, data1, data2] = msg.data;
     const cmd = status & 0xf0;
     const midiNoteNumber = data1; // MIDI note number (0-127)
-    const velocityNormalized = data2 / 127; // Normalize velocity to 0-1
     const channel = (status & 0x0f) + 1; // Extract MIDI channel (1-16)
 
-    const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
-    if (!currentInstrument || !currentInstrument.triggerAttack || !currentInstrument.triggerRelease) {
-        window.audioEngine.log(`錯誤: MIDI 事件無法播放。樂器 "${window.audioEngine.currentInstrumentName}" 不存在或不支持 triggerAttack/Release。`);
-        return;
-    }
-    if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-        window.audioEngine.log(`警告: MIDI 事件無法播放。樂器 "${window.audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
-        return;
-    }
-
-    // Check for MIDI Chord Mapping
-    const chordName = window.audioEngine.midiChordMap[midiNoteNumber];
-    let notesToPlay = null; // Can be a string (single note) or an array of strings (chord)
-    let notePlayedType = 'Single';
-
-    if (chordName) {
-        notesToPlay = window.audioEngine.chords[chordName];
-        notePlayedType = 'Chord';
-        if (!notesToPlay) {
-            window.audioEngine.log(`錯誤: 和弦 "${chordName}" 未定義。`);
-            return;
-        }
-    } else {
-        // If not a Chord, play single note
-        notesToPlay = Tone.Midi(midiNoteNumber).toNote(); // Convert MIDI number to note string
-    }
-
-    if (cmd === 0x90 && data2 > 0) { // Note ON (data1 > 0 means note on, data1 = 0 is a special note off)
-        window.audioEngine.log(`MIDI ON (${notePlayedType}): midi=${midiNoteNumber} vel=${velocityNormalized.toFixed(2)} ch=${channel} -> ${Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay}`);
+    if (cmd === 0x90 && data2 > 0) { // Note ON
+        const velocityNormalized = data2 / 127;
         
-        currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
-        window.audioEngine.midiPressedNotes.set(midiNoteNumber, notesToPlay); // Store played notes/chord
-
-        // Dispatch to all registered Blockly listeners (for MIDI note events)
-        midiNoteListeners.forEach(listener => {
-            try {
-                // Pass the original midiNoteNumber, normalized velocity, and channel
-                listener(midiNoteNumber, velocityNormalized, channel);
-            } catch (e) {
-                console.error('Error in MIDI listener callback:', e);
-            }
-        });
-
-    } else if (cmd === 0x80 || (cmd === 0x90 && data1 === 0)) { // Note OFF (data1 === 0 for note on with velocity 0)
-        // Retrieve the exact notes that were attacked for this midiNoteNumber
-        const notesToRelease = window.audioEngine.midiPressedNotes.get(midiNoteNumber);
-
-        if (notesToRelease) {
-            window.audioEngine.log(`MIDI OFF: midi=${midiNoteNumber} ch=${channel} -> ${Array.isArray(notesToRelease) ? notesToRelease.join(', ') : notesToRelease}`);
-            currentInstrument.triggerRelease(notesToRelease, Tone.now());
-            window.audioEngine.midiPressedNotes.delete(midiNoteNumber); // Remove from pressed map
+        // If hat blocks are listening, let them handle the event exclusively.
+        if (midiNoteListeners.length > 0) {
+            midiNoteListeners.forEach(listener => {
+                try {
+                    // The listener function contains the generated code from the hat block.
+                    listener(midiNoteNumber, data2, channel);
+                } catch (e) {
+                    console.error('Error in MIDI listener callback:', e);
+                }
+            });
         } else {
-            // If notesToRelease not found, it might be a single note that wasn't chord-mapped.
-            // In this case, calculate the single note.
-            const singleNote = Tone.Midi(midiNoteNumber).toNote();
-            window.audioEngine.log(`MIDI OFF (single fallback): midi=${midiNoteNumber} ch=${channel} -> ${singleNote}`);
-            currentInstrument.triggerRelease(singleNote, Tone.now());
+            // Otherwise, perform the default action (live play).
+            window.audioEngine.midiAttack(midiNoteNumber, velocityNormalized, channel);
         }
+
+    } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) { // Note OFF
+        // Default handling for live playing
+        window.audioEngine.midiRelease(midiNoteNumber);
     }
 }
 
@@ -779,8 +860,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const originalSrc = img.src;
             const hoverSrc = originalSrc.replace('_1F1F1F.png', '_FE2F89.png');
             
-            button.addEventListener('mouseover', () => { img.src = hoverSrc; });
-            button.addEventListener('mouseout', () => { img.src = originalSrc; });
+            button.addEventListener('mouseover', () => {
+                if (!button.disabled) {
+                    img.src = hoverSrc;
+                }
+            });
+            button.addEventListener('mouseout', () => {
+                img.src = originalSrc;
+            });
         }
     });
 
@@ -799,9 +886,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 按鈕事件
-    document.getElementById('btnMidi').addEventListener('click', async () => {
+    const btnMidi = document.getElementById('btnMidi');
+    btnMidi.addEventListener('click', async () => {
         const ok = await ensureAudioStarted();
-        if (ok) connectMIDI();
+        if (!ok) return;
+
+        // If we already have access, just run the update logic.
+        // This handles cases where the user clicks the button after a device was unplugged.
+                if (midiAccess) {
+                    log('重新檢查 MIDI 裝置...');
+                    if (Array.from(midiAccess.inputs.values()).filter(input => input.state === 'connected').length === 0) {
+                         log('沒有偵測到 MIDI 裝置。');
+                    }
+                    _updateMIDIConnectionState(midiAccess);
+                    return;
+                }
+        log('正在請求 MIDI 連接權限...');
+        btnMidi.disabled = true;
+
+        if (!navigator.requestMIDIAccess) {
+            log('錯誤: 您的瀏覽器不支援 Web MIDI API。');
+            btnMidi.disabled = false;
+            return;
+        }
+
+        try {
+            const midi = await navigator.requestMIDIAccess();
+            log('MIDI 存取權限已授予。');
+            midiAccess = midi; // Store the access object globally
+
+            // Set a persistent state change handler
+            midiAccess.onstatechange = (e) => {
+                log(`MIDI 裝置狀態變更: ${e.port.name}, 狀態: ${e.port.state}`);
+                _updateMIDIConnectionState(midiAccess);
+            };
+            
+            // Perform the initial check and update UI
+            _updateMIDIConnectionState(midiAccess);
+
+        } catch(e) {
+            log('MIDI 連接失敗: ' + e.message);
+            console.error(e);
+            btnMidi.disabled = false; // Re-enable on failure
+        }
     });
 
     document.getElementById('btnSerial').addEventListener('click', async () => {
