@@ -195,7 +195,6 @@
       <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">
         <block type="sb_midi_note_received"></block>
         <block type="sb_midi_play"></block>
-        <block type="sb_stop_default_midi_action"></block>
         <block type="sb_map_midi_to_chord"></block>
       </category>
       <category name="%{BKY_MSG_PC_KEYBOARD_CATEGORY}" colour="%{BKY_PC_KEYBOARD_HUE}">

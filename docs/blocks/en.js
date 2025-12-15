@@ -1,15 +1,15 @@
 // blocks/en.js — English messages
 export const MSG_EN = {
     // --- UI Button Tooltips ---
-    'UI_BTN_START_AUDIO': 'Start Audio Context',
     'UI_BTN_CONNECT_MIDI': 'Connect MIDI Device',
     'UI_BTN_CONNECT_SERIAL': 'Connect Serial Device',
-    'UI_BTN_PLAY_TEST_NOTE': 'Play Test Note (C4)',
+    'UI_BTN_PLAY_TEST_NOTE': 'Play Test Note (A4)',
     'UI_BTN_SAVE_PROJECT': 'Save Project (XML)',
     'UI_BTN_LOAD_PROJECT': 'Load Project (XML)',
     'UI_BTN_RUN_BLOCKS': 'Run Blocks',
     'UI_BTN_EXPORT_CODE': 'Export Code to File & Clipboard',
     'UI_BTN_CLEAR_LOG': 'Clear Log',
+    'UI_BTN_PANIC_STOP': 'Stop All Sounds (Panic)',
     
     // --- Category Names and Colors ---
     // Standard Blockly Categories
@@ -87,10 +87,6 @@ FEEDBACK DELAY:
     // NEW MIDI Play Block
     'SB_MIDI_PLAY_MESSAGE': 'Trigger MIDI Sound %1 Velocity %2 Channel %3',
     'SB_MIDI_PLAY_TOOLTIP': 'Triggers sound based on the incoming MIDI note number. If the note has been mapped to a chord, the entire chord will be played; otherwise, a single note will be played.',
-
-    // --- NEW: Stop Default MIDI Action Block ---
-    'SB_STOP_DEFAULT_MIDI_ACTION_MESSAGE': 'Stop Default MIDI Action',
-    'SB_STOP_DEFAULT_MIDI_ACTION_TOOLTIP': 'Prevents the incoming MIDI note from triggering the default single note or chord mapping playback. Useful when you want to handle the MIDI note entirely within the \'When MIDI Note Received\' block.',
 
     // NEW MIDI Category Name
     'MSG_MIDI_CATEGORY': 'MIDI',

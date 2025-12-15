@@ -108,7 +108,6 @@ const audioEngine = {
     midiChordMap: {}, // NEW: Object to store MIDI note-to-chord mappings
     midiPressedNotes: new Map(), // NEW: Map to store notes/chords currently pressed via MIDI
     midiPlayingNotes: new Map(), // NEW: Map to store notes started via Blockly MIDI Play block
-    isDefaultMidiActionCancelled: false, // NEW: Flag to allow hat blocks to cancel default playback
 
     log: function(msg) {
         const d = document.getElementById('log');
@@ -278,8 +277,43 @@ const audioEngine = {
         if (notesToRelease) {
             currentInstrument.triggerRelease(notesToRelease, Tone.now());
             this.midiPlayingNotes.delete(midiNoteNumber); // Remove from playing map
-            this.log(`MIDI In OFF: midi=${midiNoteNumber} -> ${Array.isArray(notesToRelease) ? notesToRelease.join(', ') : notesToRelease}`);
         }
+    },
+
+    // --- NEW: Panic function to stop all sounds and reset state ---
+    panicStopAllSounds: function() {
+        this.log('緊急停止！正在停止所有聲音並重設狀態...');
+        
+        // 1. Stop the master transport
+        this.Tone.Transport.stop();
+        this.log('✓ 主時鐘 (Transport) 已停止');
+
+        // 2. Release all notes on all instruments
+        for (const instrName in this.instruments) {
+            if (this.instruments.hasOwnProperty(instrName)) {
+                const instrument = this.instruments[instrName];
+                if (instrument && typeof instrument.releaseAll === 'function') {
+                    instrument.releaseAll();
+                }
+            }
+        }
+        this.log('✓ 所有樂器聲音已釋放');
+
+        // 3. Stop and dispose of all Blockly loops
+        if (window.blocklyLoops) {
+            for (const loopId in window.blocklyLoops) {
+                if (window.blocklyLoops.hasOwnProperty(loopId) && window.blocklyLoops[loopId] instanceof this.Tone.Loop) {
+                    window.blocklyLoops[loopId].dispose();
+                }
+            }
+            window.blocklyLoops = {}; // Clear the object
+            this.log('✓ 所有 Blockly 循環已停止');
+        }
+
+        // 4. Clear all input tracking states
+        this.clearPressedKeys();
+
+        this.log('緊急停止完成。');
     }
 };
 window.audioEngine = audioEngine;
@@ -287,6 +321,16 @@ window.audioEngine = audioEngine;
 // NEW: Initialize default synth as an instrument and set it as current
 audioEngine.instruments['DefaultSynth'] = synth;
 audioEngine.currentInstrumentName = 'DefaultSynth';
+// --- Button Event Listeners ---
+// ... (previous button listeners) ...
+
+const btnPanicStop = document.getElementById('btnPanicStop');
+if (btnPanicStop) {
+    btnPanicStop.addEventListener('click', () => {
+        window.audioEngine.panicStopAllSounds();
+    });
+}
+
 
 const log = audioEngine.log; // Keep a local reference for functions outside the engine
 
@@ -413,30 +457,18 @@ async function onMIDIMessage(msg) {
     const midiNoteNumber = data1; // MIDI note number (0-127)
     const channel = (status & 0x0f) + 1; // Extract MIDI channel (1-16)
 
-    if (cmd === 0x90 && data2 > 0) { // Note ON
-        const velocityNormalized = data2 / 127;
-        
-        // NEW LOGIC: Reset flag, execute hat blocks, then conditionally perform default attack.
-        window.audioEngine.isDefaultMidiActionCancelled = false; // Reset the flag for this event
-
-        // Always execute hat blocks first. They might set isDefaultMidiActionCancelled.
+    if (cmd === 0x90 && data1 > 0) { // Note ON
+        window.audioEngine.log(`MIDI In ON: note=${midiNoteNumber} vel=${data2} ch=${channel}`);
         midiNoteListeners.forEach(listener => {
             try {
-                // The listener function contains the generated code from the hat block.
                 listener(midiNoteNumber, data2, channel);
             } catch (e) {
                 console.error('Error in MIDI listener callback:', e);
             }
         });
-
-        // If hat blocks did not cancel the default action, perform midiAttack
-        if (!window.audioEngine.isDefaultMidiActionCancelled) {
-            window.audioEngine.midiAttack(midiNoteNumber, velocityNormalized, channel);
-        }
-
-    } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) { // Note OFF
-        // Default handling for live playing
-        window.audioEngine.midiRelease(midiNoteNumber);
+    } else if (cmd === 0x80 || (cmd === 0x90 && data1 === 0)) { // Note OFF
+        window.audioEngine.log(`MIDI In OFF: note=${midiNoteNumber}`);
+        window.audioEngine.midiRelease(midiNoteNumber); // Call midiRelease for sustained notes
     }
 }
 
@@ -974,22 +1006,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btnTestNote').addEventListener('click', async () => {
         const ok = await ensureAudioStarted();
-        if (ok) synth.triggerAttackRelease('C4', '8n');
+        if (ok) synth.triggerAttackRelease('A4', '8n');
     });
-
-    const startBtn = document.getElementById('btnStartAudio');
-    if (startBtn) {
-        startBtn.addEventListener('click', async () => {
-            try {
-                await Tone.start();
-                if (Tone.context && Tone.context.state === 'suspended') await Tone.context.resume();
-                audioStarted = true;
-                log('Audio 已由使用者手動啟動');
-            } catch (e) {
-                log('啟動 Audio 失敗: ' + e);
-            }
-        });
-    }
 
     // Run Blocks
     const runBtn = document.getElementById('btnRunBlocks');

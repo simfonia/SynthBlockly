@@ -226,18 +226,6 @@ export function registerBlocks(Blockly) {
         }
     };
 
-    // --- NEW: Stop Default MIDI Action Block ---
-    Blockly.Blocks['sb_stop_default_midi_action'] = {
-        init: function () {
-            this.jsonInit({
-                "message0": "%{BKY_SB_STOP_DEFAULT_MIDI_ACTION_MESSAGE}",
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": "%{BKY_MIDI_HUE}",
-                "tooltip": "%{BKY_SB_STOP_DEFAULT_MIDI_ACTION_TOOLTIP}"
-            });
-        }
-    };
     // 當收到 Serial 資料
     Blockly.Blocks['sb_serial_data_received'] = {
         init: function () {

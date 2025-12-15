@@ -91,16 +91,9 @@ async function connectMIDI() {
 
 function onMIDIMessage(msg) {
     const [status, data1, data2] = msg.data;
-    const cmd = status & 0xf0;
-    const channel = status & 0x0f;
-    if (cmd === 0x90 && data2 > 0) { // note on
-        const midi = data1;
-        const vel = data2 / 127;
-        const freq = Tone.Frequency(midi, 'midi').toFrequency();
-        synth.triggerAttackRelease(freq, '8n', undefined, vel);
-        log(`Note ON ${midi} vel=${data2}`);
-    } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) { // note off
-        // PolySynth triggerAttackRelease already handles note off for short notes
+    // This function will be defined by the 'midi_received' block
+    if (typeof window.onMidiMessage === 'function') {
+        window.onMidiMessage(status, data1, data2);
     }
 }
 

@@ -1,15 +1,15 @@
 // blocks/zh-hant.js — 正體中文訊息
 export const MSG_ZH_HANT = {
     // --- UI Button Tooltips ---
-    'UI_BTN_START_AUDIO': '啟動音訊',
     'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
     'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
-    'UI_BTN_PLAY_TEST_NOTE': '播放測試音 (C4)',
+    'UI_BTN_PLAY_TEST_NOTE': '播放測試音 (A4)',
     'UI_BTN_SAVE_PROJECT': '儲存專案 (XML)',
     'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
     'UI_BTN_RUN_BLOCKS': '執行積木',
     'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
     'UI_BTN_CLEAR_LOG': '清除日誌',
+    'UI_BTN_PANIC_STOP': '停止所有聲音 (緊急)',
 
     // --- Category Names and Colors ---
     // Standard Blockly Categories
@@ -87,10 +87,6 @@ FEEDBACK DELAY (回饋延遲):
     // 新的 MIDI 播放積木
     'SB_MIDI_PLAY_MESSAGE': '觸發 MIDI 聲音 %1 力度 %2 頻道 %3',
     'SB_MIDI_PLAY_TOOLTIP': '根據傳入的 MIDI 音符編號觸發對應的聲音。如果該音符已被映射到一個和弦，則會播放整個和弦；否則，播放單音。',
-
-    // --- NEW: Stop Default MIDI Action Block ---
-    'SB_STOP_DEFAULT_MIDI_ACTION_MESSAGE': '停止預設 MIDI 行為',
-    'SB_STOP_DEFAULT_MIDI_ACTION_TOOLTIP': '阻止傳入的 MIDI 音符觸發預設的單音或和弦映射播放。當您希望完全在「當 MIDI 音符接收時」積木中處理 MIDI 音符時很有用。',
 
     // 新的 MIDI 類別名稱
     'MSG_MIDI_CATEGORY': 'MIDI',

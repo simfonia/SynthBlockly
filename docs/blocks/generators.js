@@ -157,11 +157,6 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     try { G.forBlock['sb_midi_play'] = G['sb_midi_play']; } catch (e) { }
     try { G.forBlock['sb_midi_note_received'] = G['sb_midi_note_received']; } catch (e) { } // Ensure sb_midi_note_received is also in forBlock if it wasn't already
 
-    // --- NEW: Stop Default MIDI Action Generator ---
-    G['sb_stop_default_midi_action'] = function (block) {
-        return 'window.audioEngine.isDefaultMidiActionCancelled = true;\n';
-    }.bind(G);
-
     G['sb_serial_data_received'] = function (block) {
         // This hat block is handled by a live event listener in main.js.
         // It should not generate any code for the 'Run Blocks' button.
