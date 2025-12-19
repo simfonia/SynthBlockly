@@ -1,0 +1,179 @@
+// blocks/zh-hant.js — 正體中文訊息
+// 檔案中的鍵值順序已根據 toolbox.xml 進行重新排列
+export const MSG_ZH_HANT = {
+    // --- UI Button Tooltips ---
+    'UI_BTN_PANIC_STOP': '停止所有聲音 (緊急)',
+    'UI_BTN_PLAY_TEST_NOTE': '播放測試音 (A4)',
+    'UI_BTN_SAVE_PROJECT': '儲存專案 (XML)',
+    'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
+    'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
+    'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
+    'UI_BTN_RUN_BLOCKS': '執行積木',
+    'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
+    'UI_BTN_CLEAR_LOG': '清除日誌',
+
+    // --- Standard Blockly Category Names and Colors ---
+    'MSG_LOGIC_CATEGORY': '邏輯',
+    'LOGIC_HUE': '#5C81A6',
+    'MSG_LOOPS_CATEGORY': '迴圈',
+    'LOOPS_HUE': '#5CA65C',
+    'MSG_MATH_CATEGORY': '數學',
+    'MATH_HUE': '#5C68A6',
+    'MSG_TEXT_CATEGORY': '文字',
+    'TEXT_HUE': '#A65C81',
+    'MSG_LISTS_CATEGORY': '列表',
+    'LISTS_HUE': '#745CA6',
+    'MSG_VARIABLES_CATEGORY': '變數',
+    'VARIABLES_HUE': '#A6745C',
+    'MSG_FUNCTIONS_CATEGORY': '函式',
+    'FUNCTIONS_HUE': '#995CA6',
+
+    // --- SynthBlockly General Use ---
+    'SB_CONTROLS_DO': '執行 %1',
+    'SB_ACTION_ON': '開啟',
+    'SB_ACTION_OFF': '關閉',
+
+    // --- SynthBlockly Custom Category Names and Colors ---
+    'MSG_SYNTHBLOCKLY_CATEGORY': 'SynthBlockly',
+    'SYNTHBLOCKLY_HUE': '#5CA6A6',
+    'MSG_INSTRUMENTS_CATEGORY': '樂器',
+    'INSTRUMENTS_HUE': '#685CA6',
+    'MSG_INSTRUMENT_CONTROL_CATEGORY': '樂器控制',
+    'INSTRUMENT_CONTROL_HUE': '#5BC0DE',
+    'MSG_SYNTHESIZERS_CATEGORY': '合成器',
+    'SYNTHESIZERS_HUE': '#5CB85C',
+    'MSG_SAMPLERS_CATEGORY': '取樣器',
+    'SAMPLERS_HUE': '#E74C3C',
+    'MSG_TRANSPORT_CATEGORY': '傳輸',
+    'TRANSPORT_HUE': '#16A085',
+    'MSG_EFFECTS_CATEGORY': '效果',
+    'EFFECTS_HUE': '#9B59B6',
+    'MSG_MIDI_CATEGORY': 'MIDI',
+    'MIDI_HUE': '#5B67E7',
+    'MSG_PC_KEYBOARD_CATEGORY': 'PC 鍵盤',
+    'PC_KEYBOARD_HUE': '#F0B429',
+    'MSG_SERIAL_CATEGORY': '序列埠',
+    'SERIAL_HUE': '#D9534F',
+
+    // --- Custom Block Messages (sorted by toolbox.xml) ---
+
+    // MATH
+    'MATH_MAP_MESSAGE': '將數值 %1 從範圍 [%2, %3] 映射到 [%4, %5]',
+    'MATH_MAP_TOOLTIP': '將一個數值從一個範圍線性映射到另一個範圍。',
+
+    // INSTRUMENT CONTROL
+    'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': '創建樂器 %1 型態 %2',
+    'SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP': '創建一個指定名稱和類型的合成器或取樣器樂器，可供後續播放音符使用。',
+    'SB_SELECT_CURRENT_INSTRUMENT_MESSAGE': '選擇目前樂器為 %1',
+    'SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP': '設定之後播放音符時預設使用的樂器。',
+    'SB_SET_ADSR_MESSAGE': '設定 ADSR A %1 D %2 S %3 R %4',
+    'SB_SET_ADSR_TOOLTIP': '設定合成器的 ADSR 包絡',
+    'SB_DEFINE_CHORD_MESSAGE': '定義和弦 %1 音符為 %2',
+    'SB_DEFINE_CHORD_TOOLTIP': '定義一個指定名稱的和弦，其中包含用逗號分隔的音符列表 (例如 C4,E4,G4)。',
+    'SB_SET_INSTRUMENT_VIBRATO_MESSAGE': '設定樂器顫音 %1',
+    'SB_SET_INSTRUMENT_VIBRATO_TOOLTIP': '設定當前樂器的音高偏移（顫音效果），單位為「音分 (cents)」。100 音分 = 1 個半音。例如，數值 50 表示音高會上下偏移共半個半音（四分之一音）。',
+    'SB_SET_INSTRUMENT_VOLUME_MESSAGE': '設定樂器音量 %1',
+    'SB_SET_INSTRUMENT_VOLUME_TOOLTIP': '設定當前樂器的音量，建議範圍 0 到 1 (0 為靜音，1 為最大音量)。',
+
+    // SYNTHESIZERS
+    'SB_PLAY_NOTE_MESSAGE': '播放 音符 %1 時值 %2 力度 %3 (非阻塞)',
+    'SB_PLAY_NOTE_TOOLTIP': '立即播放音符，不等待其結束。力度範圍 0-1 (MIDI 輸入為 0-127)。時值符號可使用 "4n" (四分音符), "8n." (附點八分音符), "8t" (八分三連音) 等。',
+    'SB_PLAY_NOTE_AND_WAIT_MESSAGE': '播放 音符 %1 時值 %2 力度 %3 並等待',
+    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': '播放一個音符，並等待其時值結束後才繼續執行。力度範圍 0-1 (MIDI 輸入為 0-127)。時值符號可使用 "4n" (四分音符), "8n." (附點八分音符), "8t" (八分三連音) 等。',
+    'SB_PLAY_DRUM_MESSAGE': '播放 鼓聲 %1',
+    'SB_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '播放 鼓聲 %1 力度 %2',
+    'SB_PLAY_DRUM_TOOLTIP': '觸發鼓聲 (Kick/Snare/HiHat)',
+
+    // SAMPLERS
+    'JAZZKIT_PLAY_DRUM_MESSAGE': '爵士鼓(Roland TR-909): %1',
+    'JAZZKIT_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '爵士鼓(Roland TR-909): %1 力度 %2',
+    'JAZZKIT_PLAY_DRUM_TOOLTIP': '播放選定的爵士鼓音效',
+    'JAZZKIT_DRUM_KICK': '大鼓',
+    'JAZZKIT_DRUM_RIMSHOT': '邊擊',
+    'JAZZKIT_DRUM_SNARE': '小鼓',
+    'JAZZKIT_DRUM_HANDCLAP': '拍手',
+    'JAZZKIT_DRUM_LOW_TOM': '低音桶鼓',
+    'JAZZKIT_DRUM_CLOSED_HIHAT': '閉合腳踏鈸',
+    'JAZZKIT_DRUM_MID_TOM': '中音桶鼓',
+    'JAZZKIT_DRUM_HIGH_TOM': '高音桶鼓',
+    'JAZZKIT_DRUM_CRASH_CYMBAL': '碎音鈸',
+    'JAZZKIT_DRUM_OPEN_HIHAT': '開式腳踏鈸',
+    'JAZZKIT_DRUM_RIDE_CYMBAL': '駕馭鈸',
+
+    // TRANSPORT
+    'SB_TRANSPORT_SET_BPM_MESSAGE': '設定速度為 %1 BPM',
+    'SB_TRANSPORT_SET_BPM_TOOLTIP': '設定主速度 (每分鐘幾拍)',
+    'SB_TRANSPORT_START_STOP_MESSAGE': '%1 指揮',
+    'SB_TRANSPORT_START_STOP_TOOLTIP': '開始或停止主時鐘 (時間軸)',
+    'SB_TRANSPORT_ACTION_START': '開始',
+    'SB_TRANSPORT_ACTION_STOP': '停止',
+    'SB_WAIT_MUSICAL_MESSAGE': '等待 %1',
+    'SB_WAIT_MUSICAL_TOOLTIP': '等待一段音樂時值（例如 4n = 四分音符），時間長度依據主速度而定。',
+    'SB_TONE_LOOP_MESSAGE': '每 %1 執行 %2',
+    'SB_TONE_LOOP_TOOLTIP': '當主時鐘運行時，重複執行內部的積木。',
+    'SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE': '停止所有循環 (Blockly)',
+    'SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP': '停止並清除所有由 Blockly 循環積木建立的音樂循環。',
+    'SB_SCHEDULE_AT_OFFSET_MESSAGE': '在循環時間偏移 %1 執行 %2',
+    'SB_SCHEDULE_AT_OFFSET_TOOLTIP': '排程內部積木在循環的指定時間偏移處執行。必須放在「每 [時值] 執行 [積木]」循環積木內部。',
+
+    // EFFECTS
+    'SB_SETUP_EFFECT_MESSAGE': '設定 %1 效果',
+    'SB_SETUP_EFFECT_TOOLTIP': `設定特定的音訊效果及其參數。
+---
+通用參數:
+- Wet (濕度): 控制效果的乾濕混合比例 (0-1)。0 為無效果，1 為完全效果聲。
+
+DISTORTION (失真):
+- Amount (量): 失真的程度 (0-1)。
+- Oversample (超取樣): 減少高頻混疊，讓聲音更平滑 ('none', '2x', '4x')。
+
+REVERB (混響):
+- Decay (衰減): 混響的持續時間（秒）。
+- Predelay (預延遲): 原始聲音與第一個反射音之間的時間差（秒），可增加聲音清晰度。
+
+FEEDBACK DELAY (回饋延遲):
+- Delay Time (延遲時間): 回音的間隔時間 (例如 '8n', '0.5')。
+- Feedback (回饋): 回音的強度 (0-1)。0.25 表示每次回音的音量是上一次的 25%。
+
+FILTER (濾波器):
+- Type (類型): 濾波器的類型 (例如 lowpass, highpass)。
+- Frequency (頻率): 濾波器的截止或中心頻率 (Hz)。
+- Q (共振): 濾波器頻寬。數值越高，波峰越尖銳。
+- Rolloff (滾降斜率): 濾波器截止的陡峭程度 (dB/八度, -12, -24, -48)。`,
+    'SB_EFFECT_DISTORTION_AMOUNT_FIELD': '量',
+    'SB_EFFECT_OVERSAMPLE_FIELD': '超取樣',
+    'SB_EFFECT_DECAY_FIELD': '衰減',
+    'SB_EFFECT_PREDELAY_FIELD': '預延遲',
+    'SB_EFFECT_DELAY_TIME_FIELD': '延遲時間',
+    'SB_EFFECT_FEEDBACK_FIELD': '回饋',
+    'SB_EFFECT_WET_FIELD': '濕度',
+    'SB_EFFECT_FILTER_TYPE_FIELD': '類型',
+    'SB_EFFECT_FILTER_FREQ_FIELD': '頻率',
+    'SB_EFFECT_FILTER_Q_FIELD': 'Q值 (共振)',
+    'SB_EFFECT_ROLLOFF_FIELD': '滾降斜率',
+
+    // MIDI
+    'SB_MIDI_NOTE_RECEIVED_MESSAGE': '當 MIDI 音符 %1 力度 %2 頻道 %3 接收時',
+    'SB_MIDI_NOTE_RECEIVED_TOOLTIP': '當收到 MIDI 音符時觸發。提供音符編號、力度和頻道。',
+    'SB_MIDI_PLAY_MESSAGE': '觸發 MIDI 聲音 %1 力度 %2 頻道 %3',
+    'SB_MIDI_PLAY_TOOLTIP': '根據傳入的 MIDI 音符編號觸發對應的聲音。如果該音符已被映射到一個和弦，則會播放整個和弦；否則，播放單音。',
+    'SB_MAP_MIDI_TO_CHORD_MESSAGE': '映射 MIDI 音符 %1 到和弦 %2',
+    'SB_MAP_MIDI_TO_CHORD_TOOLTIP': '將一個 MIDI 音符映射到一個已定義的和弦名稱，按下該 MIDI 音符將觸發和弦。',
+
+    // PC KEYBOARD
+    'SB_MAP_KEY_TO_CHORD_MESSAGE': '映射鍵盤按鍵 %1 到和弦 %2',
+    'SB_MAP_KEY_TO_CHORD_TOOLTIP': '將一個 PC 鍵盤按鍵映射到一個已定義的和弦名稱，按下該鍵將觸發和弦。',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC 鍵盤作為 MIDI %1',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': '啟用或禁用電腦鍵盤作為 MIDI 鍵盤的功能。',
+
+    // SERIAL
+    'SB_SERIAL_DATA_RECEIVED_MESSAGE': '當 Serial 資料 %1 接收時',
+    'SB_SERIAL_DATA_RECEIVED_TOOLTIP': '當收到一行序列埠資料時觸發。提供收到的文字。',
+
+    // --- Musical Duration Options ---
+    'SB_DUR_1M': '1 小節 (1m)',
+    'SB_DUR_2N': '二分音符 (2n)',
+    'SB_DUR_4N': '四分音符 (4n)',
+    'SB_DUR_8N': '八分音符 (8n)',
+    'SB_DUR_16N': '十六分音符 (16n)',
+};

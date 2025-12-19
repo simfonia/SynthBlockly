@@ -1,0 +1,19 @@
+{
+  "name": "synthblockly-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "blockly": "^12.3.1",
+    "p5": "^2.1.2",
+    "tone": "^15.1.22"
+  }
+}
