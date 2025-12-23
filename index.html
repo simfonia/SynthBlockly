@@ -36,9 +36,15 @@
                 <div class="button-panel">
                     <button id="btnClearLog" class="icon-button" data-lang-title="UI_BTN_CLEAR_LOG"><img src="./assets/icons/clear_log_24dp_1F1F1F.png" alt="Clear Log"></button>
                 </div>
-            </div>
-            <div id="waveformContainer"></div>
-            <div id="log"></div>
+                            </div>
+                                            <div class="control-panel"> <!-- Amplitude slider panel -->
+                                                <label for="amplitudeSlider">示波器振幅:</label>
+                                                <input type="range" id="amplitudeSlider" min="0.2" max="5" value="1" step="0.1">
+                                            </div>
+                                                                            <div class="control-panel"> <!-- New panel for zoom slider -->
+                                                                                <label for="zoomSlider">時間縮放:</label>
+                                                                                <input type="range" id="zoomSlider" min="0" max="4" value="2" step="1">
+                                                                            </div>                                            <div id="waveformContainer"></div>            <div id="log"></div>
             <pre id="codeOut"
                 style="display:none;white-space:pre-wrap;background:#f4f4f4;padding:8px;border:1px solid #ddd;margin-top:8px;max-height:20vh;overflow:auto"></pre>
         </div>

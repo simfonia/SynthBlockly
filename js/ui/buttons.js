@@ -4,6 +4,26 @@ import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js';
 import { getBlocksCode } from '../core/blocklyManager.js'; // To be moved later
 import * as Blockly from 'blockly'; // Import Blockly
 
+// New function to encapsulate run logic
+async function runBlocksAction() {
+    const ok = await ensureAudioStarted();
+    if (!ok) return;
+    const code = await getBlocksCode();
+    if (!code) { log('沒有程式碼可執行'); return; }
+    log('執行積木程式碼...');
+    log('--- 產生的程式碼 START ---');
+    log(code);
+    log('--- 產生的程式碼 END ---');
+    try {
+        const runner = new Function(`(async () => { ${code} })();`);
+        runner();
+        log('程式執行完畢');
+    } catch (e) {
+        console.error('RunBlocks execution error', e);
+        log('執行積木程式發生錯誤: ' + e);
+    }
+}
+
 /**
  * Initializes all button event listeners.
  */
@@ -22,29 +42,20 @@ export function initButtons() {
         if (ok) audioEngine.synth.triggerAttackRelease('A4', '8n'); // Using audioEngine.synth
     });
 
-    // Run Blocks Button
+    // Run Blocks Button - now calls runBlocksAction()
     const runBtn = document.getElementById('btnRunBlocks');
     if (runBtn) {
-        runBtn.addEventListener('click', async () => {
-            const ok = await ensureAudioStarted();
-            if (!ok) return;
-            const code = await getBlocksCode(); // Using getBlocksCode from blocklyManager
-            if (!code) { log('沒有程式碼可執行'); return; }
-            log('執行積木程式碼...');
-            log('--- 產生的程式碼 START ---'); // Debug log
-            log(code);                  // Debug log: print the code to application log
-            log('--- 產生的程式碼 END ---'); // Debug log
-            try {
-                // Wrap the user's code in an async IIFE to allow top-level await
-                const runner = new Function(`(async () => { ${code} })();`);
-                runner();
-                log('程式執行完畢');
-            } catch (e) {
-                console.error('RunBlocks execution error', e);
-                log('執行積木程式發生錯誤: ' + e);
-            }
-        });
+        runBtn.addEventListener('click', runBlocksAction); // Use the new function
     }
+
+    // Add hotkey listener for Ctrl+Enter (or Cmd+Enter)
+    document.addEventListener('keydown', (event) => {
+        // Check for Ctrl (Windows/Linux) or Meta (Mac Cmd) and Enter key
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault(); // Prevent default browser action (e.g., new line)
+            runBlocksAction();
+        }
+    });
 
     // Export Code Button
     const exportBtn = document.getElementById('btnExportCode');
@@ -140,5 +151,41 @@ export function initButtons() {
             input.click();
         });
     }
+    // New: Oscilloscope Amplitude Slider
+    const amplitudeSlider = document.getElementById('amplitudeSlider');
+    if (amplitudeSlider) {
+        amplitudeSlider.addEventListener('input', (event) => {
+            const newScale = parseFloat(event.target.value);
+            if (typeof newScale === 'number') {
+                window.visualizerScale = newScale;
+                log(`示波器振幅縮放設定為: ${newScale.toFixed(1)}x`);
+            }
+            // Release focus from the slider so keyboard events can be captured again
+            event.target.blur();
+        });
+    }
+
+    // New: Oscilloscope Horizontal Zoom Slider
+    const zoomSlider = document.getElementById('zoomSlider');
+    if (zoomSlider) {
+        const zoomLevels = [4096, 2048, 1024, 512, 256]; // Power-of-2 sizes, reversed for 'right is zoom in'
+        
+        // Update in real-time while sliding
+        zoomSlider.addEventListener('input', (event) => {
+            const levelIndex = parseInt(event.target.value, 10);
+            const newSize = zoomLevels[levelIndex];
+
+            if (window.audioEngine && window.audioEngine.analyser && window.audioEngine.analyser.size !== newSize) {
+                window.audioEngine.analyser.size = newSize;
+                log(`示波器時間縮放設定為: ${newSize} 點`);
+            }
+        });
+
+        // Release focus when done sliding
+        zoomSlider.addEventListener('change', (event) => {
+            event.target.blur();
+        });
+    }
+
     log("Button event listeners initialized.");
 }

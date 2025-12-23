@@ -7,7 +7,7 @@
   - `main.js`: 應用程式的 **Vite 主入口點**。它的主要職責是匯入並啟動核心應用程式邏輯 `js/app.js`。
   - `styles.css`: 全域的 CSS 樣式表。
   - `package.json`: 定義專案依賴（如 Vite, Blockly, Tone.js）和執行腳本（如 `dev`, `build`）。
-  - `public/`: 存放不會被 Vite 建置流程處理的靜態檔案，例如音訊樣本 (`samples/`) 和 Blockly 工具箱定義檔案 (`toolbox.xml`)。
+  - `public/`: 存放不會被 Vite 建置流程處理的靜態檔案，例如音訊樣本 (`samples/`)。`toolbox.xml` 已內嵌至 JS，`locales` 資料夾已無作用。
   - `examples/`: 存放 Blockly 工作區的 XML 範例檔案。
   - `js/`: **模組化的 JavaScript 原始碼**
     - `app.js`: **核心應用程式主入口**。負責初始化各個模組，是整個應用的指揮中心。
@@ -17,6 +17,7 @@
       - `serialEngine.js`: 處理 Web Serial API 的邏輯，用於與 Arduino 等硬體通訊。
       - `blocklyManager.js`: 負責 Blockly 工作區的初始化、事件監聽和動態積木邏輯。
       - `eventManager.js`: 集中管理由帽子積木註冊的各類事件監聽器。
+      - `toolbox.js`: 新增檔案，內含 Blockly 工具箱的 XML 定義字串。
     - `ui/`: **使用者介面相關邏輯**
       - `dom.js`: 集中管理所有 DOM 元素的參考。
       - `buttons.js`: 處理所有 UI 按鈕的事件綁定。
@@ -25,7 +26,7 @@
       - `visualizer.js`: 使用 p5.js 實現音訊的波形視覺化。
       - `logger.js`: 提供在前端介面顯示日誌的功能。
     - `blocks/`: **積木定義與生成器**
-      - `index.js`: 統一註冊所有積木、生成器和語言檔的入口。
+      - `index.js`: 統一註冊所有積木、生成器和語言檔的入口，並使用 `js/core/toolbox.js` 中的 XML 字串。
       - `instruments_blocks.js` / `instruments_generators.js`: 樂器相關積木。
       - `transport_blocks.js` / `transport_generators.js`: 節拍相關積木。
       - `effects_blocks.js` / `effects_generators.js`: 效果器相關積木。
@@ -34,8 +35,8 @@
       - `serial_blocks.js` / `serial_generators.js`: 序列埠相關積木。
       - `math_blocks.js` / `math_generators.js`: 數學相關積木。
       - `lang/`: **Blockly 自訂語言檔案** (en.js, zh-hant.js)
-        - `en.js`
-        - `zh-hant.js`
+        - `en.js`: 英文自訂語言設定，會與主要語言包合併。
+        - `zh-hant.js`: 正體中文自訂語言設定，會與主要語言包合併。
   - `log/`: 存放開發日誌和任務清單。
     - `todo.md`: 專案的待辦事項清單。
     - `work.md`: 開發工作日誌。

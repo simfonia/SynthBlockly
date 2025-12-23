@@ -56,21 +56,15 @@
 
 ### 待辦事項 (Next Steps / ToDo)
 
-此處為專案接下來的開發任務，繼承自舊版的規劃。
-
-- [ ] **音源 (Synth) 積木擴充**
-    - [ ] `設定合成器波形`：提供下拉選單選擇 `sine`, `square`, `triangle`, `sawtooth`，並能動態加入自訂波形。
-    - [ ] `設定濾波器 (Filter)`：可調整類型 (lowpass/highpass)、截止頻率、共振(Q)。
-- [ ] **效果器 (Effects) 積木擴充**
-    - [ ] `設定 殘響 (Reverb)`：可調整乾濕比、衰退時間。
-    - [ ] `設定 延遲 (Delay)`：可調整延遲時間、回饋、乾濕比。
-- [ ] **演奏 (Actions) 積木擴充**
-    - [ ] `休息 [時值]`：提供音符時值的靜音等待。
-    - [ ] **(優化)** 將 `播放 音符` 積木的音高和時值輸入改為更友善的介面（如鋼琴鍵、下拉選單）。
-- [ ] **進階自訂波形功能開發**
-    - [ ] **方法一：諧波疊加器 (Harmonic Adder)**
-        - [ ] 建立 `定義自訂波形 [名稱]` 帽子積木。
-        - [ ] 建立 `加入諧波 [序號] 振幅 [大小]` 堆疊積木。
-    - [ ] **方法二：數學表示式 (Math Expression)**
-        - [ ] 建立 `從表示式定義波形 f(x) = [___]` 積木。
-        - [ ] 在積木的 Tooltip 中清楚說明變數 `x` 的意義。
+- [x] **實作自訂波形樂器積木 (Custom Waveform Instrument Blocks)**
+    - [x] **積木一：「加法合成器 (諧波)」(Harmonic Additive Synthesizer)**
+        - [x] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「泛音 N 振幅」。
+        - [x] 實作 Tone.js 邏輯，使用 `oscillator.partials`。
+        - [x] 整合 ADSR 參數調整。(通過 `sb_set_adsr` 積木作用於當前樂器實現)
+    - [ ] **積木二：「加法合成器 (自由頻率)」(Free Frequency Additive Synthesizer)**
+        - [ ] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「振幅 (Amplitude)」和「頻率 (Frequency)」。
+        - [ ] 實作 Tone.js 邏輯，使用多個 `Tone.Oscillator` 和 `Tone.Gain` 混合。
+        - [ ] 整合 ADSR 參數調整。
+    - [x] 實作這兩種積木的 Blockly 產生器。(積木一已完成)
+    - [x] **(已完成並優化)** 修復 `visualizer.js` 的 `SyntaxError` 以啟用即時波形視覺化。
+    - [ ] **(未來優化)** 實現 ADSR 包絡的視覺化。

@@ -161,6 +161,8 @@ export const TOOLBOX_XML_STRING = `
       <category name="%{BKY_MSG_INSTRUMENTS_CATEGORY}" colour="%{BKY_INSTRUMENTS_HUE}">
         <category name="%{BKY_MSG_INSTRUMENT_CONTROL_CATEGORY}" colour="%{BKY_INSTRUMENT_CONTROL_HUE}">
           <block type="sb_create_synth_instrument"></block>
+          <block type="sb_create_harmonic_synth"></block>
+          <block type="sb_create_additive_synth"></block>
           <block type="sb_select_current_instrument"></block>
           <block type="sb_set_adsr"></block>
           <block type="sb_define_chord"></block>

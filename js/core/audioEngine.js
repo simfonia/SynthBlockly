@@ -79,6 +79,7 @@ jazzKit.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect,
 
 export const audioEngine = {
     Tone: Tone,
+    analyser: analyser, // Make analyser accessible on the global engine object
     synth: synth,
     drum: drum,
     hh: hh,
@@ -108,7 +109,9 @@ export const audioEngine = {
         }
         if (this.instruments[name]) {
             this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
-            this.instruments[name].dispose();
+            if (typeof this.instruments[name].dispose === 'function') {
+                this.instruments[name].dispose();
+            }
         }
         let newInstrument;
         try {
@@ -143,6 +146,120 @@ export const audioEngine = {
             this.log(`成功創建樂器 "${name}" (${type})。`);
         } catch (e) {
             this.log(`創建樂器 "${name}" (${type}) 失敗: ${e.message}`);
+            console.error(e);
+        }
+    },
+
+    /**
+     * Creates a custom wave instrument using partials for additive synthesis.
+     * @param {string} name The name of the instrument.
+     * @param {number[]} partialsArray An array of numbers representing harmonic amplitudes.
+     */
+    createCustomWaveInstrument: function(name, partialsArray) {
+        if (!name) {
+            this.log('錯誤: 自訂波形樂器名稱不能為空。');
+            return;
+        }
+        if (!Array.isArray(partialsArray) || partialsArray.length === 0) {
+            this.log('錯誤: 泛音陣列無效，必須是非空的數字陣列。');
+            return;
+        }
+        // Validate partialsArray elements are numbers
+        if (partialsArray.some(isNaN)) {
+            this.log('錯誤: 泛音陣列中包含非數字值。');
+            return;
+        }
+
+        if (this.instruments[name]) {
+            this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
+            if (typeof this.instruments[name].dispose === 'function') {
+                this.instruments[name].dispose();
+            }
+        }
+
+        try {
+            const newInstrument = new Tone.PolySynth(Tone.Synth, {
+                oscillator: {
+                    type: "custom", // Set oscillator type to custom
+                    partials: partialsArray // Use the provided partials array
+                }
+            });
+
+            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+            this.instruments[name] = newInstrument;
+            this.log(`成功創建自訂波形樂器 "${name}"，泛音: [${partialsArray.join(', ')}]。`);
+        } catch (e) {
+            this.log(`創建自訂波形樂器 "${name}" 失敗: ${e.message}`);
+            console.error(e);
+        }
+    },
+
+    createAdditiveInstrument: function(name, components) {
+        if (!name) {
+            this.log('錯誤: 加法合成器名稱不能為空。');
+            return;
+        }
+        if (this.instruments[name]) {
+            this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
+            if (typeof this.instruments[name].dispose === 'function') {
+                this.instruments[name].dispose();
+            }
+        }
+
+        try {
+            // --- Manual Polyphonic Instrument using an array of oscillators and a shared envelope ---
+            const envelope = new Tone.AmplitudeEnvelope({ attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.5 });
+            const oscillators = [];
+
+            components.forEach(comp => {
+                const osc = new Tone.Oscillator(0, "sine");
+                const gain = new Tone.Gain(comp.amp).connect(envelope);
+                osc.connect(gain);
+                oscillators.push({ osc: osc, freqRatio: comp.freqRatio });
+            });
+
+            const newInstrument = {
+                oscillators: oscillators,
+                envelope: envelope,
+                activeNotes: new Map(), // To track which note is playing on which oscillator set
+
+                triggerAttack: function(note, time, velocity) {
+                    const freq = new Tone.Frequency(note).toFrequency();
+                    // In this simple model, we just overwrite. A true poly version would manage voices.
+                    // For now, this acts like a mono synth that can be re-triggered.
+                    this.oscillators.forEach(item => {
+                        item.osc.frequency.setValueAtTime(freq * item.freqRatio, time);
+                        if(item.osc.state === 'stopped') {
+                            item.osc.start(time);
+                        }
+                    });
+                    this.envelope.triggerAttack(time, velocity);
+                },
+                triggerRelease: function(note, time) {
+                    // In this model, any release call releases the envelope.
+                    this.envelope.triggerRelease(time);
+                },
+                triggerAttackRelease: function(notes, duration, time, velocity) {
+                    time = time || Tone.now();
+                    this.triggerAttack(notes, time, velocity);
+                    this.triggerRelease(time + Tone.Time(duration).toSeconds());
+                },
+                chain: function(...args) {
+                    // The output of this instrument is the envelope
+                    this.envelope.chain(...args);
+                },
+                dispose: function() {
+                    this.envelope.dispose();
+                    this.oscillators.forEach(item => item.osc.dispose());
+                }
+            };
+            
+            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+            this.instruments[name] = newInstrument;
+            this.log(`成功創建加法合成器 "${name}"。`);
+
+        } catch(e) {
+            this.log(`創建加法合成器 "${name}" 失敗: ${e.message}`);
             console.error(e);
         }
     },
@@ -295,8 +412,8 @@ export const audioEngine = {
         for (const instrName in this.instruments) {
             if (this.instruments.hasOwnProperty(instrName)) {
                 const instrument = this.instruments[instrName];
-                if (instrument && typeof instrument.releaseAll === 'function') {
-                    instrument.releaseAll();
+                if (instrument && typeof instrument.dispose === 'function') {
+                    instrument.dispose();
                 }
             }
         }

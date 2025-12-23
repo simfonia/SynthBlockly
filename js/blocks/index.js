@@ -8,6 +8,9 @@ import { javascriptGenerator } from 'blockly/javascript';
 // Import custom project-specific locales, as these are part of our source code.
 import * as CustomLangZH from './lang/zh-hant.js';
 
+// import 'blockly/blocks/field_textinput'; // Ensure FieldTextInput is loaded
+// import 'blockly/blocks/mutator'; // Ensure Mutator is loaded
+
 import { registerBlocks as registerInstrumentBlocks } from './instruments_blocks.js';
 import { registerBlocks as registerMidiBlocks } from './midi_blocks.js';
 import { registerBlocks as registerSerialBlocks } from './serial_blocks.js';
@@ -15,6 +18,7 @@ import { registerBlocks as registerKeyboardBlocks } from './keyboard_blocks.js';
 import { registerBlocks as registerTransportBlocks } from './transport_blocks.js';
 import { registerBlocks as registerEffectsBlocks } from './effects_blocks.js';
 import { registerBlocks as registerMathBlocks } from './math_blocks.js';
+import { registerBlocks as registerCustomWaveBlocks } from './instruments_custom_wave_blocks.js'; // NEW
 
 import { registerGenerators as registerInstrumentGenerators } from './instruments_generators.js';
 import { registerGenerators as registerMidiGenerators } from './midi_generators.js';
@@ -23,6 +27,7 @@ import { registerGenerators as registerKeyboardGenerators } from './keyboard_gen
 import { registerGenerators as registerTransportGenerators } from './transport_generators.js';
 import { registerGenerators as registerEffectsGenerators } from './effects_generators.js';
 import { registerGenerators as registerMathGenerators } from './math_generators.js';
+import { registerGenerators as registerCustomWaveGenerators } from './instruments_custom_wave_generators.js'; // NEW
 
 // --- End of Imports ---
 
@@ -92,6 +97,7 @@ export async function registerAll() {
     registerTransportBlocks(Blockly);
     registerEffectsBlocks(Blockly);
     registerMathBlocks(Blockly);
+    registerCustomWaveBlocks(Blockly); // NEW: Register custom wave blocks
     console.log('Blocks registered.');
 
     // 4. Register Custom Generators
@@ -102,6 +108,7 @@ export async function registerAll() {
     registerTransportGenerators(Blockly, javascriptGenerator);
     registerEffectsGenerators(Blockly, javascriptGenerator);
     registerMathGenerators(Blockly, javascriptGenerator);
+    registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW: Register custom wave generators
     console.log('Generators registered.');
 
   } catch (e) {

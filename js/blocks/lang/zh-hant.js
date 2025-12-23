@@ -8,7 +8,7 @@ export const MSG_ZH_HANT = {
     'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
     'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
     'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
-    'UI_BTN_RUN_BLOCKS': '執行積木',
+    'UI_BTN_RUN_BLOCKS': '執行積木 (Ctrl+Enter)',
     'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
     'UI_BTN_CLEAR_LOG': '清除日誌',
 
@@ -54,6 +54,16 @@ export const MSG_ZH_HANT = {
     'PC_KEYBOARD_HUE': '#F0B429',
     'MSG_SERIAL_CATEGORY': '序列埠',
     'SERIAL_HUE': '#D9534F',
+    'MSG_HARMONIC_ADDER_CATEGORY': '諧波合成器',
+    'MSG_HARMONIC_SYNTH_TOOLTIP': '創建一個基於諧波加法合成的樂器。\n泛音列表從0開始，泛音0為基頻(1倍頻)，泛音1為二倍頻，以此類推。\n振幅範圍為0到1。\n可點擊齒輪增減泛音。',
+    'MSG_FUNDAMENTAL_FIELD': '基頻 (1x) 振幅 (0-1)',
+    'MSG_HARMONIC_FIELD': '{0}倍頻 振幅 (0-1)',
+
+    'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': '創建加法合成器 名稱 %1',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': '創建一個由多個獨立振盪器疊加而成的加法合成器。\n每個振盪器都有獨立的振幅和相對於基頻的頻率倍率。\n公式: Amplitude * sin(2π * FrequencyRatio * note_frequency * t)',
+    'MSG_OSCILLATOR_FIELD': '振盪器 {0}',
+    'MSG_AMPLITUDE_INPUT_FIELD': '振幅',
+    'MSG_FREQ_RATIO_INPUT_FIELD': '頻率倍率',
 
     // --- Custom Block Messages (sorted by toolbox.xml) ---
 

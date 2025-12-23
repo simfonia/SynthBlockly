@@ -42,7 +42,8 @@ const getNoteForKeyCode = (keyCode) => {
 };
 
 const handleKeyDown = async (e) => {
-    if (!isPcKeyboardMidiEnabled || e.repeat) return;
+    // Ignore events when IME is active, or if the key is a repeat.
+    if (e.isComposing || !isPcKeyboardMidiEnabled || e.repeat) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
     if ((e.code === 'KeyZ' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) {
@@ -100,8 +101,8 @@ const handleKeyDown = async (e) => {
 };
 
 const handleKeyUp = async (e) => {
-    if (!isPcKeyboardMidiEnabled) return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    // Ignore events when IME is active.
+    if (e.isComposing || !isPcKeyboardMidiEnabled) return;
 
     if (e.code === 'KeyZ' || e.code === 'KeyX' || e.code === 'Minus' || e.code === 'Equal' || e.code === 'NumpadSubtract' || e.code === 'NumpadAdd') return;
 
@@ -140,8 +141,8 @@ export function initKeyboardController() {
     // Expose functions to enable/disable PC Keyboard MIDI
     audioEngine.enablePcKeyboardMidi = () => {
         if (!isPcKeyboardMidiEnabled) {
-            document.addEventListener('keydown', handleKeyDown);
-            document.addEventListener('keyup', handleKeyUp);
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('keyup', handleKeyUp);
             isPcKeyboardMidiEnabled = true;
             log('PC 鍵盤 MIDI 功能已開啟');
             updateLogOctave();
@@ -150,8 +151,8 @@ export function initKeyboardController() {
 
     audioEngine.disablePcKeyboardMidi = () => {
         if (isPcKeyboardMidiEnabled) {
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('keyup', handleKeyUp);
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
             isPcKeyboardMidiEnabled = false;
             log('PC 鍵盤 MIDI 功能已關閉');
             audioEngine.pressedKeys.clear(); // Clear any lingering pressed keys

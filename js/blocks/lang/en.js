@@ -8,7 +8,7 @@ export const MSG_EN = {
     'UI_BTN_LOAD_PROJECT': 'Load Project (XML)',
     'UI_BTN_CONNECT_SERIAL': 'Connect Serial Device',
     'UI_BTN_CONNECT_MIDI': 'Connect MIDI Device',
-    'UI_BTN_RUN_BLOCKS': 'Run Blocks',
+    'UI_BTN_RUN_BLOCKS': 'Run Blocks (Ctrl+Enter)',
     'UI_BTN_EXPORT_CODE': 'Export Code to File & Clipboard',
     'UI_BTN_CLEAR_LOG': 'Clear Log',
 
@@ -54,6 +54,17 @@ export const MSG_EN = {
     'PC_KEYBOARD_HUE': '#F0B429',
     'MSG_SERIAL_CATEGORY': 'Serial',
     'SERIAL_HUE': '#D9534F',
+
+    'MSG_HARMONIC_ADDER_CATEGORY': 'Harmonic Synthesizer',
+    'MSG_HARMONIC_SYNTH_TOOLTIP': 'Creates a harmonic additive synthesizer.\nPartials list starts from 0, Partial 0 is the fundamental frequency (1x), Partial 1 is the second harmonic (2x), and so on.\nAmplitude range is 0 to 1.\nClick the gear icon to add/remove partials.',
+    'MSG_FUNDAMENTAL_FIELD': 'Fundamental (1x) Amplitude (0-1)',
+    'MSG_HARMONIC_FIELD': 'Harmonic ({0}x) Amplitude (0-1)',
+
+    'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': 'Create Additive Synth Name %1',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer by summing multiple independent oscillators.\nEach oscillator has its own amplitude and frequency ratio relative to the fundamental.\nFormula: Amplitude * sin(2π * FrequencyRatio * note_frequency * t)',
+    'MSG_OSCILLATOR_FIELD': 'Oscillator {0}',
+    'MSG_AMPLITUDE_INPUT_FIELD': 'Amplitude',
+    'MSG_FREQ_RATIO_INPUT_FIELD': 'Frequency Ratio',
 
     // --- Custom Block Messages (sorted by toolbox.xml) ---
 
