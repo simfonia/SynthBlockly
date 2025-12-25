@@ -9,6 +9,21 @@
     <!-- 小圖示：使用 data URI 避免 404 -->
     <link rel="icon"
         href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=" />
+        <script>
+          const urlParams = new URLSearchParams(window.location.search);
+          let lang = urlParams.get('lang'); 
+          
+          if (!lang) {
+              const browserLang = navigator.language || navigator.userLanguage;
+              if (browserLang.toLowerCase().includes('zh')) {
+                  lang = 'zh-hant';
+              } else {
+                  lang = 'en';
+              }
+          }
+
+          window.currentLanguage = lang;
+        </script>
         <script type="module" src="/main.js"></script>
     <div id="container">
         <div id="left">
@@ -47,6 +62,15 @@
                                                                             </div>                                            <div id="waveformContainer"></div>            <div id="log"></div>
             <pre id="codeOut"
                 style="display:none;white-space:pre-wrap;background:#f4f4f4;padding:8px;border:1px solid #ddd;margin-top:8px;max-height:20vh;overflow:auto"></pre>
+        </div>
+    </div>
+
+    <!-- Help Modal Structure -->
+    <div id="helpModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h2 id="helpModalTitle"></h2>
+            <div id="helpModalContent"></div>
         </div>
     </div>
     </body>

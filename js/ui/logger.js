@@ -12,7 +12,7 @@ let logCount = 0; // Module-scoped counter
  * Logs a message to the UI log panel.
  * @param {string} msg The message to log.
  */
-export function log(msg) {
+export function log(msg, type = 'info') { // ADD type parameter
   const logDiv = document.getElementById('log');
   if (logDiv) {
     logCount++;
@@ -20,6 +20,9 @@ export function log(msg) {
     messageElement.textContent = msg;
     messageElement.classList.add('log-message');
     messageElement.classList.add(logCount % 2 === 0 ? 'log-even' : 'log-odd');
+    if (type !== 'info') { // Add type-specific class
+        messageElement.classList.add(`log-${type}`);
+    }
     
     logDiv.appendChild(messageElement);
 

@@ -39,7 +39,7 @@ async function loadBlocklyLocale(localeCode) {
     // This function now fetches locale data as JSON and pre-merges it before setting.
     const fetchLocale = async (code) => {
         const path = `${import.meta.env.BASE_URL}locales/${code}.json`;
-        console.log(`[Diag] Fetching locale from: ${path}`);
+        // console.log(`[Diag] Fetching locale from: ${path}`);
         const response = await fetch(path);
         if (!response.ok) {
             throw new Error(`Failed to fetch locale data: ${response.status} ${response.statusText}`);
@@ -50,17 +50,17 @@ async function loadBlocklyLocale(localeCode) {
     try {
         // Fetch the base locale data
         const baseLocaleData = await fetchLocale(localeCode);
-        console.log(`[Diag] Fetched base locale data. Sample (ADD_COMMENT):`, baseLocaleData.ADD_COMMENT);
+        // console.log(`[Diag] Fetched base locale data. Sample (ADD_COMMENT):`, baseLocaleData.ADD_COMMENT);
 
         // Pre-merge base and custom locales into a single object
         const finalLocale = { ...baseLocaleData, ...CustomLangZH.MSG_ZH_HANT };
-        console.log(`[Diag] Merged custom locale data. Sample (MSG_SYNTHBLOCKLY_CATEGORY):`, finalLocale.MSG_SYNTHBLOCKLY_CATEGORY);
+        // console.log(`[Diag] Merged custom locale data. Sample (MSG_SYNTHBLOCKLY_CATEGORY):`, finalLocale.MSG_SYNTHBLOCKLY_CATEGORY);
 
-        console.log('[Diag] Before Blockly.setLocale() with final merged object.');
+        // console.log('[Diag] Before Blockly.setLocale() with final merged object.');
         Blockly.setLocale(finalLocale);
-        console.log('[Diag] After Blockly.setLocale()');
+        // console.log('[Diag] After Blockly.setLocale()');
         
-        console.log(`[Diag] Successfully fetched, merged, and set locale: ${localeCode}`);
+        // console.log(`[Diag] Successfully fetched, merged, and set locale: ${localeCode}`);
 
     } catch (error) {
         console.error(`[Diag] CRITICAL: Failed to load locale ${localeCode}:`, error);
@@ -70,7 +70,7 @@ async function loadBlocklyLocale(localeCode) {
             // Also merge custom messages for the fallback
             const finalFallbackLocale = { ...fallbackData, ...CustomLangZH.MSG_ZH_HANT };
             Blockly.setLocale(finalFallbackLocale);
-            console.log('[Diag] Fell back to English locale with custom messages.');
+            // console.log('[Diag] Fell back to English locale with custom messages.');
         } catch (fallbackError) {
             console.error('[Diag] CRITICAL: Failed to load even the fallback English locale:', fallbackError);
         }

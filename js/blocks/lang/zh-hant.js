@@ -60,7 +60,8 @@ export const MSG_ZH_HANT = {
     'MSG_HARMONIC_FIELD': '{0}倍頻 振幅 (0-1)',
 
     'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': '創建加法合成器 名稱 %1',
-    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': '創建一個由多個獨立振盪器疊加而成的加法合成器。\n每個振盪器都有獨立的振幅和相對於基頻的頻率倍率。\n公式: Amplitude * sin(2π * FrequencyRatio * note_frequency * t)',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': '創建一個由多個獨立振盪器疊加而成的加法合成器。\n第一個「主振盪器」預設為基頻 (頻率倍率=1)。\n可點擊齒輪新增更多振盪器，並設定其相對於基頻的振幅與頻率倍率。\n公式: A * sin(2π * FreqRatio * note_frequency * t)',
+    'MSG_MAIN_OSCILLATOR_FIELD': '主振盪器 (基頻)',
     'MSG_OSCILLATOR_FIELD': '振盪器 {0}',
     'MSG_AMPLITUDE_INPUT_FIELD': '振幅',
     'MSG_FREQ_RATIO_INPUT_FIELD': '頻率倍率',
@@ -129,27 +130,17 @@ export const MSG_ZH_HANT = {
     // EFFECTS
     'SB_SETUP_EFFECT_MESSAGE': '設定 %1 效果',
     'SB_SETUP_EFFECT_TOOLTIP': `設定特定的音訊效果及其參數。
----
-通用參數:
-- Wet (濕度): 控制效果的乾濕混合比例 (0-1)。0 為無效果，1 為完全效果聲。
-
-DISTORTION (失真):
-- Amount (量): 失真的程度 (0-1)。
-- Oversample (超取樣): 減少高頻混疊，讓聲音更平滑 ('none', '2x', '4x')。
-
-REVERB (混響):
-- Decay (衰減): 混響的持續時間（秒）。
-- Predelay (預延遲): 原始聲音與第一個反射音之間的時間差（秒），可增加聲音清晰度。
-
-FEEDBACK DELAY (回饋延遲):
-- Delay Time (延遲時間): 回音的間隔時間 (例如 '8n', '0.5')。
-- Feedback (回饋): 回音的強度 (0-1)。0.25 表示每次回音的音量是上一次的 25%。
-
-FILTER (濾波器):
-- Type (類型): 濾波器的類型 (例如 lowpass, highpass)。
-- Frequency (頻率): 濾波器的截止或中心頻率 (Hz)。
-- Q (共振): 濾波器頻寬。數值越高，波峰越尖銳。
-- Rolloff (滾降斜率): 濾波器截止的陡峭程度 (dB/八度, -12, -24, -48)。`,
+詳細用法請按右鍵/說明。`,
+    'SB_EFFECT_DISTORTION_TYPE_FIELD': '失真 (Distortion)',
+    'SB_EFFECT_REVERB_TYPE_FIELD': '混響 (Reverb)',
+    'SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD': '回饋延遲 (FeedbackDelay)',
+    'SB_EFFECT_FILTER_TYPE_FIELD': '濾波器 (Filter)',
+    'SB_EFFECT_COMPRESSOR_TYPE_FIELD': '壓縮器 (Compressor)',
+    'SB_EFFECT_LIMITER_TYPE_FIELD': '限幅器 (Limiter)',
+    'SB_EFFECT_THRESHOLD_FIELD': '閾值 (dB)',
+    'SB_EFFECT_RATIO_FIELD': '比率',
+    'SB_EFFECT_ATTACK_FIELD': '起始時間 (s)',
+    'SB_EFFECT_RELEASE_FIELD': '釋放時間 (s)',
     'SB_EFFECT_DISTORTION_AMOUNT_FIELD': '量',
     'SB_EFFECT_OVERSAMPLE_FIELD': '超取樣',
     'SB_EFFECT_DECAY_FIELD': '衰減',
@@ -157,7 +148,7 @@ FILTER (濾波器):
     'SB_EFFECT_DELAY_TIME_FIELD': '延遲時間',
     'SB_EFFECT_FEEDBACK_FIELD': '回饋',
     'SB_EFFECT_WET_FIELD': '濕度',
-    'SB_EFFECT_FILTER_TYPE_FIELD': '類型',
+    'SB_EFFECT_FILTER_INTERNAL_TYPE_FIELD': '類型',
     'SB_EFFECT_FILTER_FREQ_FIELD': '頻率',
     'SB_EFFECT_FILTER_Q_FIELD': 'Q值 (共振)',
     'SB_EFFECT_ROLLOFF_FIELD': '滾降斜率',

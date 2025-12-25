@@ -9,6 +9,7 @@ import { initUIManager } from './ui/uiManager.js';
 import { initButtons } from './ui/buttons.js';
 import { initKeyboardController } from './ui/keyboardController.js';
 import { initVisualizer } from './ui/visualizer.js';
+import { initHelpModal } from './ui/helpModal.js';
 import { analyser, startAudioOnFirstInteraction } from './core/audioEngine.js'; // Import analyser and new function
 
 // Initial logging as modules load
@@ -37,6 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     log("Keyboard Controller initialized.");
     initVisualizer(analyser);
     log("Visualizer initialized.");
+    initHelpModal();
+    log("Help Modal initialized.");
 
     startAudioOnFirstInteraction(); // Start audio context on first interaction
     log("Audio context starter initialized.");

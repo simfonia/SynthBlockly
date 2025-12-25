@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>效果器積木說明</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
+        h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        h3 { color: #333; }
+        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+        .param { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>效果器積木詳細指南</h1>
+
+    <h2>通用參數</h2>
+    <ul>
+        <li><span class="param">濕度 (Wet):</span> 控制效果的乾濕混合比例 (0 到 1)。數值為 0 表示聽不到效果 (乾聲)，數值為 1 表示只聽到效果聲 (濕聲)。</li>
+    </ul>
+
+    <h2>失真 (Distortion)</h2>
+    <p>為聲音增添諧波、砂礫感和飽和度。</p>
+    <ul>
+        <li><span class="param">量 (Amount):</span> 失真的強度，範圍從 0 (乾淨) 到 1 (嚴重失真)。</li>
+        <li><span class="param">超取樣 (Oversample):</span> 減少因數位取樣產生的高頻混疊雜訊。使用 '2x' 或 '4x' 可以獲得更平滑、更高品質的聲音，但會稍微增加處理器負擔。</li>
+    </ul>
+
+    <h2>混響 (Reverb)</h2>
+    <p>模擬聲音在特定空間（如房間、大廳等）中的反射效果。</p>
+    <ul>
+        <li><span class="param">衰減 (Decay):</span> 混響尾音的持續時間（秒）。較長的衰減時間模擬較大的空間。</li>
+        <li><span class="param">預延遲 (Predelay):</span> 原始聲音與第一個混響反射音之間的時間差（秒）。短暫的預延遲有助於保持原始聲音的清晰度。</li>
+    </ul>
+
+    <h2>回饋延遲 (Feedback Delay)</h2>
+    <p>產生輸入聲音的回音。</p>
+    <ul>
+        <li><span class="param">延遲時間 (Delay Time):</span> 連續回音之間的間隔時間。可以是音樂時值（如 '8n' 代表八分音符）或以秒為單位的時間。</li>
+        <li><span class="param">回饋 (Feedback):</span> 回音的強度，範圍從 0 到 1。數值 0.25 表示每個回音的音量是前一個的 25%。過高的數值可能導致自我振盪。</li>
+    </ul>
+
+    <h2>濾波器 (Filter)</h2>
+    <p>透過增強或削減特定頻率來塑造聲音的音色特徵。</p>
+    <ul>
+        <li><span class="param">類型 (Type):</span> 應用的濾波器種類（例如 <code>lowpass</code> 讓低頻通過，<code>highpass</code> 讓高頻通過）。</li>
+        <li><span class="param">頻率 (Frequency):</span> 濾波器的截止或中心頻率，單位為赫茲 (Hz)。</li>
+        <li><span class="param">Q (共振):</span> 濾波器的頻寬。對於低通/高通濾波器，較高的 Q 值會在截止頻率處產生一個共振峰；對於帶通濾波器，則會使頻帶變窄。</li>
+        <li><span class="param">滾降斜率 (Rolloff):</span> 濾波器截止的陡峭程度，單位為分貝/八度。較陡峭的數值（如 -24, -48）會產生更強烈的濾波效果。</li>
+    </ul>
+
+    <h2>壓縮器 (Compressor)</h2>
+    <p>減小聲音的動態範圍，使小聲的部分變大聲，大聲的部分變小聲。</p>
+    <ul>
+        <li><span class="param">閾值 (Threshold):</span> 開始壓縮的音量水平，單位為分貝 (dB)。範圍約為 -100 到 0。較低的數值（如 -50）意味著更多信號會被壓縮。</li>
+        <li><span class="param">比率 (Ratio):</span> 施加的壓縮量。例如，比率為 4 表示輸入信號每超過閾值 4 dB，輸出信號只會增加 1 dB。</li>
+        <li><span class="param">起始時間 (Attack):</span> 當信號超過閾值後，壓縮器開始降低增益所需的時間（秒）。</li>
+        <li><span class="param">釋放時間 (Release):</span> 當信號低於閾值後，壓縮器停止降低增益所需的時間（秒）。</li>
+    </ul>
+
+    <h2>限幅器 (Limiter)</h2>
+    <p>一種極端的壓縮器，可防止信號超過設定的閾值。</p>
+    <ul>
+        <li><span class="param">閾值 (Threshold):</span> 信號不允許超過的音量水平，單位為分貝 (dB)。最大值為 0。範圍約為 -100 到 0。</li>
+    </ul>
+</body>
+</html>

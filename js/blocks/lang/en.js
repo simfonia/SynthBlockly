@@ -61,7 +61,8 @@ export const MSG_EN = {
     'MSG_HARMONIC_FIELD': 'Harmonic ({0}x) Amplitude (0-1)',
 
     'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': 'Create Additive Synth Name %1',
-    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer by summing multiple independent oscillators.\nEach oscillator has its own amplitude and frequency ratio relative to the fundamental.\nFormula: Amplitude * sin(2π * FrequencyRatio * note_frequency * t)',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer by summing multiple independent oscillators.\nThe first "Main Oscillator" defaults to the fundamental frequency (Ratio=1).\nClick the gear icon to add more oscillators with their own amplitude and frequency ratio relative to the fundamental.\nFormula: Amplitude * sin(2π * FreqRatio * note_frequency * t)',
+    'MSG_MAIN_OSCILLATOR_FIELD': 'Main Oscillator (Fundamental)',
     'MSG_OSCILLATOR_FIELD': 'Oscillator {0}',
     'MSG_AMPLITUDE_INPUT_FIELD': 'Amplitude',
     'MSG_FREQ_RATIO_INPUT_FIELD': 'Frequency Ratio',
@@ -130,27 +131,17 @@ export const MSG_EN = {
     // EFFECTS
     'SB_SETUP_EFFECT_MESSAGE': 'Set %1 effect',
     'SB_SETUP_EFFECT_TOOLTIP': `Configures a specific audio effect and its parameters.
----
-GENERAL:
-- Wet: Controls the dry/wet mix (0-1). 0 is no effect, 1 is full effect.
-
-DISTORTION:
-- Amount: The intensity of the distortion (0-1).
-- Oversample: Reduces aliasing for a smoother sound ('none', '2x', '4x').
-
-REVERB:
-- Decay: The length of the reverb tail in seconds.
-- Predelay: The time in seconds before the reverb starts, adding clarity.
-
-FEEDBACK DELAY:
-- Delay Time: The time between echoes (e.g., '8n', '0.5').
-- Feedback: The strength of the echoes (0-1). 0.25 means each echo is 25% of the previous one's volume.
-
-FILTER:
-- Type: The type of filter (e.g., lowpass, highpass).
-- Frequency: The cutoff or center frequency of the filter in Hz.
-- Q (Resonance): The width of the filter band. Higher values result in a sharper peak.
-- Rolloff: The steepness of the filter cutoff in dB/octave (-12, -24, -48).`,
+For detailed usage, right-click and select "Help".`,
+    'SB_EFFECT_DISTORTION_TYPE_FIELD': 'Distortion',
+    'SB_EFFECT_REVERB_TYPE_FIELD': 'Reverb',
+    'SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD': 'FeedbackDelay',
+    'SB_EFFECT_FILTER_TYPE_FIELD': 'Filter',
+    'SB_EFFECT_COMPRESSOR_TYPE_FIELD': 'Compressor',
+    'SB_EFFECT_LIMITER_TYPE_FIELD': 'Limiter',
+    'SB_EFFECT_THRESHOLD_FIELD': 'Threshold (dB)',
+    'SB_EFFECT_RATIO_FIELD': 'Ratio',
+    'SB_EFFECT_ATTACK_FIELD': 'Attack (s)',
+    'SB_EFFECT_RELEASE_FIELD': 'Release (s)',
     'SB_EFFECT_DISTORTION_AMOUNT_FIELD': 'Amount',
     'SB_EFFECT_OVERSAMPLE_FIELD': 'Oversample',
     'SB_EFFECT_DECAY_FIELD': 'Decay',
@@ -158,7 +149,7 @@ FILTER:
     'SB_EFFECT_DELAY_TIME_FIELD': 'Delay Time',
     'SB_EFFECT_FEEDBACK_FIELD': 'Feedback',
     'SB_EFFECT_WET_FIELD': 'Wet',
-    'SB_EFFECT_FILTER_TYPE_FIELD': 'Type',
+    'SB_EFFECT_FILTER_INTERNAL_TYPE_FIELD': 'Type',
     'SB_EFFECT_FILTER_FREQ_FIELD': 'Frequency',
     'SB_EFFECT_FILTER_Q_FIELD': 'Q (Resonance)',
     'SB_EFFECT_ROLLOFF_FIELD': 'Rolloff',

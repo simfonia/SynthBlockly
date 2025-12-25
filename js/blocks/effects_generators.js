@@ -28,8 +28,8 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         var code = '';
         if (!effectType) return '';
 
-        // Handle WET parameter conditionally, as it doesn't exist for 'filter'
-        if (effectType !== 'filter') {
+        // Handle WET parameter only for effects that support it
+        if (['distortion', 'reverb', 'feedbackDelay'].includes(effectType)) {
             var wet = block.getInput('WET') ? G.valueToCode(block, 'WET', G.ORDER_ATOMIC) || '0' : '0';
             code += `window.audioEngine.effects.${effectType}.wet.value = ${wet};
 `;
@@ -80,6 +80,27 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             code += `window.audioEngine.effects.filter.rolloff = ${filterRolloff};
 `;
             code += `window.audioEngine.log('Filter 效果已設定。');
+`;
+        } else if (effectType === 'compressor') {
+            var threshold = G.valueToCode(block, 'THRESHOLD', G.ORDER_ATOMIC) || '-24';
+            var ratio = G.valueToCode(block, 'RATIO', G.ORDER_ATOMIC) || '12';
+            var attack = G.valueToCode(block, 'ATTACK', G.ORDER_ATOMIC) || '0.003';
+            var release = G.valueToCode(block, 'RELEASE', G.ORDER_ATOMIC) || '0.25';
+            code += `window.audioEngine.effects.compressor.threshold.value = ${threshold};
+`;
+            code += `window.audioEngine.effects.compressor.ratio.value = ${ratio};
+`;
+            code += `window.audioEngine.effects.compressor.attack.value = ${attack};
+`;
+            code += `window.audioEngine.effects.compressor.release.value = ${release};
+`;
+            code += `window.audioEngine.log('Compressor 效果已設定。');
+`;
+        } else if (effectType === 'limiter') {
+            var threshold = G.valueToCode(block, 'THRESHOLD', G.ORDER_ATOMIC) || '-6';
+            code += `window.audioEngine.effects.limiter.threshold.value = ${threshold};
+`;
+            code += `window.audioEngine.log('Limiter 效果已設定。');
 `;
         }
 

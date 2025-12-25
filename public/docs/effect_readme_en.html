@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Effect Block Help</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
+        h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        h3 { color: #333; }
+        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+        .param { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Effect Block Detailed Guide</h1>
+
+    <h2>General Parameters</h2>
+    <ul>
+        <li><span class="param">Wet:</span> Controls the dry/wet mix of the effect (0 to 1). A value of 0 means no effect is audible (dry), while 1 means only the effect's output is heard (wet).</li>
+    </ul>
+
+    <h2>Distortion</h2>
+    <p>Adds harmonic grit and saturation to the sound.</p>
+    <ul>
+        <li><span class="param">Amount:</span> The intensity of the distortion, ranging from 0 (clean) to 1 (heavily distorted).</li>
+        <li><span class="param">Oversample:</span> Reduces aliasing, which can cause unwanted high-frequency noise. Using '2x' or '4x' results in a smoother, higher-quality sound at the cost of slightly more processing power.</li>
+    </ul>
+
+    <h2>Reverb</h2>
+    <p>Simulates the sound of a space (a room, hall, etc.).</p>
+    <ul>
+        <li><span class="param">Decay:</span> The length of the reverb tail in seconds. Longer decay times simulate larger spaces.</li>
+        <li><span class="param">Predelay:</span> The time in seconds between the original sound and the start of the reverb reflections. A short predelay can help maintain the clarity of the original sound.</li>
+    </ul>
+
+    <h2>Feedback Delay</h2>
+    <p>Creates echoes of the input sound.</p>
+    <ul>
+        <li><span class="param">Delay Time:</span> The time between successive echoes. This can be a musical duration (like '8n' for an eighth note) or a time in seconds.</li>
+        <li><span class="param">Feedback:</span> The strength of the echoes, from 0 to 1. A value of 0.25 means each echo will be 25% of the previous one's volume. High values can lead to self-oscillation.</li>
+    </ul>
+
+    <h2>Filter</h2>
+    <p>Shapes the tonal characteristics of the sound by boosting or cutting specific frequencies.</p>
+    <ul>
+        <li><span class="param">Type:</span> The kind of filter to apply (e.g., <code>lowpass</code> lets low frequencies through, <code>highpass</code> lets high frequencies through).</li>
+        <li><span class="param">Frequency:</span> The cutoff or center frequency of the filter in Hertz (Hz).</li>
+        <li><span class="param">Q (Resonance):</span> The width of the filter band. For lowpass/highpass filters, a higher Q value creates a resonant peak at the cutoff frequency. For bandpass filters, it narrows the band.</li>
+        <li><span class="param">Rolloff:</span> The steepness of the filter cutoff in decibels per octave. Steeper values (e.g., -24, -48) create a more aggressive filtering effect.</li>
+    </ul>
+
+    <h2>Compressor</h2>
+    <p>Reduces the dynamic range of a sound, making quiet parts louder and loud parts quieter.</p>
+    <ul>
+        <li><span class="param">Threshold:</span> The audio level in decibels (dB) above which compression starts. The range is approximately -100 to 0. A lower value (e.g., -50) means more of the signal will be compressed.</li>
+        <li><span class="param">Ratio:</span> The amount of compression applied. For example, a ratio of 4 means for every 4 dB the input signal goes above the threshold, the output signal will only increase by 1 dB.</li>
+        <li><span class="param">Attack:</span> The time in seconds it takes for the compressor to start reducing the gain once the signal exceeds the threshold.</li>
+        <li><span class="param">Release:</span> The time in seconds it takes for the compressor to stop reducing the gain after the signal falls below the threshold.</li>
+    </ul>
+
+    <h2>Limiter</h2>
+    <p>A type of extreme compressor that prevents a signal from exceeding a set threshold.</p>
+    <ul>
+        <li><span class="param">Threshold:</span> The level in decibels (dB) that the signal is not allowed to exceed. The maximum value is 0. The range is approximately -100 to 0.</li>
+    </ul>
+</body>
+</html>

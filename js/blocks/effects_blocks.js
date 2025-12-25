@@ -17,10 +17,12 @@ export function registerBlocks() {
                         "type": "field_dropdown",
                         "name": "EFFECT_TYPE",
                         "options": [
-                            ["Distortion", "distortion"],
-                            ["Reverb", "reverb"],
-                            ["FeedbackDelay", "feedbackDelay"],
-                            ["Filter", "filter"]
+                            ["%{BKY_SB_EFFECT_DISTORTION_TYPE_FIELD}", "distortion"],
+                            ["%{BKY_SB_EFFECT_REVERB_TYPE_FIELD}", "reverb"],
+                            ["%{BKY_SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD}", "feedbackDelay"],
+                            ["%{BKY_SB_EFFECT_FILTER_TYPE_FIELD}", "filter"],
+                            ["%{BKY_SB_EFFECT_COMPRESSOR_TYPE_FIELD}", "compressor"],
+                            ["%{BKY_SB_EFFECT_LIMITER_TYPE_FIELD}", "limiter"]
                         ]
                     }
                 ],
@@ -29,6 +31,14 @@ export function registerBlocks() {
                 "nextStatement": null,
                 "colour": "%{BKY_EFFECTS_HUE}",
                 "tooltip": "%{BKY_SB_SETUP_EFFECT_TOOLTIP}"
+            });
+
+            this.setHelpUrl(() => {
+                const currentLang = window.currentLanguage || 'en';
+                if (currentLang === 'zh-hant') {
+                    return 'docs/effect_readme_zh-hant.html';
+                }
+                return 'docs/effect_readme_en.html';
             });
 
             // Function to update the block's shape based on the selected effect
@@ -47,9 +57,13 @@ export function registerBlocks() {
                 if (this.getInput('FILTER_FREQ')) this.removeInput('FILTER_FREQ');
                 if (this.getInput('FILTER_Q')) this.removeInput('FILTER_Q');
                 if (this.getInput('FILTER_ROLLOFF')) this.removeInput('FILTER_ROLLOFF');
+                if (this.getInput('THRESHOLD')) this.removeInput('THRESHOLD');
+                if (this.getInput('RATIO')) this.removeInput('RATIO');
+                if (this.getInput('ATTACK')) this.removeInput('ATTACK');
+                if (this.getInput('RELEASE')) this.removeInput('RELEASE');
 
-                // Add WET input for all effects EXCEPT filter
-                if (effectType !== 'filter') {
+                // Add WET input for specific effects
+                if (['distortion', 'reverb', 'feedbackDelay'].includes(effectType)) {
                     this.appendValueInput('WET')
                         .setCheck("Number")
                         .setAlign(Blockly.ALIGN_RIGHT)
@@ -109,7 +123,7 @@ export function registerBlocks() {
                 } else if (effectType === 'filter') {
                     this.appendDummyInput('FILTER_TYPE')
                         .setAlign(Blockly.ALIGN_RIGHT)
-                        .appendField("%{BKY_SB_EFFECT_FILTER_TYPE_FIELD}")
+                        .appendField("%{BKY_SB_EFFECT_FILTER_INTERNAL_TYPE_FIELD}")
                         .appendField(new Blockly.FieldDropdown([
                             ["lowpass", "lowpass"],
                             ["highpass", "highpass"],
@@ -142,6 +156,43 @@ export function registerBlocks() {
                             ["-24", "-24"],
                             ["-48", "-48"]
                         ]), "FILTER_ROLLOFF_VALUE");
+                } else if (effectType === 'compressor') {
+                    this.appendValueInput('THRESHOLD')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_THRESHOLD_FIELD}");
+                    this.getInput('THRESHOLD').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">-24</field></shadow>'
+                    ));
+                    this.appendValueInput('RATIO')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_RATIO_FIELD}");
+                    this.getInput('RATIO').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">12</field></shadow>'
+                    ));
+                    this.appendValueInput('ATTACK')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_ATTACK_FIELD}");
+                    this.getInput('ATTACK').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">0.003</field></shadow>'
+                    ));
+                    this.appendValueInput('RELEASE')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_RELEASE_FIELD}");
+                    this.getInput('RELEASE').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">0.25</field></shadow>'
+                    ));
+                } else if (effectType === 'limiter') {
+                    this.appendValueInput('THRESHOLD')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_THRESHOLD_FIELD}");
+                    this.getInput('THRESHOLD').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">-6</field></shadow>'
+                    ));
                 }
             };
 

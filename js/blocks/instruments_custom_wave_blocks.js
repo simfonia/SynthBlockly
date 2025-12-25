@@ -211,18 +211,36 @@ export function registerBlocks(BlocklyInstance) {
     updateShape_: function() {
       for (let i = 0; i < this.itemCount_; i++) {
         if (!this.getInput('AMP' + i)) {
-          this.appendDummyInput('OSC_LABEL' + i)
-              .appendField(BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1));
+          // Add Oscillator Label
+          const oscLabel = this.appendDummyInput('OSC_LABEL' + i);
+          if (i === 0) {
+            oscLabel.appendField(BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD']);
+          } else {
+            oscLabel.appendField(BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1));
+          }
+
+          // Add Amplitude Input
           this.appendValueInput('AMP' + i)
               .setCheck('Number')
               .setAlign(BlocklyInstance.ALIGN_RIGHT)
               .appendField(BlocklyInstance.Msg['MSG_AMPLITUDE_INPUT_FIELD']);
-          this.appendValueInput('FREQ_RATIO' + i)
+          
+          // Add Frequency Ratio Input
+          const freqInput = this.appendValueInput('FREQ_RATIO' + i)
               .setCheck('Number')
               .setAlign(BlocklyInstance.ALIGN_RIGHT)
               .appendField(BlocklyInstance.Msg['MSG_FREQ_RATIO_INPUT_FIELD']);
+          
+          // Add a shadow block with default value '1' for the first frequency ratio
+          if (i === 0) {
+            const shadowDom = BlocklyInstance.utils.xml.textToDom(
+                '<shadow type="math_number"><field name="NUM">1</field></shadow>'
+            );
+            freqInput.connection.setShadowDom(shadowDom);
+          }
         }
       }
+      // Remove deleted inputs.
       let i = this.itemCount_;
       while (this.getInput('AMP' + i)) {
         this.removeInput('OSC_LABEL' + i);

@@ -21,6 +21,7 @@ export function registerBlocks() {
                             ["H", "KeyH"], ["J", "KeyJ"], ["K", "KeyK"], ["L", "KeyL"],
                             [";", "Semicolon"], ["'", "Quote"],
                             [",", "Comma"], [".", "Period"], ["/", "Slash"],
+                            ["Z", "KeyZ"], ["X", "KeyX"], 
                             ["C", "KeyC"], ["V", "KeyV"], ["B", "KeyB"], ["N", "KeyN"], ["M", "KeyM"]
                         ]
                     },

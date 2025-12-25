@@ -40,6 +40,8 @@ const reverbEffect = new Tone.Reverb(1.5);
 const feedbackDelayEffect = new Tone.FeedbackDelay("8n", 0.25);
 const filterEffect = new Tone.Filter(20000, "lowpass"); // Default to open lowpass
 filterEffect.Q.value = 1;
+const compressorEffect = new Tone.Compressor(-30, 3);
+const limiterEffect = new Tone.Limiter(-6);
 
 distortionEffect.wet.value = 0;
 reverbEffect.wet.value = 0;
@@ -67,12 +69,12 @@ const jazzKit = new Tone.Sampler({
 });
 
 // --- Signal Chain ---
-// Chain instruments through effects to the analyser, with filter first
-synth.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
-drum.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
-hh.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
-snare.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
-jazzKit.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+// Chain instruments through effects to the analyser, with the limiter last.
+synth.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+drum.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+hh.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+snare.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+jazzKit.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
 
 
 // --- Audio Engine Object ---
@@ -89,7 +91,9 @@ export const audioEngine = {
         distortion: distortionEffect,
         reverb: reverbEffect,
         feedbackDelay: feedbackDelayEffect,
-        filter: filterEffect // ADD THIS
+        filter: filterEffect, // ADD THIS
+        compressor: compressorEffect,
+        limiter: limiterEffect
     },
     instruments: {},
     currentInstrumentName: 'DefaultSynth',
@@ -141,7 +145,7 @@ export const audioEngine = {
                     return;
             }
             // All new instruments must also be chained through the filter first, then other effects and analyser
-            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建樂器 "${name}" (${type})。`);
         } catch (e) {
@@ -185,7 +189,7 @@ export const audioEngine = {
                 }
             });
 
-            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建自訂波形樂器 "${name}"，泛音: [${partialsArray.join(', ')}]。`);
         } catch (e) {
@@ -207,54 +211,91 @@ export const audioEngine = {
         }
 
         try {
-            // --- Manual Polyphonic Instrument using an array of oscillators and a shared envelope ---
-            const envelope = new Tone.AmplitudeEnvelope({ attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.5 });
-            const oscillators = [];
+            const polyphony = 8; // Max number of simultaneous voices
+            const voices = [];
 
-            components.forEach(comp => {
-                const osc = new Tone.Oscillator(0, "sine");
-                const gain = new Tone.Gain(comp.amp).connect(envelope);
-                osc.connect(gain);
-                oscillators.push({ osc: osc, freqRatio: comp.freqRatio });
-            });
+            // Pre-create the pool of voices
+            for (let i = 0; i < polyphony; i++) {
+                const envelope = new Tone.AmplitudeEnvelope({ attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.5 });
+                const oscillators = [];
+                components.forEach(comp => {
+                    const osc = new Tone.Oscillator(0, "sine");
+                    const gain = new Tone.Gain(comp.amp).connect(envelope);
+                    osc.connect(gain);
+                    oscillators.push({ osc: osc, freqRatio: comp.freqRatio });
+                });
+                voices.push({
+                    note: null,
+                    oscillators: oscillators,
+                    envelope: envelope,
+                    busy: false,
+                    attackTime: 0
+                });
+            }
 
             const newInstrument = {
-                oscillators: oscillators,
-                envelope: envelope,
-                activeNotes: new Map(), // To track which note is playing on which oscillator set
+                voices: voices,
+                
+                _findVoice: function(note) {
+                    return this.voices.find(v => v.note === note && v.busy);
+                },
 
                 triggerAttack: function(note, time, velocity) {
+                    time = time || Tone.now();
+                    
+                    let voiceToUse = this.voices.find(v => !v.busy);
+                    if (!voiceToUse) {
+                        voiceToUse = this.voices.sort((a, b) => a.attackTime - b.attackTime)[0];
+                    }
+
+                    voiceToUse.busy = true;
+                    voiceToUse.note = note;
+                    voiceToUse.attackTime = time;
+                    
                     const freq = new Tone.Frequency(note).toFrequency();
-                    // In this simple model, we just overwrite. A true poly version would manage voices.
-                    // For now, this acts like a mono synth that can be re-triggered.
-                    this.oscillators.forEach(item => {
+
+                    voiceToUse.oscillators.forEach(item => {
                         item.osc.frequency.setValueAtTime(freq * item.freqRatio, time);
-                        if(item.osc.state === 'stopped') {
+                        if (item.osc.state === 'stopped') {
                             item.osc.start(time);
                         }
                     });
-                    this.envelope.triggerAttack(time, velocity);
+                    voiceToUse.envelope.triggerAttack(time, velocity);
                 },
+
                 triggerRelease: function(note, time) {
-                    // In this model, any release call releases the envelope.
-                    this.envelope.triggerRelease(time);
+                    time = time || Tone.now();
+                    const voiceToRelease = this._findVoice(note);
+                    if (voiceToRelease) {
+                        voiceToRelease.busy = false;
+                        voiceToRelease.envelope.triggerRelease(time);
+                        // Oscillators are stopped automatically by the envelope's release in this design
+                    }
                 },
+                
                 triggerAttackRelease: function(notes, duration, time, velocity) {
                     time = time || Tone.now();
                     this.triggerAttack(notes, time, velocity);
-                    this.triggerRelease(time + Tone.Time(duration).toSeconds());
+                    // Handle single note or array of notes for release
+                    const notesArray = Array.isArray(notes) ? notes : [notes];
+                    notesArray.forEach(note => {
+                        this.triggerRelease(note, time + Tone.Time(duration).toSeconds());
+                    });
                 },
+
                 chain: function(...args) {
-                    // The output of this instrument is the envelope
-                    this.envelope.chain(...args);
+                    this.voices.forEach(v => v.envelope.chain(...args));
                 },
+
                 dispose: function() {
-                    this.envelope.dispose();
-                    this.oscillators.forEach(item => item.osc.dispose());
+                    this.voices.forEach(v => {
+                        v.envelope.dispose();
+                        v.oscillators.forEach(item => item.osc.dispose());
+                    });
                 }
             };
             
-            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, analyser);
+            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建加法合成器 "${name}"。`);
 
@@ -279,7 +320,7 @@ export const audioEngine = {
         if (!oldInstrument) {
             // This case is unlikely if currentInstrumentName is managed properly, but as a fallback...
             this.currentInstrumentName = newInstrumentName;
-            this.log(`已切換到樂器: ${newInstrumentName} (沒有舊樂器可供轉換)。`);
+            this.log(`已切換到樂器: ${newInstrumentName} (沒有舊樂器可供轉換)。`, 'instrument');
             return;
         }
 
@@ -300,7 +341,7 @@ export const audioEngine = {
         });
 
         this.currentInstrumentName = newInstrumentName;
-        this.log(`已切換到樂器: ${newInstrumentName}，並轉換了正在彈奏的音符。`);
+        this.log(`已切換到樂器: ${newInstrumentName}，並轉換了正在彈奏的音符。`, 'instrument');
     },
 
     playKick: async function(velocity = 1, time = Tone.now()) {

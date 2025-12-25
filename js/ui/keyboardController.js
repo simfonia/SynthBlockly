@@ -41,17 +41,47 @@ const getNoteForKeyCode = (keyCode) => {
     return `${baseNote}${noteOctave}`;
 };
 
+/**
+ * Switches to the next or previous instrument in the list.
+ * @param {number} direction -1 for previous, 1 for next.
+ */
+const switchInstrument = (direction) => {
+    const instrumentNames = Object.keys(audioEngine.instruments);
+    if (instrumentNames.length < 2) {
+        audioEngine.log('沒有其他樂器可供切換。');
+        return; // Not enough instruments to switch
+    }
+    const currentIndex = instrumentNames.indexOf(audioEngine.currentInstrumentName);
+    // The + instrumentNames.length is a robust way to handle negative results from modulo
+    const newIndex = (currentIndex + direction + instrumentNames.length) % instrumentNames.length;
+    const newInstrumentName = instrumentNames[newIndex];
+    
+    // Call the existing transition function
+    audioEngine.transitionToInstrument(newInstrumentName);
+};
+
 const handleKeyDown = async (e) => {
     // Ignore events when IME is active, or if the key is a repeat.
     if (e.isComposing || !isPcKeyboardMidiEnabled || e.repeat) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-    if ((e.code === 'KeyZ' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) {
+    // --- Octave and Instrument Switching ---
+    if (e.code === 'ArrowLeft') {
+        switchInstrument(-1);
+        e.preventDefault();
+        return;
+    }
+    if (e.code === 'ArrowRight') {
+        switchInstrument(1);
+        e.preventDefault();
+        return;
+    }
+    if ((e.code === 'ArrowDown' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) {
         shiftOctave(-1);
         e.preventDefault();
         return;
     }
-    if ((e.code === 'KeyX' || e.code === 'Equal' || e.code === 'NumpadAdd') && currentOctave < MAX_OCTAVE) {
+    if ((e.code === 'ArrowUp' || e.code === 'Equal' || e.code === 'NumpadAdd') && currentOctave < MAX_OCTAVE) {
         shiftOctave(1);
         e.preventDefault();
         return;
@@ -104,7 +134,7 @@ const handleKeyUp = async (e) => {
     // Ignore events when IME is active.
     if (e.isComposing || !isPcKeyboardMidiEnabled) return;
 
-    if (e.code === 'KeyZ' || e.code === 'KeyX' || e.code === 'Minus' || e.code === 'Equal' || e.code === 'NumpadSubtract' || e.code === 'NumpadAdd') return;
+    if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Minus' || e.code === 'Equal' || e.code === 'NumpadSubtract' || e.code === 'NumpadAdd') return;
 
     const note = audioEngine.pressedKeys.get(e.code);
     if (note) {
