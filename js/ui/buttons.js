@@ -1,7 +1,7 @@
 // js/ui/buttons.js
 import { log } from './logger.js';
 import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js';
-import { getBlocksCode } from '../core/blocklyManager.js'; // To be moved later
+import { getBlocksCode, resetWorkspaceAndAudio } from '../core/blocklyManager.js'; // Import resetWorkspaceAndAudio
 import * as Blockly from 'blockly'; // Import Blockly
 
 // New function to encapsulate run logic
@@ -137,7 +137,7 @@ export function initButtons() {
                 reader.onload = (e) => {
                     const xmlText = e.target.result;
                     try {
-                        workspace.clear();
+                        resetWorkspaceAndAudio(); // Call the new reset function
                         const xml = Blockly.utils.xml.textToDom(xmlText);
                         Blockly.Xml.domToWorkspace(xml, workspace);
                         log(`Workspace loaded from ${file.name}`);
@@ -149,6 +149,17 @@ export function initButtons() {
                 reader.readAsText(file);
             });
             input.click();
+        });
+    }
+
+    // New Project Button
+    const btnNewProject = document.getElementById('btnNewProject');
+    if (btnNewProject) {
+        btnNewProject.addEventListener('click', () => {
+            if (confirm('確定要開新專案嗎？現有的程式碼將會被清除。')) {
+                resetWorkspaceAndAudio();
+                log('✓ 已開新專案，工作區已清除。');
+            }
         });
     }
     // New: Oscilloscope Amplitude Slider

@@ -6,6 +6,7 @@ export const MSG_ZH_HANT = {
     'UI_BTN_PLAY_TEST_NOTE': '播放測試音 (A4)',
     'UI_BTN_SAVE_PROJECT': '儲存專案 (XML)',
     'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
+    'UI_BTN_NEW_PROJECT': '開新專案',
     'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
     'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
     'UI_BTN_RUN_BLOCKS': '執行積木 (Ctrl+Enter)',

@@ -5,6 +5,7 @@ import { javascriptGenerator } from 'blockly/javascript'; // Explicitly import j
 import { log } from '../ui/logger.js';
 import { registerAll } from '../blocks/index.js'; // Module to handle block registration
 import { registerMidiListener, unregisterMidiListener } from './midiEngine.js';
+import { audioEngine } from './audioEngine.js'; // Import audioEngine for cleanup functions
 // Import the toolbox XML string from its dedicated module.
 import { TOOLBOX_XML_STRING } from './toolbox.js';
 
@@ -225,6 +226,9 @@ export async function initBlocklyManager() {
     log('開始初始化 Blockly...');
 
     try {
+        // 在初始化 Blockly 或載入任何積木之前，先清除舊的音頻狀態
+        audioEngine.resetAudioEngineState();
+
         // Step 1: Register all blocks, generators, and dynamically load the locale data.
         await registerAll();
         log('✓ 所有模組已載入 (via js/blocks/index.js)');
@@ -275,6 +279,9 @@ export async function getBlocksCode() {
         return '';
     }
 
+    // 在生成並執行新程式碼之前，先清除舊的音頻狀態
+    audioEngine.resetAudioEngineState();
+
     try {
         // Ensure the code generator is initialized for this workspace (prevents "init was not called" issues)
         try {
@@ -294,6 +301,33 @@ export async function getBlocksCode() {
                 }
             }
         } catch (e) { console.warn('forBlock sync failed', e); } // Ignore errors during sync
+
+        // --- Dynamic Effect Chain Refactoring ---
+        // 1. Collect effect configurations from all 'sb_setup_effect' blocks
+        const effectConfigs = [];
+        const effectBlocks = workspace.getBlocksByType('sb_setup_effect', false);
+        const configRegex = /\/\* EFFECT_CONFIG:(.*) \*\//;
+
+        effectBlocks.forEach(block => {
+            try {
+                // Generate the comment string for this block only
+                const blockCode = javascriptGenerator.blockToCode(block);
+                if (blockCode) {
+                    const match = blockCode.match(configRegex);
+                    if (match && match[1]) {
+                        effectConfigs.push(JSON.parse(match[1]));
+                    }
+                }
+            } catch (err) {
+                log(`處理效果器積木 ${block.id} 時出錯: ${err.message}`);
+                console.error(err);
+            }
+        });
+
+        // 2. Rebuild the audio engine's effect chain based on the collected configs
+        // This is done *after* resetting the state and *before* generating the main code.
+        audioEngine.rebuildEffectChain(effectConfigs);
+        // --- End of Dynamic Effect Chain Refactoring ---
 
         let code = javascriptGenerator.workspaceToCode(workspace);
         code = javascriptGenerator.finish(code);
@@ -362,4 +396,18 @@ export async function getBlocksCode() {
             return '';
         }
     }
+}
+
+/**
+ * Clears the Blockly workspace and resets the audio engine state.
+ * @returns {void}
+ */
+export function resetWorkspaceAndAudio() {
+    if (workspace) {
+        workspace.clear();
+        workspace.clearUndo();
+        log('✓ Blockly 工作區已清除。');
+    }
+    audioEngine.resetAudioEngineState();
+    log('✓ 音訊引擎狀態已重設。');
 }

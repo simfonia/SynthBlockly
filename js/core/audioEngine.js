@@ -35,20 +35,10 @@ export const analyser = new Tone.Analyser('waveform', 1024);
 analyser.toDestination(); // Connect analyser to the master output
 
 // --- Effects ---
-const distortionEffect = new Tone.Distortion(0.0);
-const reverbEffect = new Tone.Reverb(1.5);
-const feedbackDelayEffect = new Tone.FeedbackDelay("8n", 0.25);
-const filterEffect = new Tone.Filter(20000, "lowpass"); // Default to open lowpass
-filterEffect.Q.value = 1;
-const compressorEffect = new Tone.Compressor(-30, 3);
-const limiterEffect = new Tone.Limiter(-6);
-
-distortionEffect.wet.value = 0;
-reverbEffect.wet.value = 0;
-feedbackDelayEffect.wet.value = 0;
+// Effects are now dynamically managed by the audioEngine.
 
 // --- Instruments ---
-const synth = new Tone.PolySynth(Tone.Synth);
+let synth = new Tone.PolySynth(Tone.Synth);
 const drum = new Tone.MembraneSynth();
 const hh = new Tone.NoiseSynth({ volume: -12 });
 const snare = new Tone.NoiseSynth({
@@ -69,12 +59,12 @@ const jazzKit = new Tone.Sampler({
 });
 
 // --- Signal Chain ---
-// Chain instruments through effects to the analyser, with the limiter last.
-synth.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
-drum.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
-hh.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
-snare.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
-jazzKit.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+// Instruments are now chained to the analyser. The effect chain is built dynamically.
+synth.chain(analyser);
+drum.chain(analyser);
+hh.chain(analyser);
+snare.chain(analyser);
+jazzKit.chain(analyser);
 
 
 // --- Audio Engine Object ---
@@ -87,14 +77,94 @@ export const audioEngine = {
     hh: hh,
     snare: snare,
     jazzKit: jazzKit,
-    effects: {
-        distortion: distortionEffect,
-        reverb: reverbEffect,
-        feedbackDelay: feedbackDelayEffect,
-        filter: filterEffect, // ADD THIS
-        compressor: compressorEffect,
-        limiter: limiterEffect
+    effects: {},
+    _activeEffects: [], // Internal array to track the current effect chain
+
+    rebuildEffectChain: function(effectsConfig = []) {
+        // 1. Dispose of all previously active effects
+        this._activeEffects.forEach(effect => {
+            if (effect && typeof effect.dispose === 'function') {
+                effect.dispose();
+            }
+        });
+        this._activeEffects = [];
+        this.log('舊效果器鏈已清除。');
+
+        // 2. Disconnect all instruments from their current output to prepare for re-chaining
+        const allInstruments = [this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)];
+        allInstruments.forEach(instr => {
+            // For standard Tone.js instruments and our custom additive synth
+            if (instr && typeof instr.disconnect === 'function') {
+                instr.disconnect();
+            }
+        });
+        
+        // 3. Create new effect instances from the config
+        try {
+            effectsConfig.forEach(config => {
+                if (!config || !config.type) return;
+
+                let effectInstance;
+                // Use a temporary object for params to avoid modifying the original config
+                const params = { ...(config.params || {}) };
+
+                switch (config.type) {
+                    case 'distortion':
+                        effectInstance = new Tone.Distortion(params);
+                        break;
+                    case 'reverb':
+                        // Reverb constructor takes decay time, not an object
+                        effectInstance = new Tone.Reverb(params.decay);
+                        if (params.preDelay) effectInstance.preDelay = params.preDelay;
+                        break;
+                    case 'feedbackDelay':
+                        // FeedbackDelay constructor takes delay time and feedback ratio
+                        effectInstance = new Tone.FeedbackDelay(params.delayTime, params.feedback);
+                        break;
+                    case 'filter':
+                        effectInstance = new Tone.Filter(params.frequency, params.type || 'lowpass');
+                        if (params.Q) effectInstance.Q.value = params.Q;
+                        if (params.rolloff) effectInstance.rolloff = params.rolloff;
+                        break;
+                    case 'compressor':
+                        effectInstance = new Tone.Compressor(params);
+                        break;
+                    case 'limiter':
+                        // Limiter constructor takes threshold in dB
+                        effectInstance = new Tone.Limiter(params.threshold);
+                        break;
+                    default:
+                        this.log(`警告: 未知的效果器類型 "${config.type}"。`);
+                        return;
+                }
+                
+                // Set wet level for all applicable effects
+                if (params.wet !== undefined && effectInstance.wet) {
+                    effectInstance.wet.value = params.wet;
+                }
+
+                this._activeEffects.push(effectInstance);
+            });
+        } catch (e) {
+            this.log(`創建效果器鏈時出錯: ${e.message}`);
+            console.error(e);
+            // Fallback to a clean chain if creation fails
+            this._activeEffects = [];
+        }
+
+        // 4. Connect instruments to the new effect chain, ending at the analyser
+        const chain = [...this._activeEffects, analyser];
+        allInstruments.forEach(instr => {
+            if (instr) {
+                 // For standard Tone.js instruments and our custom additive synth
+                if (typeof instr.chain === 'function') {
+                    instr.chain(...chain);
+                }
+            }
+        });
+        this.log(`已重建效果器鏈，包含 ${this._activeEffects.length} 個效果器。`);
     },
+
     instruments: {},
     currentInstrumentName: 'DefaultSynth',
     pressedKeys: new Map(),
@@ -144,8 +214,8 @@ export const audioEngine = {
                     this.log(`錯誤: 未知的樂器類型 "${type}"。`);
                     return;
             }
-            // All new instruments must also be chained through the filter first, then other effects and analyser
-            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+            // All new instruments are chained directly to the analyser. The effect chain is managed dynamically.
+            newInstrument.chain(analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建樂器 "${name}" (${type})。`);
         } catch (e) {
@@ -182,14 +252,7 @@ export const audioEngine = {
         }
 
         try {
-            const newInstrument = new Tone.PolySynth(Tone.Synth, {
-                oscillator: {
-                    type: "custom", // Set oscillator type to custom
-                    partials: partialsArray // Use the provided partials array
-                }
-            });
-
-            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+            newInstrument.chain(analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建自訂波形樂器 "${name}"，泛音: [${partialsArray.join(', ')}]。`);
         } catch (e) {
@@ -295,7 +358,7 @@ export const audioEngine = {
                 }
             };
             
-            newInstrument.chain(filterEffect, distortionEffect, feedbackDelayEffect, reverbEffect, compressorEffect, limiterEffect, analyser);
+            newInstrument.chain(analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建加法合成器 "${name}"。`);
 
@@ -446,31 +509,62 @@ export const audioEngine = {
         }
     },
 
-    panicStopAllSounds: function() {
-        this.log('緊急停止！正在停止所有聲音並重設狀態...');
+    /**
+     * Resets the entire audio engine state, stopping all sounds, disposing of instruments and effects,
+     * and clearing all mappings and loops. This should be called before loading a new project or running new code.
+     */
+    resetAudioEngineState: function() {
+        this.log('正在重設音訊引擎狀態...');
         this.Tone.Transport.stop();
         this.log('✓ 主時鐘 (Transport) 已停止');
+
+        // Dispose of all custom instruments
         for (const instrName in this.instruments) {
-            if (this.instruments.hasOwnProperty(instrName)) {
+            if (this.instruments.hasOwnProperty(instrName) && instrName !== 'DefaultSynth') { // Don't dispose DefaultSynth if it's the base
                 const instrument = this.instruments[instrName];
                 if (instrument && typeof instrument.dispose === 'function') {
                     instrument.dispose();
                 }
+                delete this.instruments[instrName];
             }
         }
-        this.log('✓ 所有樂器聲音已釋放');
+            // Re-initialize DefaultSynth if it was disposed or needs resetting
+            if (this.instruments['DefaultSynth'] && typeof this.instruments['DefaultSynth'].dispose === 'function') {
+                this.instruments['DefaultSynth'].dispose(); // Dispose the old DefaultSynth
+            }
+            // Create a BRAND NEW DefaultSynth instance and update the top-level 'synth' variable
+            synth = new Tone.PolySynth(Tone.Synth);
+            synth.chain(analyser); // Re-chain it directly to the analyser
+            this.instruments['DefaultSynth'] = synth; // Assign the NEW instance
+            this.currentInstrumentName = 'DefaultSynth';
+            this.log('✓ 所有自訂樂器已釋放並重設為預設。');
+
         if (blocklyLoops) {
             for (const loopId in blocklyLoops) {
                 if (blocklyLoops.hasOwnProperty(loopId) && blocklyLoops[loopId] instanceof this.Tone.Loop) {
                     window.blocklyLoops[loopId].dispose();
                 }
             }
-            blocklyLoops = {};
-            this.log('✓ 所有 Blockly 循環已停止');
+            blocklyLoops = {}; // Clear the loops object
+            this.log('✓ 所有 Blockly 循環已停止並清除。');
         }
-        this.clearPressedKeys();
+
+        // Clear all mappings and chord definitions
+            this.chords = {};
+            this.keyboardChordMap = {};
+            this.midiChordMap = {};
+            this.clearPressedKeys(); // Also clears midiPressedNotes and midiPlayingNotes
+            this.log('✓ 所有和弦、鍵盤及 MIDI 映射已清除。');
+        
+            // Reset the effect chain by rebuilding it with an empty configuration.
+            this.rebuildEffectChain([]);
+            this.log('音訊引擎狀態重設完成。');
+            },
+    panicStopAllSounds: function() {
+        this.log('緊急停止！正在停止所有聲音並重設狀態...');
+        this.resetAudioEngineState();
         this.log('緊急停止完成。');
-    }
+    },
 };
 
 /**

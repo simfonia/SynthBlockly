@@ -24,87 +24,68 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     if (!G.forBlock) G.forBlock = {};
 
     G['sb_setup_effect'] = function (block) {
-        var effectType = block.getFieldValue('EFFECT_TYPE');
-        var code = '';
-        if (!effectType) return '';
+        let effectType = block.getFieldValue('EFFECT_TYPE');
+        if (!effectType) return null;
 
-        // Handle WET parameter only for effects that support it
+        const params = {};
+
+        // Helper to get numeric value from input
+        const getNumericValue = (inputName, defaultValue) => {
+            const value = G.valueToCode(block, inputName, G.ORDER_ATOMIC);
+            const num = parseFloat(value);
+            return isNaN(num) ? defaultValue : num;
+        };
+        
+        // Helper to get string value from input (for time values like '8n')
+        const getStringValue = (inputName, defaultValue) => {
+            let value = G.valueToCode(block, inputName, G.ORDER_ATOMIC) || defaultValue;
+            // remove quotes from string if they exist
+            if (value && value.startsWith('"') && value.endsWith('"')) {
+                value = value.substring(1, value.length - 1);
+            }
+            return value;
+        };
+
+
+        // Collect parameters based on effect type
         if (['distortion', 'reverb', 'feedbackDelay'].includes(effectType)) {
-            var wet = block.getInput('WET') ? G.valueToCode(block, 'WET', G.ORDER_ATOMIC) || '0' : '0';
-            code += `window.audioEngine.effects.${effectType}.wet.value = ${wet};
-`;
+            if (block.getInput('WET')) {
+                params.wet = getNumericValue('WET', 0);
+            }
         }
 
         if (effectType === 'distortion') {
-            var distortionAmount = G.valueToCode(block, 'DISTORTION_AMOUNT', G.ORDER_ATOMIC) || '0';
-            var oversample = block.getFieldValue('OVERSAMPLE_VALUE');
-            code += `window.audioEngine.effects.distortion.distortion = ${distortionAmount};
-`;
-            code += `window.audioEngine.effects.distortion.oversample = '${oversample}';
-`;
-            code += `window.audioEngine.log('Distortion 效果已設定。');
-`;
+            params.distortion = getNumericValue('DISTORTION_AMOUNT', 0);
+            params.oversample = block.getFieldValue('OVERSAMPLE_VALUE');
         } else if (effectType === 'reverb') {
-            var decay = G.valueToCode(block, 'DECAY', G.ORDER_ATOMIC) || '1.5';
-            var predelay = G.valueToCode(block, 'PREDELAY', G.ORDER_ATOMIC) || '0.01';
-            // Reverb needs to be stopped and started for decay and predelay to take effect
-            code += `
-                window.audioEngine.effects.reverb.decay = ${decay};
-                window.audioEngine.effects.reverb.preDelay = ${predelay};
-                window.audioEngine.effects.reverb.stop();
-                window.audioEngine.effects.reverb.start();
-            `; // Reverb starts on its own after setting decay
-            code += `window.audioEngine.log('Reverb 效果已設定。');
-`;
+            params.decay = getNumericValue('DECAY', 1.5);
+            params.preDelay = getNumericValue('PREDELAY', 0.01);
         } else if (effectType === 'feedbackDelay') {
-            var delayTime = G.valueToCode(block, 'DELAY_TIME', G.ORDER_ATOMIC) || '"8n"';
-            var feedback = G.valueToCode(block, 'FEEDBACK', G.ORDER_ATOMIC) || '0.25';
-            code += `window.audioEngine.effects.feedbackDelay.delayTime.value = ${delayTime};
-`;
-            code += `window.audioEngine.effects.feedbackDelay.feedback.value = ${feedback};
-`;
-            code += `window.audioEngine.log('FeedbackDelay 效果已設定。');
-`;
+            params.delayTime = getStringValue('DELAY_TIME', '8n');
+            params.feedback = getNumericValue('FEEDBACK', 0.25);
         } else if (effectType === 'filter') {
-            var filterType = block.getFieldValue('FILTER_TYPE_VALUE');
-            var filterFreq = block.getInput('FILTER_FREQ') ? G.valueToCode(block, 'FILTER_FREQ', G.ORDER_ATOMIC) || '20000' : '20000';
-            var filterQ = block.getInput('FILTER_Q') ? G.valueToCode(block, 'FILTER_Q', G.ORDER_ATOMIC) || '1' : '1';
-            var filterRolloff = block.getFieldValue('FILTER_ROLLOFF_VALUE');
-
-            code += `window.audioEngine.effects.filter.type = '${filterType}';
-`;
-            code += `window.audioEngine.effects.filter.frequency.value = ${filterFreq};
-`;
-            code += `window.audioEngine.effects.filter.Q.value = ${filterQ};
-`;
-            code += `window.audioEngine.effects.filter.rolloff = ${filterRolloff};
-`;
-            code += `window.audioEngine.log('Filter 效果已設定。');
-`;
+            // For filter, the 'type' in the config is the specific filter type from the dropdown
+            effectType = block.getFieldValue('FILTER_TYPE_VALUE');
+            params.frequency = getNumericValue('FILTER_FREQ', 20000);
+            params.Q = getNumericValue('FILTER_Q', 1);
+            params.rolloff = parseInt(block.getFieldValue('FILTER_ROLLOFF_VALUE'), 10);
+            // The type of filter is now the main effectType for the config object
         } else if (effectType === 'compressor') {
-            var threshold = G.valueToCode(block, 'THRESHOLD', G.ORDER_ATOMIC) || '-24';
-            var ratio = G.valueToCode(block, 'RATIO', G.ORDER_ATOMIC) || '12';
-            var attack = G.valueToCode(block, 'ATTACK', G.ORDER_ATOMIC) || '0.003';
-            var release = G.valueToCode(block, 'RELEASE', G.ORDER_ATOMIC) || '0.25';
-            code += `window.audioEngine.effects.compressor.threshold.value = ${threshold};
-`;
-            code += `window.audioEngine.effects.compressor.ratio.value = ${ratio};
-`;
-            code += `window.audioEngine.effects.compressor.attack.value = ${attack};
-`;
-            code += `window.audioEngine.effects.compressor.release.value = ${release};
-`;
-            code += `window.audioEngine.log('Compressor 效果已設定。');
-`;
+            params.threshold = getNumericValue('THRESHOLD', -24);
+            params.ratio = getNumericValue('RATIO', 12);
+            params.attack = getNumericValue('ATTACK', 0.003);
+            params.release = getNumericValue('RELEASE', 0.25);
         } else if (effectType === 'limiter') {
-            var threshold = G.valueToCode(block, 'THRESHOLD', G.ORDER_ATOMIC) || '-6';
-            code += `window.audioEngine.effects.limiter.threshold.value = ${threshold};
-`;
-            code += `window.audioEngine.log('Limiter 效果已設定。');
-`;
+            params.threshold = getNumericValue('THRESHOLD', -6);
         }
 
-        return code;
+        const config = {
+            type: effectType,
+            params: params
+        };
+
+        // Return a JSON string wrapped in a comment. This is data to be collected, not executed.
+        return `/* EFFECT_CONFIG:${JSON.stringify(config)} */`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_setup_effect'] = G['sb_setup_effect']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_setup_effect'] = G['sb_setup_effect']; } catch (e) { }

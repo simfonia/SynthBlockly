@@ -1,8 +1,8 @@
-# SynthBlockly-Vite 檔案結構
+# SynthBlockly檔案結構
 
 本文件說明 Vite 版本的 SynthBlockly 專案檔案結構。專案已經從傳統的全域腳本模式重構為使用 Vite 進行打包和管理的現代模組化架構。
 
-- `synthblockly-vite/`
+- `synthblockly/`
   - `index.html`: Vite 專案的 HTML 主入口點。負責載入主腳本 `main.js`。
   - `main.js`: 應用程式的 **Vite 主入口點**。它的主要職責是匯入並啟動核心應用程式邏輯 `js/app.js`。
   - `styles.css`: 全域的 CSS 樣式表。
@@ -12,7 +12,7 @@
   - `js/`: **模組化的 JavaScript 原始碼**
     - `app.js`: **核心應用程式主入口**。負責初始化各個模組，是整個應用的指揮中心。
     - `core/`: **核心商業邏輯**
-      - `audioEngine.js`: 封裝 Tone.js 的音訊引擎，管理樂器、效果器和音訊播放。
+      - `audioEngine.js`: 封裝 Tone.js 的音訊引擎，負責管理樂器、**動態效果器鏈**和音訊播放。
       - `midiEngine.js`: 處理 Web MIDI API 的邏輯，包括設備連接和訊息監聽。
       - `serialEngine.js`: 處理 Web Serial API 的邏輯，用於與 Arduino 等硬體通訊。
       - `blocklyManager.js`: 負責 Blockly 工作區的初始化、事件監聽和動態積木邏輯。

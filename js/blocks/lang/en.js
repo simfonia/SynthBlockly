@@ -6,6 +6,7 @@ export const MSG_EN = {
     'UI_BTN_PLAY_TEST_NOTE': 'Play Test Note (A4)',
     'UI_BTN_SAVE_PROJECT': 'Save Project (XML)',
     'UI_BTN_LOAD_PROJECT': 'Load Project (XML)',
+    'UI_BTN_NEW_PROJECT': 'New Project',
     'UI_BTN_CONNECT_SERIAL': 'Connect Serial Device',
     'UI_BTN_CONNECT_MIDI': 'Connect MIDI Device',
     'UI_BTN_RUN_BLOCKS': 'Run Blocks (Ctrl+Enter)',

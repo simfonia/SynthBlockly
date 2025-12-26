@@ -5,8 +5,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 
 // --- i18n ---
 // Locales are now loaded dynamically. See loadBlocklyLocale function.
-// Import custom project-specific locales, as these are part of our source code.
-import * as CustomLangZH from './lang/zh-hant.js';
+// NO hardcoded import for custom project-specific locales here anymore.
 
 // import 'blockly/blocks/field_textinput'; // Ensure FieldTextInput is loaded
 // import 'blockly/blocks/mutator'; // Ensure Mutator is loaded
@@ -32,47 +31,60 @@ import { registerGenerators as registerCustomWaveGenerators } from './instrument
 // --- End of Imports ---
 
 /**
- * Dynamically loads a Blockly locale from the /locales/ public directory.
- * @param {string} localeCode The locale code, e.g., 'zh-hant'.
+ * Dynamically loads a Blockly locale from the /locales/ public directory and merges
+ * it with SynthBlockly's custom language strings.
+ * @param {string} currentLang The detected language code from window.currentLanguage (e.g., 'zh-hant', 'en').
  */
-async function loadBlocklyLocale(localeCode) {
-    // This function now fetches locale data as JSON and pre-merges it before setting.
-    const fetchLocale = async (code) => {
+async function loadBlocklyLocale(currentLang) {
+    // Determine which base Blockly locale to load from the public folder
+    const blocklyLocaleCode = currentLang;
+
+    // Fetch the base Blockly locale data
+    const fetchBaseLocale = async (code) => {
         const path = `${import.meta.env.BASE_URL}locales/${code}.json`;
-        // console.log(`[Diag] Fetching locale from: ${path}`);
         const response = await fetch(path);
         if (!response.ok) {
-            throw new Error(`Failed to fetch locale data: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch base Blockly locale data: ${response.status} ${response.statusText}`);
         }
         return response.json();
     };
 
+    // Dynamically import SynthBlockly's custom language data (e.g., ./lang/zh-hant.js)
+    const fetchCustomLocale = async (code) => {
+        try {
+            const module = await import(`./lang/${code}.js`);
+            // Custom language modules export an object like MSG_ZH_HANT or MSG_EN
+            return module[`MSG_${code.toUpperCase().replace('-', '_')}`];
+        } catch (error) {
+            console.warn(`Failed to load custom locale for ${code}. Falling back to 'en' for custom strings.`, error);
+            // If specific custom locale fails, try to load custom 'en' as fallback
+            const enModule = await import(`./lang/en.js`);
+            return enModule.MSG_EN;
+        }
+    };
+
+
     try {
-        // Fetch the base locale data
-        const baseLocaleData = await fetchLocale(localeCode);
-        // console.log(`[Diag] Fetched base locale data. Sample (ADD_COMMENT):`, baseLocaleData.ADD_COMMENT);
+        const baseLocaleData = await fetchBaseLocale(blocklyLocaleCode);
+        const customLocaleData = await fetchCustomLocale(blocklyLocaleCode); // Use blocklyLocaleCode for custom too
 
-        // Pre-merge base and custom locales into a single object
-        const finalLocale = { ...baseLocaleData, ...CustomLangZH.MSG_ZH_HANT };
-        // console.log(`[Diag] Merged custom locale data. Sample (MSG_SYNTHBLOCKLY_CATEGORY):`, finalLocale.MSG_SYNTHBLOCKLY_CATEGORY);
-
-        // console.log('[Diag] Before Blockly.setLocale() with final merged object.');
+        // Merge base Blockly and custom SynthBlockly locales
+        const finalLocale = { ...baseLocaleData, ...customLocaleData };
         Blockly.setLocale(finalLocale);
-        // console.log('[Diag] After Blockly.setLocale()');
         
-        // console.log(`[Diag] Successfully fetched, merged, and set locale: ${localeCode}`);
+        console.log(`Successfully fetched, merged, and set locale: ${blocklyLocaleCode} (custom: ${blocklyLocaleCode})`);
 
     } catch (error) {
-        console.error(`[Diag] CRITICAL: Failed to load locale ${localeCode}:`, error);
-        // Fallback to English if loading fails
+        console.error(`CRITICAL: Failed to load locale ${blocklyLocaleCode}:`, error);
+        // Fallback to English if any part of loading (base or custom) fails
         try {
-            const fallbackData = await fetchLocale('en');
-            // Also merge custom messages for the fallback
-            const finalFallbackLocale = { ...fallbackData, ...CustomLangZH.MSG_ZH_HANT };
+            const fallbackBaseData = await fetchBaseLocale('en');
+            const fallbackCustomData = await fetchCustomLocale('en'); // Use 'en' for custom fallback
+            const finalFallbackLocale = { ...fallbackBaseData, ...fallbackCustomData };
             Blockly.setLocale(finalFallbackLocale);
-            // console.log('[Diag] Fell back to English locale with custom messages.');
+            console.log('Fell back to English locale with custom messages.');
         } catch (fallbackError) {
-            console.error('[Diag] CRITICAL: Failed to load even the fallback English locale:', fallbackError);
+            console.error('CRITICAL: Failed to load even the fallback English locale:', fallbackError);
         }
     }
 }
@@ -83,8 +95,9 @@ async function loadBlocklyLocale(localeCode) {
  */
 export async function registerAll() {
   try {
-    // 1. Load language first
-    await loadBlocklyLocale('zh-hant');
+    // 1. Load language first, using window.currentLanguage
+    // window.currentLanguage is set in index.html, defaulting to 'en' if not detected.
+    await loadBlocklyLocale(window.currentLanguage || 'en'); 
 
     // 2. Register built-in blocks
     Blockly.common.defineBlocks(libraryBlocks);
@@ -97,7 +110,7 @@ export async function registerAll() {
     registerTransportBlocks(Blockly);
     registerEffectsBlocks(Blockly);
     registerMathBlocks(Blockly);
-    registerCustomWaveBlocks(Blockly); // NEW: Register custom wave blocks
+    registerCustomWaveBlocks(Blockly); // NEW
     console.log('Blocks registered.');
 
     // 4. Register Custom Generators
@@ -108,7 +121,7 @@ export async function registerAll() {
     registerTransportGenerators(Blockly, javascriptGenerator);
     registerEffectsGenerators(Blockly, javascriptGenerator);
     registerMathGenerators(Blockly, javascriptGenerator);
-    registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW: Register custom wave generators
+    registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW
     console.log('Generators registered.');
 
   } catch (e) {

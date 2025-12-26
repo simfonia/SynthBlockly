@@ -61,10 +61,12 @@
         - [x] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「泛音 N 振幅」。
         - [x] 實作 Tone.js 邏輯，使用 `oscillator.partials`。
         - [x] 整合 ADSR 參數調整。(通過 `sb_set_adsr` 積木作用於當前樂器實現)
-    - [ ] **積木二：「加法合成器 (自由頻率)」(Free Frequency Additive Synthesizer)**
-        - [ ] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「振幅 (Amplitude)」和「頻率 (Frequency)」。
-        - [ ] 實作 Tone.js 邏輯，使用多個 `Tone.Oscillator` 和 `Tone.Gain` 混合。
-        - [ ] 整合 ADSR 參數調整。
+    - [x] **積木二：「加法合成器 (自由頻率)」(Free Frequency Additive Synthesizer)**
+        - [x] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「振幅 (Amplitude)」和「頻率 (Frequency)」。
+        - [x] 實作 Tone.js 邏輯，使用多個 `Tone.Oscillator` 和 `Tone.Gain` 混合。
+        - [x] 整合 ADSR 參數調整。
     - [x] 實作這兩種積木的 Blockly 產生器。(積木一已完成)
     - [x] **(已完成並優化)** 修復 `visualizer.js` 的 `SyntaxError` 以啟用即時波形視覺化。
     - [ ] **(未來優化)** 實現 ADSR 包絡的視覺化。
+
+- [x] **動態效果器管理與效果鏈重構 (Dynamic Effect Management and Chain Refactoring)**
