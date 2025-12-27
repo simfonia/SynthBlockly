@@ -22,7 +22,11 @@ export function registerBlocks() {
                             ["%{BKY_SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD}", "feedbackDelay"],
                             ["%{BKY_SB_EFFECT_FILTER_TYPE_FIELD}", "filter"],
                             ["%{BKY_SB_EFFECT_COMPRESSOR_TYPE_FIELD}", "compressor"],
-                            ["%{BKY_SB_EFFECT_LIMITER_TYPE_FIELD}", "limiter"]
+                            ["%{BKY_SB_EFFECT_LIMITER_TYPE_FIELD}", "limiter"],
+                            ["%{BKY_SB_EFFECT_LOFI_TYPE_FIELD}", "lofi"],
+                            ["%{BKY_SB_EFFECT_CHORUS_TYPE_FIELD}", "chorus"],
+                            ["%{BKY_SB_EFFECT_PHASER_TYPE_FIELD}", "phaser"],
+                            ["%{BKY_SB_EFFECT_AUTOPANNER_TYPE_FIELD}", "autoPanner"]
                         ]
                     }
                 ],
@@ -61,9 +65,18 @@ export function registerBlocks() {
                 if (this.getInput('RATIO')) this.removeInput('RATIO');
                 if (this.getInput('ATTACK')) this.removeInput('ATTACK');
                 if (this.getInput('RELEASE')) this.removeInput('RELEASE');
+                if (this.getInput('BITDEPTH')) this.removeInput('BITDEPTH');
+                if (this.getInput('CHORUS_FREQUENCY')) this.removeInput('CHORUS_FREQUENCY');
+                if (this.getInput('CHORUS_DELAY_TIME')) this.removeInput('CHORUS_DELAY_TIME');
+                if (this.getInput('CHORUS_DEPTH')) this.removeInput('CHORUS_DEPTH');
+                if (this.getInput('PHASER_FREQUENCY')) this.removeInput('PHASER_FREQUENCY');
+                if (this.getInput('PHASER_OCTAVES')) this.removeInput('PHASER_OCTAVES');
+                if (this.getInput('PHASER_BASE_FREQUENCY')) this.removeInput('PHASER_BASE_FREQUENCY');
+                if (this.getInput('AUTOPANNER_FREQUENCY')) this.removeInput('AUTOPANNER_FREQUENCY');
+                if (this.getInput('AUTOPANNER_DEPTH')) this.removeInput('AUTOPANNER_DEPTH');
 
                 // Add WET input for specific effects
-                if (['distortion', 'reverb', 'feedbackDelay'].includes(effectType)) {
+                if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner'].includes(effectType)) {
                     this.appendValueInput('WET')
                         .setCheck("Number")
                         .setAlign(Blockly.ALIGN_RIGHT)
@@ -193,6 +206,75 @@ export function registerBlocks() {
                     this.getInput('THRESHOLD').setShadowDom(Blockly.utils.xml.textToDom(
                         '<shadow type="math_number"><field name="NUM">-6</field></shadow>'
                     ));
+                } else if (effectType === 'lofi') {
+                    this.appendDummyInput('BITDEPTH')
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_BITDEPTH_FIELD}")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["4", "4"],
+                            ["8", "8"],
+                            ["12", "12"],
+                            ["16", "16"]
+                        ]), "BITDEPTH_VALUE");
+                } else if (effectType === 'chorus') {
+                    this.appendValueInput('CHORUS_FREQUENCY')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_CHORUS_FREQUENCY_FIELD}");
+                    this.getInput('CHORUS_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">1.5</field></shadow>'
+                    ));
+                    this.appendValueInput('CHORUS_DELAY_TIME')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_DELAY_TIME_FIELD}");
+                    this.getInput('CHORUS_DELAY_TIME').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">3.5</field></shadow>'
+                    ));
+                    this.appendValueInput('CHORUS_DEPTH')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_DEPTH_FIELD}");
+                    this.getInput('CHORUS_DEPTH').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">0.7</field></shadow>'
+                    ));
+                } else if (effectType === 'phaser') {
+                    this.appendValueInput('PHASER_FREQUENCY')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_PHASER_FREQUENCY_FIELD}"); // Now uses its own key
+                    this.getInput('PHASER_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">15</field></shadow>'
+                    ));
+                    this.appendValueInput('PHASER_OCTAVES')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_OCTAVES_FIELD}");
+                    this.getInput('PHASER_OCTAVES').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">3</field></shadow>'
+                    ));
+                    this.appendValueInput('PHASER_BASE_FREQUENCY')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_BASE_FREQUENCY_FIELD}");
+                    this.getInput('PHASER_BASE_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">200</field></shadow>'
+                    ));
+                } else if (effectType === 'autoPanner') {
+                    this.appendValueInput('AUTOPANNER_FREQUENCY')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_AUTOPANNER_FREQUENCY_FIELD}");
+                    this.getInput('AUTOPANNER_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">1</field></shadow>'
+                    ));
+                    this.appendValueInput('AUTOPANNER_DEPTH')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_AUTOPANNER_DEPTH_FIELD}");
+                    this.getInput('AUTOPANNER_DEPTH').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
+                    ));
                 }
             };
 
@@ -217,6 +299,8 @@ export function registerBlocks() {
             } else if (effectType === 'filter') {
                 container.setAttribute('filter_type_value', this.getFieldValue('FILTER_TYPE_VALUE'));
                 container.setAttribute('filter_rolloff_value', this.getFieldValue('FILTER_ROLLOFF_VALUE'));
+            } else if (effectType === 'lofi') {
+                container.setAttribute('bitdepth_value', this.getFieldValue('BITDEPTH_VALUE'));
             }
             return container;
         },
@@ -231,6 +315,8 @@ export function registerBlocks() {
             } else if (effectType === 'filter') {
                 this.setFieldValue(xmlElement.getAttribute('filter_type_value'), 'FILTER_TYPE_VALUE');
                 this.setFieldValue(xmlElement.getAttribute('filter_rolloff_value'), 'FILTER_ROLLOFF_VALUE');
+            } else if (effectType === 'lofi') {
+                this.setFieldValue(xmlElement.getAttribute('bitdepth_value'), 'BITDEPTH_VALUE');
             }
         }
     };

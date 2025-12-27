@@ -306,7 +306,7 @@ export async function getBlocksCode() {
         // 1. Collect effect configurations from all 'sb_setup_effect' blocks
         const effectConfigs = [];
         const effectBlocks = workspace.getBlocksByType('sb_setup_effect', false);
-        const configRegex = /\/\* EFFECT_CONFIG:(.*) \*\//;
+        const configRegex = /\/\* EFFECT_CONFIG:(.*?) \*\//;
 
         effectBlocks.forEach(block => {
             try {

@@ -1,28 +1,20 @@
-# SynthBlockly-Vite 專案文件
+# SynthBlockly專案任務說明
 
-本文件記錄 SynthBlockly (Vite 版本) 的程式架構與開發任務。
+## 概述
+    - 本專案是一個透過 Blockly 連結 Arduino/MIDI 鍵盤 到 p5.js+ tone.js 來產生音樂的合成器
+    - 本專案為由 **Vite** 驅動的現代 JavaScript 模組化專案。
 
----
+    - 開發環境
+        * Windows 11
+        * VS Code v1.106.2
+        * node.js v24.12.0
+        * Blockly v12.3.1
+        * tone.js
+        * p5.js
 
-## 程式架構說明 (Architecture Overview)
 
-本專案已從傳統的全域腳本模式，全面重構為由 **Vite** 驅動的現代 JavaScript 模組化專案。
 
-### 主要組成 (Main Components)
-
-- **`main.js` (根目錄)**: 專案的 **Vite 主入口點**。其核心職責是匯入並執行 `js/app.js`，從而啟動整個應用程式。
-- **`js/app.js`**: **應用程式的核心指揮中心**。負責初始化 Blockly 工作區、音訊引擎、MIDI/Serial 引擎以及所有 UI 元件，並協調各模組之間的運作。
-- **`js/core/`**: 存放核心商業邏輯的模組。
-    - `audioEngine.js`: 封裝 **Tone.js**，管理所有音訊合成、樂器、效果器與播放。
-    - `blocklyManager.js`: 管理 Blockly 工作區的生命週期、事件監聽與動態積木註冊。
-    - `midiEngine.js` / `serialEngine.js`: 分別處理 **Web MIDI** 與 **Web Serial** API 的通訊。
-- **`js/blocks/`**: 存放所有 Blockly 自訂積木的相關檔案。
-    - `index.js`: 統一載入並註冊所有積木定義、程式碼生成器與語言檔案。
-    - `*_blocks.js`: 各類積木的 JSON 定義。
-    - `*_generators.js`: 各類積木對應的 JavaScript 程式碼生成器。
-- **`toolbox.xml` (根目錄)**: 定義 Blockly 工具箱的結構與內容。
-
-### 事件驅動機制 (Event-Driven Mechanism)
+## 事件驅動機制 (Event-Driven Mechanism)
 
 專案保留並優化了事件驅動架構，以處理「帽子積木」(例如「當收到...」)，使其**無需點擊「執行」按鈕**即可即時響應。
 
@@ -37,9 +29,7 @@
 
 ---
 
-## 近期任務與狀態 (Recent Tasks & Status)
-
-### 已完成 (Completed)
+## 任務清單
 - [x] **專案遷移至 Vite**: 將整個專案從傳統 script 引入方式重構為使用 Vite 進行建置與開發。
 - [x] **程式碼模組化**: 根據新規範將所有 JavaScript 程式碼拆分為獨立的 ES 模組，存放於 `js/core`, `js/ui`, `js/blocks` 等資料夾中。
 - [x] **重構事件處理架構**：將 `sb_serial_data_received` 和 `sb_midi_note_received` 兩個帽子積木重構為即時事件驅動模式。
@@ -53,20 +43,16 @@
 - [x] **修復 MIDI 與 PC 鍵盤發聲問題**: 解決了模組化後的 MIDI 監聽器作用域問題。
 - [x] **解決 Blockly API 棄用警告**: 為相關的變數操作 API 增加了 polyfill。
 - [x] **完成基礎積木庫與分類**: 補齊標準積木，並建立 `SynthBlockly` 主分類。
-
-### 待辦事項 (Next Steps / ToDo)
-
 - [x] **實作自訂波形樂器積木 (Custom Waveform Instrument Blocks)**
-    - [x] **積木一：「加法合成器 (諧波)」(Harmonic Additive Synthesizer)**
+    * [x] **積木一：「加法合成器 (諧波)」(Harmonic Additive Synthesizer)**
         - [x] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「泛音 N 振幅」。
         - [x] 實作 Tone.js 邏輯，使用 `oscillator.partials`。
         - [x] 整合 ADSR 參數調整。(通過 `sb_set_adsr` 積木作用於當前樂器實現)
-    - [x] **積木二：「加法合成器 (自由頻率)」(Free Frequency Additive Synthesizer)**
+    * [x] **積木二：「加法合成器 (自由頻率)」(Free Frequency Additive Synthesizer)**
         - [x] 設計 Blockly 積木定義 (JSON/JS) - 可擴展列表，每個項目輸入「振幅 (Amplitude)」和「頻率 (Frequency)」。
         - [x] 實作 Tone.js 邏輯，使用多個 `Tone.Oscillator` 和 `Tone.Gain` 混合。
         - [x] 整合 ADSR 參數調整。
-    - [x] 實作這兩種積木的 Blockly 產生器。(積木一已完成)
-    - [x] **(已完成並優化)** 修復 `visualizer.js` 的 `SyntaxError` 以啟用即時波形視覺化。
-    - [ ] **(未來優化)** 實現 ADSR 包絡的視覺化。
 
 - [x] **動態效果器管理與效果鏈重構 (Dynamic Effect Management and Chain Refactoring)**
+- [x] **自訂取樣器**:可以用自訂的wav檔創建樂器音色
+- [ ] **實現 ADSR 包絡的視覺化**

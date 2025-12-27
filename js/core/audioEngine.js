@@ -133,6 +133,18 @@ export const audioEngine = {
                         // Limiter constructor takes threshold in dB
                         effectInstance = new Tone.Limiter(params.threshold);
                         break;
+                    case 'bitCrusher':
+                        effectInstance = new Tone.BitCrusher(params);
+                        break;
+                    case 'chorus':
+                        effectInstance = new Tone.Chorus(params.frequency, params.delayTime, params.depth).start();
+                        break;
+                    case 'phaser':
+                        effectInstance = new Tone.Phaser(params.frequency, params.octaves, params.baseFrequency);
+                        break;
+                    case 'autoPanner':
+                        effectInstance = new Tone.AutoPanner(params.frequency, params.depth).start();
+                        break;
                     default:
                         this.log(`警告: 未知的效果器類型 "${config.type}"。`);
                         return;
@@ -173,8 +185,38 @@ export const audioEngine = {
     midiChordMap: {},
     midiPressedNotes: new Map(),
     midiPlayingNotes: new Map(),
+    backgroundNoise: null,
 
     log: log, // Use the imported log function
+
+    playBackgroundNoise: async function(type = 'white', volume = 0.1) {
+        await ensureAudioStarted();
+        this.stopBackgroundNoise(); // Stop any existing noise first
+        try {
+            this.backgroundNoise = new Tone.Noise(type).toDestination();
+            this.backgroundNoise.volume.value = Tone.gainToDb(volume); // Convert linear gain to dB
+            this.backgroundNoise.start();
+            this.log(`背景雜訊 (${type}) 已開始播放，音量 ${volume.toFixed(2)}。`);
+        } catch (e) {
+            this.log(`播放背景雜訊時出錯: ${e.message}`);
+            console.error(e);
+        }
+    },
+
+    stopBackgroundNoise: function() {
+        if (this.backgroundNoise) {
+            try {
+                this.backgroundNoise.stop();
+                this.backgroundNoise.dispose();
+                this.backgroundNoise = null;
+                this.log('背景雜訊已停止。');
+            } catch (e) {
+                this.log(`停止背景雜訊時出錯: ${e.message}`);
+                console.error(e);
+                this.backgroundNoise = null; // Ensure it's cleared even on error
+            }
+        }
+    },
 
     createInstrument: function(name, type) {
         if (!name) {
@@ -214,8 +256,8 @@ export const audioEngine = {
                     this.log(`錯誤: 未知的樂器類型 "${type}"。`);
                     return;
             }
-            // All new instruments are chained directly to the analyser. The effect chain is managed dynamically.
-            newInstrument.chain(analyser);
+            // All new instruments are chained through the active effect chain.
+            newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建樂器 "${name}" (${type})。`);
         } catch (e) {
@@ -252,7 +294,8 @@ export const audioEngine = {
         }
 
         try {
-            newInstrument.chain(analyser);
+            // New instruments are chained through the active effect chain.
+            newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建自訂波形樂器 "${name}"，泛音: [${partialsArray.join(', ')}]。`);
         } catch (e) {
@@ -358,7 +401,8 @@ export const audioEngine = {
                 }
             };
             
-            newInstrument.chain(analyser);
+            // New instruments are chained through the active effect chain.
+            newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
             this.log(`成功創建加法合成器 "${name}"。`);
 
@@ -515,6 +559,7 @@ export const audioEngine = {
      */
     resetAudioEngineState: function() {
         this.log('正在重設音訊引擎狀態...');
+        this.stopBackgroundNoise(); // Stop any background noise
         this.Tone.Transport.stop();
         this.log('✓ 主時鐘 (Transport) 已停止');
 

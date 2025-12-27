@@ -21,6 +21,7 @@
     </ul>
 
     <h2>Distortion</h2>
+    <p>Distortion processes an audio signal non-linearly. It intentionally alters the shape of the input waveform, typically by clipping or saturating its peaks. This non-linear operation introduces new harmonic content (overtones), often odd-order harmonics, that were not present in the original signal, resulting in a "fuzzier" or "grittier" sound.</p>
     <p>Adds harmonic grit and saturation to the sound.</p>
     <ul>
         <li><span class="param">Amount:</span> The intensity of the distortion, ranging from 0 (clean) to 1 (heavily distorted).</li>
@@ -28,6 +29,7 @@
     </ul>
 
     <h2>Reverb</h2>
+    <p>Reverb simulates the physical phenomenon of sound reflections in an enclosed space. When sound is produced in a room, it bounces off surfaces, creating numerous reflections that reach the listener's ear at slightly different times and with gradually reduced amplitude. Reverb effects create a dense, decaying series of echoes that blend together, giving a sense of space.</p>
     <p>Simulates the sound of a space (a room, hall, etc.).</p>
     <ul>
         <li><span class="param">Decay:</span> The length of the reverb tail in seconds. Longer decay times simulate larger spaces.</li>
@@ -35,6 +37,7 @@
     </ul>
 
     <h2>Feedback Delay</h2>
+    <p>Feedback Delay creates a series of decaying echoes by feeding a portion of the delayed signal back into the input of the delay line. The original signal is delayed, and then a fraction of this delayed signal is added back to the input, causing it to be delayed again. This process creates successive, progressively quieter repetitions of the sound.</p>
     <p>Creates echoes of the input sound.</p>
     <ul>
         <li><span class="param">Delay Time:</span> The time between successive echoes. This can be a musical duration (like '8n' for an eighth note) or a time in seconds.</li>
@@ -42,6 +45,7 @@
     </ul>
 
     <h2>Filter</h2>
+    <p>A filter modifies the frequency content of a signal by attenuating or boosting specific frequency ranges. Filters work by selectively allowing certain frequencies to pass through while reducing others. This changes the timbre (tonal quality) of the sound by shaping its spectral balance.</p>
     <p>Shapes the tonal characteristics of the sound by boosting or cutting specific frequencies.</p>
     <ul>
         <li><span class="param">Type:</span> The kind of filter to apply (e.g., <code>lowpass</code> lets low frequencies through, <code>highpass</code> lets high frequencies through).</li>
@@ -51,6 +55,7 @@
     </ul>
 
     <h2>Compressor</h2>
+    <p>A compressor reduces the dynamic range of an audio signal. When the signal's amplitude exceeds a specified "threshold," the compressor automatically reduces its gain (volume) by a defined "ratio." This makes loud parts quieter relative to the original, effectively reducing the difference between the loudest and quietest parts of the sound.</p>
     <p>Reduces the dynamic range of a sound, making quiet parts louder and loud parts quieter.</p>
     <ul>
         <li><span class="param">Threshold:</span> The audio level in decibels (dB) above which compression starts. The range is approximately -100 to 0. A lower value (e.g., -50) means more of the signal will be compressed.</li>
@@ -60,9 +65,40 @@
     </ul>
 
     <h2>Limiter</h2>
+    <p>A limiter is a specialized form of compressor with a very high (often infinite) ratio, designed to prevent the audio signal from exceeding an absolute maximum amplitude (threshold). Any part of the signal that attempts to go above this threshold is immediately brought down to the threshold level, effectively preventing clipping and unwanted distortion.</p>
     <p>A type of extreme compressor that prevents a signal from exceeding a set threshold.</p>
     <ul>
         <li><span class="param">Threshold:</span> The level in decibels (dB) that the signal is not allowed to exceed. The maximum value is 0. The range is approximately -100 to 0.</li>
+    </ul>
+
+    <h2>Lo-Fi</h2>
+    <p>Lo-Fi effects achieve their characteristic sound by intentionally degrading audio quality through processes like bit crushing and/or downsampling.</p>
+    <ul>
+        <li><b>Bit Crushing:</b> Reduces the digital bit depth of the signal. This means fewer discrete amplitude levels are available to represent the waveform, introducing quantization error and noise, creating a "stair-step" effect on the waveform and a gritty, digital distortion.</li>
+        <li><b>Downsampling:</b> Reduces the sample rate of the signal. This limits the maximum frequency that can be accurately represented (Nyquist frequency) and introduces aliasing (high frequencies folding back into lower frequencies), resulting in a less detailed and often "lo-fi" sound.</li>
+    </ul>
+    <p>Simulates the sound quality of early digital equipment by reducing the bit depth, which creates a unique, gritty, and retro effect.</p>
+    <ul>
+        <li><span class="param">Bit Depth:</span> Sets the bit depth of the audio signal. A lower bit depth produces a more pronounced Lo-Fi effect and quantization noise. Available values are 4, 8, 12, 16.</li>
+    </ul>
+
+    <h2>Chorus</h2>
+    <p>Chorus effects simulate the sound of multiple voices or instruments playing slightly out of unison. It works by creating one or more copies of the original signal, subtly delaying each copy, and then modulating the delay time of these copies with a slow Low-Frequency Oscillator (LFO). This dynamic delay causes slight, continuous pitch variations (Doppler effect) and creates a rich, shimmering, and wider stereo image.</p>
+    <p>Simulates multiple instruments playing in unison by mixing the original sound with slightly delayed and pitch-modulated copies, creating a fuller, shimmering sound.</p>
+    <ul>
+        <li><span class="param">Frequency:</span> The frequency of the LFO (Low-Frequency Oscillator) in Hertz (Hz), which controls the rate of the pitch modulation.</li>
+        <li><span class="param">Delay Time:</span> The base delay time between the original and copied sounds, in milliseconds (ms).</li>
+        <li><span class="param">Depth:</span> The depth of the modulation, from 0 to 1. This determines the amount of pitch variation.</li>
+    </ul>
+
+    <h2>Phaser</h2>
+    <p>The Phaser effect fundamentally relies on <b>Phase Shift</b> and <b>Wave Interference</b> to produce its unique sound. It splits the audio signal into two paths: one remains untouched, while the other passes through a series of "all-pass filters." These filters change the phase of different frequencies without altering their amplitude. When these two signals are recombined, frequencies where phases align will constructively interfere (boosting volume), and frequencies where phases oppose will destructively interfere (creating "notches" or dips in volume). This pattern across the frequency spectrum is known as "comb filtering."</p>
+    <p>To create its signature sweeping sound, a Low-Frequency Oscillator (LFO) continuously varies the settings of these all-pass filters. This causes the comb filter's notches to move up and down the frequency spectrum, resulting in the characteristic swirling, "whooshing," or "jet plane" auditory effect.</p>
+    <p>The Phaser creates unique sweeping and swirling effects by generating a series of cascading filter notches.</p>
+    <ul>
+        <li><span class="param">Frequency:</span> The frequency of the LFO (Low-Frequency Oscillator) in Hertz (Hz), which controls the rate of the phase sweep.</li>
+        <li><span class="param">Octaves:</span> The range of the phase sweep in octaves. Higher values result in a wider frequency sweep.</li>
+        <li><span class="param">Base Frequency:</span> The starting frequency of the phase sweep in Hertz (Hz).</li>
     </ul>
 </body>
 </html>

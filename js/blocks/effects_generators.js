@@ -48,7 +48,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
 
         // Collect parameters based on effect type
-        if (['distortion', 'reverb', 'feedbackDelay'].includes(effectType)) {
+        if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner'].includes(effectType)) {
             if (block.getInput('WET')) {
                 params.wet = getNumericValue('WET', 0);
             }
@@ -77,6 +77,20 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             params.release = getNumericValue('RELEASE', 0.25);
         } else if (effectType === 'limiter') {
             params.threshold = getNumericValue('THRESHOLD', -6);
+        } else if (effectType === 'lofi') {
+            effectType = 'bitCrusher'; // Use the Tone.js effect name internally
+            params.bits = parseInt(block.getFieldValue('BITDEPTH_VALUE'), 10);
+        } else if (effectType === 'chorus') {
+            params.frequency = getNumericValue('CHORUS_FREQUENCY', 1.5);
+            params.delayTime = getNumericValue('CHORUS_DELAY_TIME', 3.5);
+            params.depth = getNumericValue('CHORUS_DEPTH', 0.7);
+        } else if (effectType === 'phaser') {
+            params.frequency = getNumericValue('PHASER_FREQUENCY', 15);
+            params.octaves = getNumericValue('PHASER_OCTAVES', 3);
+            params.baseFrequency = getNumericValue('PHASER_BASE_FREQUENCY', 200);
+        } else if (effectType === 'autoPanner') {
+            params.frequency = getNumericValue('AUTOPANNER_FREQUENCY', 1);
+            params.depth = getNumericValue('AUTOPANNER_DEPTH', 0.5);
         }
 
         const config = {

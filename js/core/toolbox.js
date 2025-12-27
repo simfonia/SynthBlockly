@@ -235,6 +235,12 @@ export const TOOLBOX_XML_STRING = `
       <category name="%{BKY_MSG_EFFECTS_CATEGORY}" colour="%{BKY_EFFECTS_HUE}">
         <block type="sb_setup_effect"></block>
       </category>
+      <category name="%{BKY_MSG_SFX_CATEGORY}" colour="%{BKY_SFX_HUE}">
+        <category name="%{BKY_MSG_NOISE_CATEGORY}" colour="%{BKY_NOISE_HUE}">
+          <block type="sb_play_background_noise"></block>
+          <block type="sb_stop_background_noise"></block>
+        </category>
+      </category>
       <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">
         <block type="sb_midi_note_received"></block>
         <block type="sb_midi_play"></block>
