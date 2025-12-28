@@ -179,6 +179,7 @@ export const audioEngine = {
 
     instruments: {},
     currentInstrumentName: 'DefaultSynth',
+    currentSemitoneOffset: 0, // Tracks the current semitone adjustment
     pressedKeys: new Map(),
     chords: {},
     keyboardChordMap: {},
@@ -291,9 +292,16 @@ export const audioEngine = {
             if (typeof this.instruments[name].dispose === 'function') {
                 this.instruments[name].dispose();
             }
-        }
-
-        try {
+                        }
+                
+                        let newInstrument; // Declared here for proper scoping
+                        try {
+                            // Instantiate newInstrument as a Tone.PolySynth with OmniOscillator for custom partials
+                            newInstrument = new Tone.PolySynth(Tone.Synth, {
+                                oscillator: {
+                                    partials: partialsArray
+                                }
+                            });
             // New instruments are chained through the active effect chain.
             newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
@@ -412,6 +420,104 @@ export const audioEngine = {
         }
     },
 
+    createCustomSampler: function(name, urls, baseUrl, envelopeSettings = null) {
+        if (!name) {
+            this.log('Error: Custom sampler name cannot be empty.');
+            return;
+        }
+        if (this.instruments[name]) {
+            this.log(`Warning: Instrument "${name}" already exists and will be overwritten.`);
+            if (typeof this.instruments[name].dispose === 'function') {
+                this.instruments[name].dispose();
+            }
+        }
+
+        try {
+            const defaultEnvelope = { // Default envelope if none provided
+                attack: 0.01,
+                decay: 0.2,
+                sustain: 0.5,
+                release: 1.0,
+            };
+
+            const sampler = new Tone.Sampler({
+                urls: urls,
+                baseUrl: baseUrl || '',
+                volume: 6, // Increased to boost the sampler's output volume by 10dB
+                release: 0, // Ensure sampler itself has no long release, controlled by its internal envelope
+                envelope: envelopeSettings || defaultEnvelope, // Use provided settings or default
+                onload: () => {
+                    instrumentWrapper.loaded = true;
+                    // Sampler will connect its internal voices to the main sampler output
+                    // and then the sampler output chains to the effects.
+                    audioEngine.log(`Custom sampler "${name}" samples loaded successfully.`);
+                },
+                onerror: (e) => {
+                    audioEngine.log(`Error loading samples for custom sampler "${name}": ${e}`);
+                }
+            });
+
+            // Store the sampler
+            const instrumentWrapper = {
+                type: 'CustomSampler',
+                sampler: sampler,
+                loaded: false, // Sampler's own loaded status
+                
+                // --- Playback methods for the wrapper ---
+                triggerAttack: function(notes, time, velocity) {
+                    if (this.sampler && this.loaded) {
+                        // Explicitly release any currently playing instances of these notes to prevent stacking
+                        this.sampler.triggerRelease(notes, time); 
+                        this.sampler.triggerAttack(notes, time, velocity);
+                    } else {
+                        audioEngine.log(`Warning: Sampler "${name}" is not loaded yet.`);
+                    }
+                },
+                triggerRelease: function(notes, time) {
+                    if (this.sampler && this.loaded) {
+                        // Rely on Sampler's internal envelope for release; do not call sampler.triggerRelease directly here.
+                        // Sampler's internal envelope release is triggered by the lack of further triggerAttack calls.
+                        // If we truly need to 'release' via the envelope for held notes,
+                        // this is handled by the Sampler's internal envelope setting.
+                        // The explicit `triggerRelease` on sampler is more for ending the sample source.
+                        // Let's rely on the envelope's release param set in constructor.
+                    }
+                },
+                triggerAttackRelease: function(notes, duration, time, velocity) {
+                    if (this.sampler && this.loaded) {
+                        // Explicitly release any currently playing instances of these notes to prevent stacking
+                        this.sampler.triggerRelease(notes, time); 
+                        this.sampler.triggerAttackRelease(notes, duration, time, velocity);
+                    } else {
+                        audioEngine.log(`Warning: Sampler "${name}" is not loaded yet.`);
+                    }
+                },
+
+                // --- Configuration methods ---
+                set: function(options) {
+                    // Sampler's set method can take detune, volume, and envelope settings
+                    this.sampler.set(options);
+                    if (options.detune !== undefined) audioEngine.log('Warning: Custom samplers do not currently support global detune.'); // Already handled by sampler.set
+                },
+                chain: function(...args) {
+                    this.sampler.chain(...args);
+                },
+                dispose: function() {
+                    if (this.sampler) this.sampler.dispose();
+                }
+            };
+            
+            // Chain the sampler directly
+            instrumentWrapper.chain(...this._activeEffects, analyser);
+            this.instruments[name] = instrumentWrapper;
+            this.log(`Successfully created custom sampler instrument "${name}".`);
+
+        } catch (e) {
+            this.log(`Failed to create custom sampler "${name}": ${e.message}`);
+            console.error(e);
+        }
+    },
+
     transitionToInstrument: function(newInstrumentName) {
         if (!this.instruments[newInstrumentName]) {
             this.log(`錯誤: 無法切換，樂器 "${newInstrumentName}" 不存在。`);
@@ -446,6 +552,16 @@ export const audioEngine = {
             const velocity = 0.7; // Default keyboard velocity
             newInstrument.triggerAttack(notes, Tone.now(), velocity);
         });
+
+        // Apply current semitone offset to the new instrument
+        if (newInstrument && newInstrument.set) { // Check only for the .set method, as it handles parameters robustly
+            const targetDetune = this.currentSemitoneOffset * 100;
+            newInstrument.set({ detune: targetDetune });
+            this.log(`將當前半音偏移 (${targetDetune} 音分) 應用到新樂器 ${newInstrumentName}。`);
+        } else {
+            this.log(`警告: 樂器 "${newInstrumentName}" 不支援 detune 調整。`);
+        }
+
 
         this.currentInstrumentName = newInstrumentName;
         this.log(`已切換到樂器: ${newInstrumentName}，並轉換了正在彈奏的音符。`, 'instrument');
@@ -565,8 +681,12 @@ export const audioEngine = {
 
         // Dispose of all custom instruments
         for (const instrName in this.instruments) {
-            if (this.instruments.hasOwnProperty(instrName) && instrName !== 'DefaultSynth') { // Don't dispose DefaultSynth if it's the base
+            if (this.instruments.hasOwnProperty(instrName) && instrName !== 'DefaultSynth') {
                 const instrument = this.instruments[instrName];
+                // If the instrument has a releaseAll method (like PolySynth), call it.
+                if (instrument && typeof instrument.releaseAll === 'function') {
+                    instrument.releaseAll();
+                }
                 if (instrument && typeof instrument.dispose === 'function') {
                     instrument.dispose();
                 }
@@ -603,6 +723,7 @@ export const audioEngine = {
         
             // Reset the effect chain by rebuilding it with an empty configuration.
             this.rebuildEffectChain([]);
+            this.currentSemitoneOffset = 0; // Reset semitone offset
             this.log('音訊引擎狀態重設完成。');
             },
     panicStopAllSounds: function() {

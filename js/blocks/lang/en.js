@@ -125,6 +125,15 @@ export const MSG_EN = {
     'JAZZKIT_DRUM_OPEN_HIHAT': 'Open Hi-hat',
     'JAZZKIT_DRUM_RIDE_CYMBAL': 'Ride Cymbal',
 
+    'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': 'Create Sampler Instrument %1 Type %2',
+    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': 'Creates a sampler instrument. Choose \'Default\' for a piano sound or \'Custom\' to provide your own audio samples. Right-click for Help.',
+    'SB_SAMPLER_TYPE_DEFAULT': 'Default Piano',
+    'SB_SAMPLER_TYPE_VIOLIN_PIZZ': 'Violin (Pizzicato)',
+    'SB_SAMPLER_TYPE_VIOLIN_SUSTAIN': 'Violin (Sustain)',
+    'SB_SAMPLER_TYPE_CUSTOM': 'Custom',
+    'SB_SAMPLER_BASE_URL': 'Base URL',
+    'SB_SAMPLER_MAP': 'Sample Map (JSON)',
+
     // TRANSPORT
     'SB_TRANSPORT_SET_BPM_MESSAGE': 'Set Tempo to %1 BPM',
     'SB_TRANSPORT_SET_BPM_TOOLTIP': 'Sets the master tempo (Beats Per Minute)',
@@ -191,7 +200,13 @@ For detailed usage, right-click and select "Help".`,
     'SB_MAP_KEY_TO_CHORD_MESSAGE': 'Map Keyboard Key %1 to Chord %2',
     'SB_MAP_KEY_TO_CHORD_TOOLTIP': 'Maps a PC keyboard key to a defined chord name. Pressing the key will trigger the chord.',
     'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC Keyboard as MIDI %1',
-    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': 'Enables or disables the PC keyboard as a MIDI keyboard.',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': `Enables or disables the PC keyboard as a MIDI keyboard.
+Usage:
+1. Switch to English input method to play music.
+2. Arrow keys Up/Down: Octave adjustment.
+3. Arrow keys Left/Right: Instrument switching.
+4. '+', '-' keys: Semitone adjustment (+/- 100 cents).
+5. 'Backspace' key: Reset semitone adjustment to 0.`,
 
     // SERIAL
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': 'When Serial Data %1 Received',

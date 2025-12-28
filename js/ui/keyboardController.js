@@ -76,15 +76,52 @@ const handleKeyDown = async (e) => {
         e.preventDefault();
         return;
     }
-    if ((e.code === 'ArrowDown' || e.code === 'Minus' || e.code === 'NumpadSubtract') && currentOctave > MIN_OCTAVE) {
+    if (e.code === 'ArrowDown' && currentOctave > MIN_OCTAVE) { // Removed NumpadSubtract
         shiftOctave(-1);
         e.preventDefault();
         return;
     }
-    if ((e.code === 'ArrowUp' || e.code === 'Equal' || e.code === 'NumpadAdd') && currentOctave < MAX_OCTAVE) {
+    if (e.code === 'ArrowUp' && currentOctave < MAX_OCTAVE) { // Removed NumpadAdd
         shiftOctave(1);
         e.preventDefault();
         return;
+    }
+
+    // --- Semitone Adjustment ---
+    const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
+    if (currentInstrument && currentInstrument.set) { // Check if the instrument supports .set()
+        let detuneChange = 0;
+        if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+            detuneChange = -100; // -1 semitone = -100 cents
+        } else if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+            detuneChange = 100; // +1 semitone = +100 cents
+        }
+
+        if (detuneChange !== 0) {
+            audioEngine.currentSemitoneOffset += (detuneChange / 100); // Store in semitones
+            currentInstrument.set({ detune: audioEngine.currentSemitoneOffset * 100 });
+            audioEngine.log(`Semitone adjusted to ${audioEngine.currentSemitoneOffset}. Detune: ${audioEngine.currentSemitoneOffset * 100} cents.`);
+            e.preventDefault();
+            return;
+        }
+
+        // --- Reset Semitone Adjustment ---
+        if (e.code === 'Backspace') {
+            audioEngine.currentSemitoneOffset = 0;
+            currentInstrument.set({ detune: 0 });
+            audioEngine.log('Semitone offset reset to 0.');
+            e.preventDefault();
+            return;
+        }
+
+        // --- Reset Semitone Adjustment ---
+        if (e.code === 'Backspace') {
+            audioEngine.currentSemitoneOffset = 0;
+            currentInstrument.set({ detune: 0 });
+            audioEngine.log('Semitone offset reset to 0.');
+            e.preventDefault();
+            return;
+        }
     }
 
     let notesToPlay = null;

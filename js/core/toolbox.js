@@ -222,6 +222,7 @@ export const TOOLBOX_XML_STRING = `
               </shadow>
             </value>
           </block>
+          <block type="sb_create_sampler_instrument"></block>
         </category>
       </category>
       <category name="%{BKY_MSG_TRANSPORT_CATEGORY}" colour="%{BKY_TRANSPORT_HUE}">

@@ -8,11 +8,14 @@
   - `styles.css`: 全域的 CSS 樣式表。
   - `package.json`: 定義專案依賴（如 Vite, Blockly, Tone.js）和執行腳本（如 `dev`, `build`）。
   - `public/`: 存放不會被 Vite 建置流程處理的靜態檔案，例如音訊樣本 (`samples/`)。`toolbox.xml` 已內嵌至 JS，`locales` 資料夾已無作用。
+    - `docs/`: 存放 HTML 格式的說明文件。
+      - `custom_sampler_en.html`: 自訂取樣器英文說明文件。
+      - `custom_sampler_zh-hant.html`: 自訂取樣器正體中文說明文件。
   - `examples/`: 存放 Blockly 工作區的 XML 範例檔案。
   - `js/`: **模組化的 JavaScript 原始碼**
     - `app.js`: **核心應用程式主入口**。負責初始化各個模組，是整個應用的指揮中心。
     - `core/`: **核心商業邏輯**
-      - `audioEngine.js`: 封裝 Tone.js 的音訊引擎，負責管理樂器、**動態效果器鏈**和音訊播放。
+      - `audioEngine.js`: 封裝 Tone.js 的音訊引擎，負責管理樂器、**動態效果器鏈**、**自訂取樣器的高階語音管理**和音訊播放。
       - `midiEngine.js`: 處理 Web MIDI API 的邏輯，包括設備連接和訊息監聽。
       - `serialEngine.js`: 處理 Web Serial API 的邏輯，用於與 Arduino 等硬體通訊。
       - `blocklyManager.js`: 負責 Blockly 工作區的初始化、事件監聽和動態積木邏輯。
@@ -34,10 +37,11 @@
       - `keyboard_blocks.js` / `keyboard_generators.js`: PC 鍵盤相關積木。
       - `serial_blocks.js` / `serial_generators.js`: 序列埠相關積木。
       - `math_blocks.js` / `math_generators.js`: 數學相關積木。
+      - `sampler_blocks.js` / `sampler_generators.js`: 取樣器相關積木。
       - `lang/`: **Blockly 自訂語言檔案** (en.js, zh-hant.js)
         - `en.js`: 英文自訂語言設定，會與主要語言包合併。
         - `zh-hant.js`: 正體中文自訂語言設定，會與主要語言包合併。
   - `log/`: 存放開發日誌和任務清單。
     - `todo.md`: 專案的待辦事項清單。
-    - `work.md`: 開發工作日誌。
+    - `work/`: 存放每日工作日誌，格式為 `yyyy-mm-dd.md`。
   - `src/`: **(未使用)** Vite 初始化時產生的預設資料夾，目前專案的核心邏輯在 `js/` 資料夾中。

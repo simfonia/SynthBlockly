@@ -111,12 +111,14 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
                     currentInstrument.set({envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}});
                 }
                 window.audioEngine.log('ADSR 已設定到當前樂器: ' + window.audioEngine.currentInstrumentName);
+            } else if (currentInstrument.type === 'CustomSampler' && currentInstrument.envelope) {
+                // For custom samplers, apply ADSR to their managed AmplitudeEnvelope
+                currentInstrument.envelope.set({attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}});
+                window.audioEngine.log('ADSR 已設定到自訂取樣器樂器: ' + window.audioEngine.currentInstrumentName);
             } else if (currentInstrument instanceof window.audioEngine.Tone.Sampler) {
-                // Samplers don't have a direct 'envelope' property to set ADSR like synths.
-                // Their 'attack' and 'release' can be set, but not full ADSR curve with sustain/decay.
-                currentInstrument.set({attack: ${a}, release: ${r}}); // Set attack and release directly
+                // For standard Tone.Sampler, set attack and release directly
+                currentInstrument.set({attack: ${a}, release: ${r}});
                 window.audioEngine.log('警告: Sampler 的 ADSR 僅支援設定 Attack 和 Release。');
-                // For full ADSR on Sampler, it needs to be routed through an AmplitudeEnvelope.
             } else {
                 window.audioEngine.log('錯誤: 無法設定 ADSR。樂器 "${window.audioEngine.currentInstrumentName}" 不支援 ADSR 設定。');
             }
@@ -193,10 +195,18 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
         var code = `
             const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
             if (currentInstrument) {
-                // Tone.js volume is in dB, but a linear gain (0-1) is more intuitive for blocks.
-                // Convert linear 0-1 to dB (approximate: 0.01 -> -40dB, 1 -> 0dB)
                 const gain = Math.max(0, Math.min(1, Number(${volumeValue}))); // Clamp 0-1
-                currentInstrument.volume.rampTo(window.audioEngine.Tone.gainToDb(gain), 0.01); // Ramp to prevent clicks
+                const db = window.audioEngine.Tone.gainToDb(gain);
+                
+                if (currentInstrument.type === 'CustomSampler' && currentInstrument.envelope) {
+                    // Target the envelope's volume for custom samplers
+                    currentInstrument.envelope.volume.rampTo(db, 0.01);
+                } else if (currentInstrument.volume) {
+                    // Target the instrument's main volume for standard instruments
+                    currentInstrument.volume.rampTo(db, 0.01);
+                } else {
+                    window.audioEngine.log('錯誤: 當前樂器不支援音量設定。');
+                }
                 window.audioEngine.log('音量已設定到當前樂器: ' + ${volumeValue});
             } else {
                 window.audioEngine.log('錯誤: 無法設定音量。樂器 "${window.audioEngine.currentInstrumentName}" 不存在。');

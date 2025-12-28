@@ -201,8 +201,7 @@ export function registerBlocks() {
                             ["PolySynth", "PolySynth"],
                             ["AMSynth", "AMSynth"],
                             ["FMSynth", "FMSynth"],
-                            ["DuoSynth", "DuoSynth"],
-                            ["Sampler", "Sampler"]
+                            ["DuoSynth", "DuoSynth"]
                         ]
                     }
                 ],

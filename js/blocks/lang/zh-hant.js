@@ -124,6 +124,15 @@ export const MSG_ZH_HANT = {
     'JAZZKIT_DRUM_OPEN_HIHAT': '開式腳踏鈸',
     'JAZZKIT_DRUM_RIDE_CYMBAL': '駕馭鈸',
 
+    'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': '創建取樣器樂器 %1 型態 %2',
+    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': '創建一個取樣器樂器。選擇「預設鋼琴」以使用內建音色，或選擇「自訂」來提供你自己的音訊樣本。詳細用法請按右鍵選擇「說明」。',
+    'SB_SAMPLER_TYPE_DEFAULT': '預設鋼琴',
+    'SB_SAMPLER_TYPE_VIOLIN_PIZZ': '小提琴 (撥奏)',
+    'SB_SAMPLER_TYPE_VIOLIN_SUSTAIN': '小提琴 (持續音)',
+    'SB_SAMPLER_TYPE_CUSTOM': '自訂',
+    'SB_SAMPLER_BASE_URL': '基礎網址',
+    'SB_SAMPLER_MAP': '樣本映射 (JSON)',
+
     // TRANSPORT
     'SB_TRANSPORT_SET_BPM_MESSAGE': '設定速度為 %1 BPM',
     'SB_TRANSPORT_SET_BPM_TOOLTIP': '設定主速度 (每分鐘幾拍)',
@@ -190,7 +199,13 @@ export const MSG_ZH_HANT = {
     'SB_MAP_KEY_TO_CHORD_MESSAGE': '映射鍵盤按鍵 %1 到和弦 %2',
     'SB_MAP_KEY_TO_CHORD_TOOLTIP': '將一個 PC 鍵盤按鍵映射到一個已定義的和弦名稱，按下該鍵將觸發和弦。',
     'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC 鍵盤作為 MIDI %1',
-    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': '啟用或禁用電腦鍵盤作為 MIDI 鍵盤的功能。',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': `啟用或禁用電腦鍵盤作為 MIDI 鍵盤的功能。
+使用方式：
+1. 請切換到英文輸入法才能彈奏音樂。
+2. 方向鍵上下: 高低八度調整。
+3. 方向鍵左右: 樂器切換。
+4. '+', '-' 鍵: 升降半音 (+/- 100 音分)。
+5. 'Backspace' 鍵: 重設半音調整至 0。`,
 
     // SERIAL
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': '當 Serial 資料 %1 接收時',
