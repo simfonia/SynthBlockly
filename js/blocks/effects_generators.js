@@ -29,9 +29,12 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
         const params = {};
 
-        // Helper to get numeric value from input
+        // Helper to get numeric value from input - robust version
         const getNumericValue = (inputName, defaultValue) => {
-            const value = G.valueToCode(block, inputName, G.ORDER_ATOMIC);
+            let value = G.valueToCode(block, inputName, G.ORDER_ATOMIC);
+            if (!value) return defaultValue;
+            // Remove parentheses that Blockly might add for negative numbers or order of operations
+            value = value.replace(/[\(\)]/g, '').trim();
             const num = parseFloat(value);
             return isNaN(num) ? defaultValue : num;
         };
@@ -48,7 +51,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
 
         // Collect parameters based on effect type
-        if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner'].includes(effectType)) {
+        if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner', 'bitCrusher'].includes(effectType)) {
             if (block.getInput('WET')) {
                 params.wet = getNumericValue('WET', 0);
             }
@@ -64,12 +67,11 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             params.delayTime = getStringValue('DELAY_TIME', '8n');
             params.feedback = getNumericValue('FEEDBACK', 0.25);
         } else if (effectType === 'filter') {
-            // For filter, the 'type' in the config is the specific filter type from the dropdown
-            effectType = block.getFieldValue('FILTER_TYPE_VALUE');
+            // The main type remains 'filter', and we store the specific filter type in params
+            params.type = block.getFieldValue('FILTER_TYPE_VALUE');
             params.frequency = getNumericValue('FILTER_FREQ', 20000);
             params.Q = getNumericValue('FILTER_Q', 1);
             params.rolloff = parseInt(block.getFieldValue('FILTER_ROLLOFF_VALUE'), 10);
-            // The type of filter is now the main effectType for the config object
         } else if (effectType === 'compressor') {
             params.threshold = getNumericValue('THRESHOLD', -24);
             params.ratio = getNumericValue('RATIO', 12);

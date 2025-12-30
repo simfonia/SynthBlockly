@@ -57,6 +57,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         var code = `
 await window.audioEngine.playCurrentInstrumentNote(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${velocity});
 await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('${dur}').toMilliseconds()));
+if (!window.audioEngine.isExecutionActive) return;
 `;
         return code;
     }.bind(G);
@@ -94,34 +95,38 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
         var r = Number(block.getFieldValue('R')) || 1.0;
         
         var code = `
-            const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
-            if (!currentInstrument) {
-                window.audioEngine.log('錯誤: 無法設定 ADSR。樂器 "${window.audioEngine.currentInstrumentName}" 不存在。');
-            } else if (currentInstrument instanceof window.audioEngine.Tone.PolySynth) {
-                // All our synths (PolySynth, AMSynth, FMSynth, DuoSynth) are wrapped in PolySynth
-                // PolySynth has a .set() method that takes envelope options
-                // For DuoSynth wrapped in PolySynth, we need to target its internal voices' envelopes.
-                if (currentInstrument.get().voice0 && currentInstrument.get().voice1) { // Check if it's likely a DuoSynth structure
-                    currentInstrument.set({
-                        voice0: {envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}},
-                        voice1: {envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}}
-                    });
-                } else {
-                    // For standard Synths (PolySynth(Tone.Synth), AMSynth, FMSynth)
-                    currentInstrument.set({envelope: {attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}}});
+            (function() {
+                const instrName = window.audioEngine.currentInstrumentName;
+                const currentInstrument = window.audioEngine.instruments[instrName];
+                if (!currentInstrument) {
+                    window.audioEngine.logKey('LOG_ERR_INSTR_NOT_FOUND', 'error', instrName);
+                    return;
                 }
-                window.audioEngine.log('ADSR 已設定到當前樂器: ' + window.audioEngine.currentInstrumentName);
-            } else if (currentInstrument.type === 'CustomSampler' && currentInstrument.envelope) {
-                // For custom samplers, apply ADSR to their managed AmplitudeEnvelope
-                currentInstrument.envelope.set({attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r}});
-                window.audioEngine.log('ADSR 已設定到自訂取樣器樂器: ' + window.audioEngine.currentInstrumentName);
-            } else if (currentInstrument instanceof window.audioEngine.Tone.Sampler) {
-                // For standard Tone.Sampler, set attack and release directly
-                currentInstrument.set({attack: ${a}, release: ${r}});
-                window.audioEngine.log('警告: Sampler 的 ADSR 僅支援設定 Attack 和 Release。');
-            } else {
-                window.audioEngine.log('錯誤: 無法設定 ADSR。樂器 "${window.audioEngine.currentInstrumentName}" 不支援 ADSR 設定。');
-            }
+
+                try {
+                    if (currentInstrument.type === 'CustomSampler' || currentInstrument instanceof window.audioEngine.Tone.Sampler || currentInstrument.name === 'Sampler') {
+                        // For samplers, we only support Release (R) control effectively
+                        currentInstrument.set({ release: ${r} });
+                        window.audioEngine.logKey('LOG_SAMPLER_ADS_WARN', 'warning');
+                    } else if (currentInstrument.get?.().voice0) {
+                        // Special handling for PolySynth wrapping DuoSynth
+                        currentInstrument.set({
+                            voice0: { envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } },
+                            voice1: { envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } }
+                        });
+                        window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', instrName);
+                    } else if (typeof currentInstrument.set === 'function') {
+                        // Standard Tone.js Instruments (PolySynth, etc.)
+                        currentInstrument.set({ envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } });
+                        window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', instrName);
+                    } else {
+                        window.audioEngine.logKey('LOG_ADSR_NOT_SUPPORTED_INSTR', 'error', instrName);
+                    }
+                } catch (e) {
+                    console.error('ADSR setting failed:', e);
+                    window.audioEngine.logKey('LOG_EXEC_ERR', 'error', e.message);
+                }
+            })();
         `;
         return code + '\n';
     }.bind(G);
@@ -175,13 +180,16 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     G['sb_set_instrument_vibrato'] = function (block) {
         var detuneValue = G.valueToCode(block, 'DETUNE_VALUE', G.ORDER_ATOMIC) || '0';
         var code = `
-            const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
-            if (currentInstrument) {
-                currentInstrument.set({ detune: Number(${detuneValue}) });
-                window.audioEngine.log('抖音值已設定到當前樂器: ' + ${detuneValue});
-            } else {
-                window.audioEngine.log('錯誤: 無法設定抖音值。樂器 "${window.audioEngine.currentInstrumentName}" 不存在。');
-            }
+            (function() {
+                const instrName = window.audioEngine.currentInstrumentName;
+                const currentInstrument = window.audioEngine.instruments[instrName];
+                if (currentInstrument) {
+                    currentInstrument.set({ detune: Number(${detuneValue}) });
+                    window.audioEngine.logKey('LOG_VIBRATO_SET_INSTR', 'info', instrName + " (" + ${detuneValue} + ")");
+                } else {
+                    window.audioEngine.logKey('LOG_VIBRATO_ERR', 'error', instrName);
+                }
+            })();
         `;
         return code + '\n';
     }.bind(G);
@@ -193,24 +201,23 @@ await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('$
     G['sb_set_instrument_volume'] = function (block) {
         var volumeValue = G.valueToCode(block, 'VOLUME_VALUE', G.ORDER_ATOMIC) || '0';
         var code = `
-            const currentInstrument = window.audioEngine.instruments[window.audioEngine.currentInstrumentName];
-            if (currentInstrument) {
-                const gain = Math.max(0, Math.min(1, Number(${volumeValue}))); // Clamp 0-1
-                const db = window.audioEngine.Tone.gainToDb(gain);
-                
-                if (currentInstrument.type === 'CustomSampler' && currentInstrument.envelope) {
-                    // Target the envelope's volume for custom samplers
-                    currentInstrument.envelope.volume.rampTo(db, 0.01);
-                } else if (currentInstrument.volume) {
-                    // Target the instrument's main volume for standard instruments
-                    currentInstrument.volume.rampTo(db, 0.01);
+            (function() {
+                const instrName = window.audioEngine.currentInstrumentName;
+                const currentInstrument = window.audioEngine.instruments[instrName];
+                if (currentInstrument) {
+                    const gain = Math.max(0, Math.min(1, Number(${volumeValue}))); // Clamp 0-1
+                    const db = window.audioEngine.Tone.gainToDb(gain);
+                    
+                    if (currentInstrument.type === 'CustomSampler' || currentInstrument.volume) {
+                        currentInstrument.set({ volume: db });
+                        window.audioEngine.logKey('LOG_VOL_SET_INSTR', 'info', instrName + " (" + ${volumeValue} + ")");
+                    } else {
+                        window.audioEngine.logKey('LOG_VOL_NOT_SUPPORTED', 'error');
+                    }
                 } else {
-                    window.audioEngine.log('錯誤: 當前樂器不支援音量設定。');
+                    window.audioEngine.logKey('LOG_VOL_ERR', 'error', instrName);
                 }
-                window.audioEngine.log('音量已設定到當前樂器: ' + ${volumeValue});
-            } else {
-                window.audioEngine.log('錯誤: 無法設定音量。樂器 "${window.audioEngine.currentInstrumentName}" 不存在。');
-            }
+            })();
         `;
         return code + '\n';
     }.bind(G);

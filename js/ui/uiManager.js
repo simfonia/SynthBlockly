@@ -1,16 +1,24 @@
 // js/ui/uiManager.js
 import * as Blockly from 'blockly/core';
-import { log } from '../ui/logger.js'; // Assuming log is needed here
+import { log, logKey } from './logger.js'; // Corrected import path for sibling
 
 /**
  * Updates UI translations based on the current language.
  */
 function updateUITranslations() {
-    const elements = document.querySelectorAll('[data-lang-title]');
-    elements.forEach(el => {
+    const titleElements = document.querySelectorAll('[data-lang-title]');
+    titleElements.forEach(el => {
         const key = el.getAttribute('data-lang-title');
         if (Blockly.Msg[key]) {
             el.title = Blockly.Msg[key];
+        }
+    });
+
+    const textElements = document.querySelectorAll('[data-lang-text]');
+    textElements.forEach(el => {
+        const key = el.getAttribute('data-lang-text');
+        if (Blockly.Msg[key]) {
+            el.textContent = Blockly.Msg[key];
         }
     });
 }
@@ -20,7 +28,7 @@ function updateUITranslations() {
  */
 export function initUIManager() {
     updateUITranslations();
-    log("UI Translations updated.");
+    logKey("LOG_UI_TRANS_UPDATED");
 
     // Handle icon button hover effects
     const iconButtons = document.querySelectorAll('.icon-button');
@@ -40,5 +48,5 @@ export function initUIManager() {
             });
         }
     });
-    log("UI Manager initialized (translations and button effects).");
+    logKey("LOG_UI_INIT");
 }

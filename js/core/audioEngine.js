@@ -1,6 +1,6 @@
 // js/core/audioEngine.js
 import * as Tone from 'tone';
-import { log } from '../ui/logger.js';
+import { log, logKey, getMsg } from '../ui/logger.js';
 
 export let blocklyLoops = {}; // Initialize as an exported module variable
 
@@ -21,10 +21,10 @@ export async function ensureAudioStarted() {
             }
         } catch (e) { /* ignore */ }
         audioStarted = true;
-        log('AudioContext 已啟動');
+        logKey('LOG_AUDIO_STARTED');
         return true;
     } catch (e) {
-        log('無法啟動 AudioContext: ' + e);
+        logKey('LOG_AUDIO_START_FAIL', 'error', e);
         return false;
     }
 }
@@ -54,7 +54,12 @@ const jazzKit = new Tone.Sampler({
     },
     baseUrl: import.meta.env.BASE_URL + 'samples/jazzkit/Roland_TR-909/',
     onload: () => {
-        log('Jazz Kit samples loaded.');
+        // Ensure localization is ready before logging, or fallback
+        if (typeof Tone !== 'undefined') { // Simple check context
+             setTimeout(() => {
+                 logKey('LOG_JAZZKIT_LOADED');
+             }, 500); // Slight delay to give registerAll a chance if samples load instantly
+        }
     }
 });
 
@@ -70,6 +75,7 @@ jazzKit.chain(analyser);
 // --- Audio Engine Object ---
 
 export const audioEngine = {
+    isExecutionActive: false, // Flag to track if Blockly code execution is active
     Tone: Tone,
     analyser: analyser, // Make analyser accessible on the global engine object
     synth: synth,
@@ -88,12 +94,15 @@ export const audioEngine = {
             }
         });
         this._activeEffects = [];
-        this.log('舊效果器鏈已清除。');
+        logKey('LOG_EFFECT_CLEARED');
 
         // 2. Disconnect all instruments from their current output to prepare for re-chaining
-        const allInstruments = [this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)];
+        // Use a Set to ensure we don't process the same instrument twice (e.g., DefaultSynth)
+        const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);
+        const allInstruments = Array.from(instrumentSet).filter(Boolean);
+        
         allInstruments.forEach(instr => {
-            // For standard Tone.js instruments and our custom additive synth
+            // For standard Tone.js instruments and our custom wrappers
             if (instr && typeof instr.disconnect === 'function') {
                 instr.disconnect();
             }
@@ -117,21 +126,71 @@ export const audioEngine = {
                         effectInstance = new Tone.Reverb(params.decay);
                         if (params.preDelay) effectInstance.preDelay = params.preDelay;
                         break;
-                    case 'feedbackDelay':
-                        // FeedbackDelay constructor takes delay time and feedback ratio
-                        effectInstance = new Tone.FeedbackDelay(params.delayTime, params.feedback);
+                    case 'feedbackDelay': {
+                        // --- Final Fallback: Manual Time Parsing (Expanded for Triplets) ---
+                        let delayInSeconds;
+                        const rawTime = params.delayTime || '8n'; 
+
+                        if (!isNaN(parseFloat(rawTime)) && isFinite(rawTime)) {
+                            delayInSeconds = parseFloat(rawTime);
+                        } else if (typeof rawTime === 'string') {
+                            try {
+                                const bpm = (Tone.Transport && Tone.Transport.bpm && Tone.Transport.bpm.value) ? Tone.Transport.bpm.value : 120;
+                                const quarterNoteTime = 60 / bpm;
+
+                                let baseDuration;
+                                const noteValue = parseInt(rawTime);
+
+                                if (rawTime.includes('t')) { // Triplet
+                                    baseDuration = (quarterNoteTime * (4 / noteValue)) * (2 / 3);
+                                } else if (rawTime.includes('n')) { // Normal note
+                                    baseDuration = quarterNoteTime * (4 / noteValue);
+                                } else {
+                                    // If no 'n' or 't', assume it's just a number in a string, but this case is mostly handled above.
+                                    // However, as a fallback, we can treat it as seconds.
+                                    delayInSeconds = parseFloat(rawTime);
+                                }
+                                
+                                if(baseDuration) {
+                                    delayInSeconds = baseDuration;
+                                    // Handle dots
+                                    if (rawTime.includes('.')) {
+                                        delayInSeconds *= 1.5;
+                                    }
+                                }
+
+                            } catch (e) {
+                                logKey('LOG_TIME_PARSE_ERR', 'error', rawTime, e.message);
+                                delayInSeconds = 0.25;
+                            }
+                        } else {
+                            logKey('LOG_TIME_INVALID', 'error', rawTime);
+                            delayInSeconds = 0.25;
+                        }
+
+                        if (isNaN(delayInSeconds) || delayInSeconds === undefined) {
+                            logKey('LOG_TIME_INVALID', 'error', rawTime);
+                            delayInSeconds = 0.25;
+                        }
+                        
+                        effectInstance = new Tone.FeedbackDelay(delayInSeconds, params.feedback);
                         break;
+                    }
                     case 'filter':
-                        effectInstance = new Tone.Filter(params.frequency, params.type || 'lowpass');
-                        if (params.Q) effectInstance.Q.value = params.Q;
-                        if (params.rolloff) effectInstance.rolloff = params.rolloff;
+                        // The main type remains 'filter', and we store the specific filter type in params
+                        params.type = block.getFieldValue('FILTER_TYPE_VALUE');
+                        params.frequency = getNumericValue('FILTER_FREQ', 20000);
+                        params.Q = getNumericValue('FILTER_Q', 1);
+                        params.rolloff = parseInt(block.getFieldValue('FILTER_ROLLOFF_VALUE'), 10);
                         break;
                     case 'compressor':
                         effectInstance = new Tone.Compressor(params);
                         break;
                     case 'limiter':
-                        // Limiter constructor takes threshold in dB
-                        effectInstance = new Tone.Limiter(params.threshold);
+                        // Limiter constructor takes threshold in dB or an options object
+                        effectInstance = new Tone.Limiter({
+                            threshold: params.threshold !== undefined ? params.threshold : -6
+                        });
                         break;
                     case 'bitCrusher':
                         effectInstance = new Tone.BitCrusher(params);
@@ -146,7 +205,7 @@ export const audioEngine = {
                         effectInstance = new Tone.AutoPanner(params.frequency, params.depth).start();
                         break;
                     default:
-                        this.log(`警告: 未知的效果器類型 "${config.type}"。`);
+                        logKey('LOG_UNKNOWN_EFFECT', 'warning', config.type);
                         return;
                 }
                 
@@ -158,7 +217,7 @@ export const audioEngine = {
                 this._activeEffects.push(effectInstance);
             });
         } catch (e) {
-            this.log(`創建效果器鏈時出錯: ${e.message}`);
+            logKey('LOG_EFFECT_CHAIN_ERR', 'error', e.message);
             console.error(e);
             // Fallback to a clean chain if creation fails
             this._activeEffects = [];
@@ -174,7 +233,7 @@ export const audioEngine = {
                 }
             }
         });
-        this.log(`已重建效果器鏈，包含 ${this._activeEffects.length} 個效果器。`);
+        logKey('LOG_EFFECT_CHAIN_REBUILT', 'info', this._activeEffects.length);
     },
 
     instruments: {},
@@ -188,7 +247,9 @@ export const audioEngine = {
     midiPlayingNotes: new Map(),
     backgroundNoise: null,
 
-    log: log, // Use the imported log function
+    log: log, // Original raw log function
+    logKey: logKey,
+    getMsg: getMsg,
 
     playBackgroundNoise: async function(type = 'white', volume = 0.1) {
         await ensureAudioStarted();
@@ -197,9 +258,9 @@ export const audioEngine = {
             this.backgroundNoise = new Tone.Noise(type).toDestination();
             this.backgroundNoise.volume.value = Tone.gainToDb(volume); // Convert linear gain to dB
             this.backgroundNoise.start();
-            this.log(`背景雜訊 (${type}) 已開始播放，音量 ${volume.toFixed(2)}。`);
+            logKey('LOG_NOISE_STARTED', 'info', type, volume.toFixed(2));
         } catch (e) {
-            this.log(`播放背景雜訊時出錯: ${e.message}`);
+            logKey('LOG_NOISE_ERR', 'error', e.message);
             console.error(e);
         }
     },
@@ -210,9 +271,9 @@ export const audioEngine = {
                 this.backgroundNoise.stop();
                 this.backgroundNoise.dispose();
                 this.backgroundNoise = null;
-                this.log('背景雜訊已停止。');
+                logKey('LOG_NOISE_STOPPED');
             } catch (e) {
-                this.log(`停止背景雜訊時出錯: ${e.message}`);
+                logKey('LOG_NOISE_STOP_ERR', 'error', e.message);
                 console.error(e);
                 this.backgroundNoise = null; // Ensure it's cleared even on error
             }
@@ -221,11 +282,11 @@ export const audioEngine = {
 
     createInstrument: function(name, type) {
         if (!name) {
-            this.log('錯誤: 樂器名稱不能為空。');
+            logKey('LOG_INSTR_NAME_EMPTY', 'error');
             return;
         }
         if (this.instruments[name]) {
-            this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
+            logKey('LOG_INSTR_EXISTS', 'warning', name);
             if (typeof this.instruments[name].dispose === 'function') {
                 this.instruments[name].dispose();
             }
@@ -251,18 +312,18 @@ export const audioEngine = {
                         release: 1,
                         baseUrl: "https://tonejs.github.io/audio/salamander/"
                     });
-                    newInstrument.onload = () => this.log(`樂器 "${name}" (Sampler) 樣本已載入。`);
+                    newInstrument.onload = () => logKey('LOG_SAMPLER_LOADED', 'info', name);
                     break;
                 default:
-                    this.log(`錯誤: 未知的樂器類型 "${type}"。`);
+                    logKey('LOG_UNKNOWN_INSTR_TYPE', 'error', type);
                     return;
             }
             // All new instruments are chained through the active effect chain.
             newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
-            this.log(`成功創建樂器 "${name}" (${type})。`);
+            logKey('LOG_INSTR_CREATED', 'info', name, type);
         } catch (e) {
-            this.log(`創建樂器 "${name}" (${type}) 失敗: ${e.message}`);
+            logKey('LOG_INSTR_CREATE_FAIL', 'error', name, type, e.message);
             console.error(e);
         }
     },
@@ -274,21 +335,21 @@ export const audioEngine = {
      */
     createCustomWaveInstrument: function(name, partialsArray) {
         if (!name) {
-            this.log('錯誤: 自訂波形樂器名稱不能為空。');
+            logKey('LOG_CUSTOM_WAVE_NAME_EMPTY', 'error');
             return;
         }
         if (!Array.isArray(partialsArray) || partialsArray.length === 0) {
-            this.log('錯誤: 泛音陣列無效，必須是非空的數字陣列。');
+            logKey('LOG_PARTIALS_INVALID', 'error');
             return;
         }
         // Validate partialsArray elements are numbers
         if (partialsArray.some(isNaN)) {
-            this.log('錯誤: 泛音陣列中包含非數字值。');
+            logKey('LOG_PARTIALS_NAN', 'error');
             return;
         }
 
         if (this.instruments[name]) {
-            this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
+            logKey('LOG_INSTR_EXISTS', 'warning', name);
             if (typeof this.instruments[name].dispose === 'function') {
                 this.instruments[name].dispose();
             }
@@ -299,26 +360,27 @@ export const audioEngine = {
                             // Instantiate newInstrument as a Tone.PolySynth with OmniOscillator for custom partials
                             newInstrument = new Tone.PolySynth(Tone.Synth, {
                                 oscillator: {
+                                    type: 'custom',
                                     partials: partialsArray
                                 }
                             });
             // New instruments are chained through the active effect chain.
             newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
-            this.log(`成功創建自訂波形樂器 "${name}"，泛音: [${partialsArray.join(', ')}]。`);
+            logKey('LOG_CUSTOM_WAVE_CREATED', 'info', name, partialsArray.join(', '));
         } catch (e) {
-            this.log(`創建自訂波形樂器 "${name}" 失敗: ${e.message}`);
+            logKey('LOG_INSTR_CREATE_FAIL', 'error', name, 'CustomWave', e.message);
             console.error(e);
         }
     },
 
     createAdditiveInstrument: function(name, components) {
         if (!name) {
-            this.log('錯誤: 加法合成器名稱不能為空。');
+            logKey('LOG_ADDITIVE_NAME_EMPTY', 'error');
             return;
         }
         if (this.instruments[name]) {
-            this.log(`警告: 樂器 "${name}" 已存在，將被覆蓋。`);
+            logKey('LOG_INSTR_EXISTS', 'warning', name);
             if (typeof this.instruments[name].dispose === 'function') {
                 this.instruments[name].dispose();
             }
@@ -401,6 +463,10 @@ export const audioEngine = {
                     this.voices.forEach(v => v.envelope.chain(...args));
                 },
 
+                disconnect: function() {
+                    this.voices.forEach(v => v.envelope.disconnect());
+                },
+
                 dispose: function() {
                     this.voices.forEach(v => {
                         v.envelope.dispose();
@@ -412,21 +478,21 @@ export const audioEngine = {
             // New instruments are chained through the active effect chain.
             newInstrument.chain(...this._activeEffects, analyser);
             this.instruments[name] = newInstrument;
-            this.log(`成功創建加法合成器 "${name}"。`);
+            logKey('LOG_ADDITIVE_CREATED', 'info', name);
 
         } catch(e) {
-            this.log(`創建加法合成器 "${name}" 失敗: ${e.message}`);
+            logKey('LOG_ADDITIVE_CREATE_FAIL', 'error', name, e.message);
             console.error(e);
         }
     },
 
     createCustomSampler: function(name, urls, baseUrl, envelopeSettings = null) {
         if (!name) {
-            this.log('Error: Custom sampler name cannot be empty.');
+            logKey('LOG_SAMPLER_NAME_EMPTY', 'error');
             return;
         }
         if (this.instruments[name]) {
-            this.log(`Warning: Instrument "${name}" already exists and will be overwritten.`);
+            logKey('LOG_INSTR_EXISTS', 'warning', name);
             if (typeof this.instruments[name].dispose === 'function') {
                 this.instruments[name].dispose();
             }
@@ -435,25 +501,24 @@ export const audioEngine = {
         try {
             const defaultEnvelope = { // Default envelope if none provided
                 attack: 0.01,
-                decay: 0.2,
-                sustain: 0.5,
-                release: 1.0,
+                decay: 0.1,
+                sustain: 1.0,
+                release: 0.5,
             };
 
             const sampler = new Tone.Sampler({
                 urls: urls,
                 baseUrl: baseUrl || '',
-                volume: 6, // Increased to boost the sampler's output volume by 10dB
-                release: 0, // Ensure sampler itself has no long release, controlled by its internal envelope
-                envelope: envelopeSettings || defaultEnvelope, // Use provided settings or default
+                volume: 0,
+                attack: 0.01,
+                release: 0.5,
+                curve: 'exponential',
                 onload: () => {
                     instrumentWrapper.loaded = true;
-                    // Sampler will connect its internal voices to the main sampler output
-                    // and then the sampler output chains to the effects.
-                    audioEngine.log(`Custom sampler "${name}" samples loaded successfully.`);
+                    logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name);
                 },
                 onerror: (e) => {
-                    audioEngine.log(`Error loading samples for custom sampler "${name}": ${e}`);
+                    logKey('LOG_SAMPLER_SAMPLES_ERR', 'error', name, e);
                 }
             });
 
@@ -461,46 +526,46 @@ export const audioEngine = {
             const instrumentWrapper = {
                 type: 'CustomSampler',
                 sampler: sampler,
-                loaded: false, // Sampler's own loaded status
+                loaded: false, 
                 
                 // --- Playback methods for the wrapper ---
                 triggerAttack: function(notes, time, velocity) {
                     if (this.sampler && this.loaded) {
-                        // Explicitly release any currently playing instances of these notes to prevent stacking
-                        this.sampler.triggerRelease(notes, time); 
-                        this.sampler.triggerAttack(notes, time, velocity);
+                        this.sampler.triggerAttack(notes, time, velocity); 
                     } else {
-                        audioEngine.log(`Warning: Sampler "${name}" is not loaded yet.`);
+                        logKey('LOG_SAMPLER_NOT_LOADED', 'warning', name);
                     }
                 },
                 triggerRelease: function(notes, time) {
                     if (this.sampler && this.loaded) {
-                        // Rely on Sampler's internal envelope for release; do not call sampler.triggerRelease directly here.
-                        // Sampler's internal envelope release is triggered by the lack of further triggerAttack calls.
-                        // If we truly need to 'release' via the envelope for held notes,
-                        // this is handled by the Sampler's internal envelope setting.
-                        // The explicit `triggerRelease` on sampler is more for ending the sample source.
-                        // Let's rely on the envelope's release param set in constructor.
+                        this.sampler.triggerRelease(notes, time);
                     }
                 },
                 triggerAttackRelease: function(notes, duration, time, velocity) {
                     if (this.sampler && this.loaded) {
-                        // Explicitly release any currently playing instances of these notes to prevent stacking
-                        this.sampler.triggerRelease(notes, time); 
                         this.sampler.triggerAttackRelease(notes, duration, time, velocity);
-                    } else {
-                        audioEngine.log(`Warning: Sampler "${name}" is not loaded yet.`);
+                    }
+                    else {
+                        logKey('LOG_SAMPLER_NOT_LOADED', 'warning', name);
                     }
                 },
 
                 // --- Configuration methods ---
                 set: function(options) {
-                    // Sampler's set method can take detune, volume, and envelope settings
-                    this.sampler.set(options);
-                    if (options.detune !== undefined) audioEngine.log('Warning: Custom samplers do not currently support global detune.'); // Already handled by sampler.set
+                    if (options.attack !== undefined) this.sampler.attack = options.attack;
+                    if (options.release !== undefined) this.sampler.release = options.release;
+                    if (options.volume !== undefined && this.sampler.volume) {
+                        this.sampler.volume.value = options.volume;
+                    }
+                    if (options.detune !== undefined && this.sampler.detune) {
+                        this.sampler.detune.value = options.detune;
+                    }
                 },
                 chain: function(...args) {
                     this.sampler.chain(...args);
+                },
+                disconnect: function() {
+                    if (this.sampler) this.sampler.disconnect();
                 },
                 dispose: function() {
                     if (this.sampler) this.sampler.dispose();
@@ -510,17 +575,17 @@ export const audioEngine = {
             // Chain the sampler directly
             instrumentWrapper.chain(...this._activeEffects, analyser);
             this.instruments[name] = instrumentWrapper;
-            this.log(`Successfully created custom sampler instrument "${name}".`);
+            logKey('LOG_SAMPLER_CREATED', 'info', name);
 
         } catch (e) {
-            this.log(`Failed to create custom sampler "${name}": ${e.message}`);
+            logKey('LOG_SAMPLER_CREATE_FAIL', 'error', name, e.message);
             console.error(e);
         }
     },
 
     transitionToInstrument: function(newInstrumentName) {
         if (!this.instruments[newInstrumentName]) {
-            this.log(`錯誤: 無法切換，樂器 "${newInstrumentName}" 不存在。`);
+            logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'error', newInstrumentName);
             return;
         }
 
@@ -533,7 +598,7 @@ export const audioEngine = {
         if (!oldInstrument) {
             // This case is unlikely if currentInstrumentName is managed properly, but as a fallback...
             this.currentInstrumentName = newInstrumentName;
-            this.log(`已切換到樂器: ${newInstrumentName} (沒有舊樂器可供轉換)。`, 'instrument');
+            logKey('LOG_SWITCHED_TO', 'info', newInstrumentName);
             return;
         }
 
@@ -541,7 +606,6 @@ export const audioEngine = {
         this.midiPlayingNotes.forEach((notes, midiNoteNumber) => {
             oldInstrument.triggerRelease(notes, Tone.now());
             // We need the original velocity, but we don't store it. Use a default for now.
-            // This is a limitation to improve upon later if needed.
             const velocity = 0.8;
             newInstrument.triggerAttack(notes, Tone.now(), velocity);
         });
@@ -557,33 +621,33 @@ export const audioEngine = {
         if (newInstrument && newInstrument.set) { // Check only for the .set method, as it handles parameters robustly
             const targetDetune = this.currentSemitoneOffset * 100;
             newInstrument.set({ detune: targetDetune });
-            this.log(`將當前半音偏移 (${targetDetune} 音分) 應用到新樂器 ${newInstrumentName}。`);
+            logKey('LOG_DETUNE_APPLIED', 'info', targetDetune, newInstrumentName);
         } else {
-            this.log(`警告: 樂器 "${newInstrumentName}" 不支援 detune 調整。`);
+            logKey('LOG_DETUNE_NOT_SUPPORTED', 'warning', newInstrumentName);
         }
 
 
         this.currentInstrumentName = newInstrumentName;
-        this.log(`已切換到樂器: ${newInstrumentName}，並轉換了正在彈奏的音符。`, 'instrument');
+        logKey('LOG_SWITCHED_WITH_CONVERT', 'info', newInstrumentName);
     },
 
     playKick: async function(velocity = 1, time = Tone.now()) {
         const ok = await ensureAudioStarted();
-        if (ok) this.drum.triggerAttackRelease('C2', '8n', time, velocity);
+        if (!ok) return;
+        this.drum.triggerAttackRelease('C2', '8n', time, velocity);
     },
 
     playSnare: async function(velocity = 1, time = Tone.now()) {
         const ok = await ensureAudioStarted();
-        if (ok) this.snare.triggerAttackRelease('8n', time, velocity);
+        if (!ok) return;
+        this.snare.triggerAttackRelease('8n', time, velocity);
     },
 
     playJazzKitNote: async function(drumNote, velocityOverride, time, contextNote, contextVelocity) {
         const ok = await ensureAudioStarted();
         if (!ok) return;
         const finalVelocity = velocityOverride !== null ? velocityOverride : (contextVelocity !== null ? contextVelocity : 1);
-        let logMessage = `Jazz Kit Play: note=${drumNote} vel=${finalVelocity.toFixed(2)}`;
-        if (contextNote !== null) logMessage += ` (triggered by MIDI ${contextNote})`;
-        this.log(logMessage);
+        logKey('LOG_JAZZKIT_PLAY', 'info', drumNote, finalVelocity.toFixed(2));
         this.jazzKit.triggerAttackRelease(drumNote, '8n', time, finalVelocity);
     },
 
@@ -591,21 +655,21 @@ export const audioEngine = {
         this.pressedKeys.clear();
         this.midiPressedNotes.clear();
         this.midiPlayingNotes.clear();
-        this.log('PC 鍵盤及 MIDI 按下狀態已清除。');
+        logKey('LOG_STATE_CLEARED');
     },
 
     playCurrentInstrumentNote: async function(note, dur, time, velocity) {
         const ok = await ensureAudioStarted();
-        if (!ok) return;
+        if (!ok) return; 
         const currentInstrument = this.instruments[this.currentInstrumentName];
         if (currentInstrument && currentInstrument.triggerAttackRelease) {
             if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-                this.log(`警告: 樂器 "${this.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+                logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
                 return;
             }
             currentInstrument.triggerAttackRelease(note, dur, time, velocity);
         } else {
-            this.log(`錯誤: 無法播放音符。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerAttackRelease。`);
+            logKey('LOG_PLAY_NOTE_FAIL', 'error', this.currentInstrumentName);
         }
     },
 
@@ -615,11 +679,11 @@ export const audioEngine = {
 
         const currentInstrument = this.instruments[this.currentInstrumentName];
         if (!currentInstrument || !currentInstrument.triggerAttack || !currentInstrument.triggerRelease) {
-            this.log(`錯誤: MIDI 播放失敗。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerAttack/Release。`);
+            logKey('LOG_MIDI_PLAY_FAIL', 'error', this.currentInstrumentName);
             return;
         }
         if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-            this.log(`警告: MIDI 播放失敗。樂器 "${this.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+            logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
             return;
         }
 
@@ -631,7 +695,7 @@ export const audioEngine = {
             notesToPlay = this.chords[chordName];
             notePlayedType = 'Chord';
             if (!notesToPlay) {
-                this.log(`錯誤: 和弦 "${chordName}" 未定義。`);
+                logKey('LOG_CHORD_UNDEFINED', 'error', chordName);
                 return;
             }
         } else {
@@ -642,11 +706,11 @@ export const audioEngine = {
             try {
                 currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
             } catch (e) {
-                this.log(`triggerAttack failed for MIDI: ${e.message}`);
+                logKey('LOG_MIDI_PLAY_FAIL', 'error', this.currentInstrumentName + ": " + e.message);
                 console.error(e);
             }
             this.midiPlayingNotes.set(midiNoteNumber, notesToPlay);
-            this.log(`MIDI In ON (${notePlayedType}): midi=${midiNoteNumber} vel=${(velocityNormalized*127).toFixed(0)} ch=${channel} -> ${Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay}`);
+            logKey('LOG_MIDI_ON', 'info', notePlayedType, midiNoteNumber, (velocityNormalized*127).toFixed(0), channel, Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay);
         }
     },
 
@@ -655,11 +719,11 @@ export const audioEngine = {
         if (!ok) return;
         const currentInstrument = this.instruments[this.currentInstrumentName];
         if (!currentInstrument || !currentInstrument.triggerRelease) {
-            this.log(`警告: MIDI 釋放失敗。樂器 "${this.currentInstrumentName}" 不存在或不支持 triggerRelease。`);
+            logKey('LOG_MIDI_PLAY_FAIL', 'warning', this.currentInstrumentName);
             return;
         }
         if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-            this.log(`警告: MIDI 釋放失敗。樂器 "${this.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+            logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
             return;
         }
         const notesToRelease = this.midiPlayingNotes.get(midiNoteNumber);
@@ -674,35 +738,50 @@ export const audioEngine = {
      * and clearing all mappings and loops. This should be called before loading a new project or running new code.
      */
     resetAudioEngineState: function() {
-        this.log('正在重設音訊引擎狀態...');
+        this.isExecutionActive = false; // Mark execution as INACTIVE to stop async loops
+        logKey('LOG_RESETTING_ENGINE');
         this.stopBackgroundNoise(); // Stop any background noise
+        
+        // Stop the transport and immediately cancel all scheduled events on the timeline
         this.Tone.Transport.stop();
-        this.log('✓ 主時鐘 (Transport) 已停止');
+        this.Tone.Transport.cancel(0); // Explicitly cancel from the beginning
+        this.Tone.Transport.seconds = 0; // Reset position to 0
+        logKey('LOG_TRANSPORT_STOPPED');
 
-        // Dispose of all custom instruments
+        // Disconnect and release all instruments
+        const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);
+        instrumentSet.forEach(instr => {
+            if (instr) {
+                if (typeof instr.releaseAll === 'function') {
+                    try { instr.releaseAll(); } catch(e) {}
+                }
+                if (typeof instr.disconnect === 'function') {
+                    try { instr.disconnect(); } catch(e) {}
+                }
+            }
+        });
+
+        // Dispose of all custom instruments (except DefaultSynth which we handle specially)
         for (const instrName in this.instruments) {
             if (this.instruments.hasOwnProperty(instrName) && instrName !== 'DefaultSynth') {
                 const instrument = this.instruments[instrName];
-                // If the instrument has a releaseAll method (like PolySynth), call it.
-                if (instrument && typeof instrument.releaseAll === 'function') {
-                    instrument.releaseAll();
-                }
                 if (instrument && typeof instrument.dispose === 'function') {
-                    instrument.dispose();
+                    try { instrument.dispose(); } catch(e) {}
                 }
                 delete this.instruments[instrName];
             }
         }
             // Re-initialize DefaultSynth if it was disposed or needs resetting
             if (this.instruments['DefaultSynth'] && typeof this.instruments['DefaultSynth'].dispose === 'function') {
-                this.instruments['DefaultSynth'].dispose(); // Dispose the old DefaultSynth
+                try { this.instruments['DefaultSynth'].dispose(); } catch(e) {}
             }
-            // Create a BRAND NEW DefaultSynth instance and update the top-level 'synth' variable
+            // Create a BRAND NEW DefaultSynth instance
             synth = new Tone.PolySynth(Tone.Synth);
-            synth.chain(analyser); // Re-chain it directly to the analyser
-            this.instruments['DefaultSynth'] = synth; // Assign the NEW instance
+            synth.chain(analyser); // Chain to analyser so 'Test Note' works immediately
+            this.synth = synth;
+            this.instruments['DefaultSynth'] = synth;
             this.currentInstrumentName = 'DefaultSynth';
-            this.log('✓ 所有自訂樂器已釋放並重設為預設。');
+            logKey('LOG_INSTR_RESET');
 
         if (blocklyLoops) {
             for (const loopId in blocklyLoops) {
@@ -711,7 +790,7 @@ export const audioEngine = {
                 }
             }
             blocklyLoops = {}; // Clear the loops object
-            this.log('✓ 所有 Blockly 循環已停止並清除。');
+            logKey('LOG_LOOPS_CLEARED');
         }
 
         // Clear all mappings and chord definitions
@@ -719,17 +798,23 @@ export const audioEngine = {
             this.keyboardChordMap = {};
             this.midiChordMap = {};
             this.clearPressedKeys(); // Also clears midiPressedNotes and midiPlayingNotes
-            this.log('✓ 所有和弦、鍵盤及 MIDI 映射已清除。');
+            logKey('LOG_MAPPINGS_CLEARED');
         
-            // Reset the effect chain by rebuilding it with an empty configuration.
-            this.rebuildEffectChain([]);
+            // Clear active effects but don't rebuild the chain (don't re-connect instruments)
+            this._activeEffects.forEach(effect => {
+                if (effect && typeof effect.dispose === 'function') {
+                    try { effect.dispose(); } catch(e) {}
+                }
+            });
+            this._activeEffects = [];
+            
             this.currentSemitoneOffset = 0; // Reset semitone offset
-            this.log('音訊引擎狀態重設完成。');
+            logKey('LOG_ENGINE_RESET_DONE');
             },
     panicStopAllSounds: function() {
-        this.log('緊急停止！正在停止所有聲音並重設狀態...');
+        logKey('LOG_PANIC_STOP');
         this.resetAudioEngineState();
-        this.log('緊急停止完成。');
+        logKey('LOG_PANIC_DONE');
     },
 };
 

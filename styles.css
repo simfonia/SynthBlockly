@@ -85,16 +85,69 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
 }
 
 /* Log Panel Styling */
-#log {
+#log, #error-log {
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 13px;
     line-height: 1.4;
     color: #333;
 }
 
+.log-container {
+    display: flex;
+    flex-direction: column; /* Stack panels vertically */
+    gap: 8px;
+    flex-grow: 1;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.log-panel {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #fdfdfd;
+}
+
+/* Special styling for the error log panel */
+.log-panel:has(#error-log) {
+    border-color: #d9534f;
+    flex-shrink: 0; /* Prevent shrinking */
+    height: 10em; /* Approx 5-6 lines of text */
+}
+
+/* General log panel should take remaining space */
+.log-panel:has(#log) {
+    flex-grow: 1;
+}
+
+
+.log-title {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+}
+
+.log-panel:has(#error-log) .log-title {
+    background-color: #f2dede; /* Light red for error title background */
+    color: #a94442; /* Dark red for error title text */
+    border-color: #ebccd1;
+}
+
+.log-box {
+    flex-grow: 1;
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 6px;
+}
+
 .log-message {
     padding: 4px 6px;
     border-bottom: 1px solid rgba(0,0,0,0.05); /* Subtle separator */
+    word-break: break-all;
 }
 
 .log-odd {
@@ -106,10 +159,20 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
 }
 
 /* Custom Log Types */
-.log-instrument {
-    color: red;
+.log-error {
+    color: #a94442; /* Dark red for error text */
     font-weight: bold;
 }
+.log-error.log-odd { background-color: #f2dede !important; }
+.log-error.log-even { background-color: #f9f2f2 !important; }
+
+.log-warning {
+    color: #8a6d3b; /* Dark yellow/brown for warning text */
+    font-weight: bold;
+}
+.log-warning.log-odd { background-color: #fcf8e3 !important; }
+.log-warning.log-even { background-color: #fefcf0 !important; }
+
 
 /* Help Modal Styles */
 .modal-backdrop {

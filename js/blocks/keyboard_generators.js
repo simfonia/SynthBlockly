@@ -31,17 +31,13 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         const chordNotesArray = ${notesString}.split(',').map(note => note.trim());
         if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
             window.audioEngine.chords[${name}] = chordNotesArray;
-            window.audioEngine.log('和弦 ' + ${name} + ' 已定義: ' + chordNotesArray.join(', '));
+            window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', ${name}, chordNotesArray.join(', '));
         } else {
-            window.audioEngine.log('錯誤: 無法定義和弦 ' + ${name} + '。請提供有效的音符列表。');
+            window.audioEngine.logKey('LOG_CHORD_ERR', 'error', ${name});
         }
     `;
         return code + '\n';
     }.bind(G);
-    try { if (Gproto) Gproto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
-    try { if (GeneratorProto) GeneratorProto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
-    try { if (JSConstructorProto) JSConstructorProto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
-    try { G.forBlock['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
 
     G['sb_map_key_to_chord'] = function (block) {
         var keyCode = G.quote_(block.getFieldValue('KEY_CODE')); // Quote the key code
@@ -50,17 +46,13 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         var code = `
         if (window.audioEngine.chords[${chordName}]) {
             window.audioEngine.keyboardChordMap[${keyCode}] = ${chordName};
-            window.audioEngine.log('鍵盤按鍵 ' + ${keyCode} + ' 已映射到和弦 ' + ${chordName} + '。');
+            window.audioEngine.logKey('LOG_KEY_MAPPED', 'info', ${keyCode}, ${chordName});
         } else {
-            window.audioEngine.log('錯誤: 和弦 ' + ${chordName} + ' 不存在。無法映射按鍵 ' + ${keyCode} + '。');
+            window.audioEngine.logKey('LOG_KEY_MAP_ERR', 'error', ${chordName}, ${keyCode});
         }
     `;
         return code + '\n';
     }.bind(G);
-    try { if (Gproto) Gproto['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
-    try { if (GeneratorProto) GeneratorProto['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
-    try { if (JSConstructorProto) JSConstructorProto['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
-    try { G.forBlock['sb_map_key_to_chord'] = G['sb_map_key_to_chord']; } catch (e) { }
 
     G['sb_toggle_pc_keyboard_midi'] = function (block) {
         var action = block.getFieldValue('ACTION');

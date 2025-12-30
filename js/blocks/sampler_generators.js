@@ -44,7 +44,7 @@ try {
     // No specific envelope settings passed for CUSTOM, will use default in createCustomSampler
     window.audioEngine.createCustomSampler(${name}, sampleMap, ${baseUrl}, null);
 } catch (e) {
-    window.audioEngine.log('Error: Could not parse custom sampler map JSON. Please check syntax. ' + e.message);
+    window.audioEngine.logKey('LOG_SAMPLER_JSON_ERR', 'error', e.message);
     console.error('Failed to parse sampler JSON:', e);
 }
 `;

@@ -56,9 +56,9 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         var code = `
         if (window.audioEngine.chords[${chordName}]) {
             window.audioEngine.midiChordMap[${midiNote}] = ${chordName};
-            window.audioEngine.log('MIDI 音符 ' + ${midiNote} + ' 已映射到和弦 ' + ${chordName} + '。');
+            window.audioEngine.logKey('LOG_MIDI_MAPPED', 'info', ${midiNote}, ${chordName});
         } else {
-            window.audioEngine.log('錯誤: 和弦 ' + ${chordName} + ' 不存在。無法映射 MIDI 音符 ' + ${midiNote} + '。');
+            window.audioEngine.logKey('LOG_MIDI_MAP_ERR', 'error', ${chordName}, ${midiNote});
         }
     `;
         return code + '\n';

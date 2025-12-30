@@ -49,7 +49,10 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     G['sb_wait_musical'] = function (block) {
         var duration = block.getFieldValue('DURATION');
         // The conversion to milliseconds must happen at runtime, because BPM can change.
-        return `await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('${duration}').toMilliseconds()));\n`;
+        return `
+await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('${duration}').toMilliseconds()));
+if (!window.audioEngine.isExecutionActive) return;
+`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
@@ -71,9 +74,8 @@ if (window.blocklyLoops['${loopId}']) {
     window.blocklyLoops['${loopId}'].dispose();
 }
 window.blocklyLoops['${loopId}'] = new window.audioEngine.Tone.Loop(async (time) => {
+    if (!window.audioEngine.isExecutionActive) return;
     // Make 'time' available to inner blocks if they need it (e.g., for scheduling children)
-    // Note: Inner blocks usually trigger instantly relative to the callback,
-    //       but 'time' could be used for advanced relative scheduling.
     ${doCode}
 }, '${interval}');
 window.blocklyLoops['${loopId}'].start(0); // Start the loop from the beginning of the Transport

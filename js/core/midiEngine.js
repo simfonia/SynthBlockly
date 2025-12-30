@@ -1,6 +1,6 @@
 // js/core/midiEngine.js
 import { ensureAudioStarted, audioEngine } from './audioEngine.js';
-import { log } from '../ui/logger.js';
+import { log, logKey } from '../ui/logger.js';
 
 let midiAccess = null;
 let lastReportedDeviceCount = -1;
@@ -28,7 +28,7 @@ function _updateMIDIConnectionState() {
     if (!midiAccess) {
         btnMidi.disabled = false;
         btnMidi.title = '連接 MIDI';
-        log('錯誤: MIDIAccess 物件不存在。');
+        logKey('LOG_MIDI_ACCESS_MISSING', 'error');
         return;
     }
 
@@ -43,18 +43,18 @@ function _updateMIDIConnectionState() {
     if (connectedInputs.length > 0) {
         connectedInputs.forEach(input => {
             if (hasStateChanged) {
-                log(`正在為裝置附加監聽器: ${input.name}`);
+                logKey('LOG_MIDI_ATTACHING', 'info', input.name);
             }
             input.onmidimessage = onMIDIMessage;
         });
         if (hasStateChanged) {
-            log(`${connectedInputs.length} 個 MIDI 裝置已連接。`);
+            logKey('LOG_MIDI_CONNECTED', 'info', connectedInputs.length);
         }
         btnMidi.disabled = true;
         btnMidi.title = `${connectedInputs.length} 個 MIDI 裝置已連接。`;
     } else {
         if (hasStateChanged) {
-            log('沒有偵測到 MIDI 裝置。');
+            logKey('LOG_MIDI_NOT_FOUND', 'warning');
         }
         btnMidi.disabled = false;
         btnMidi.title = '連接 MIDI';
@@ -71,7 +71,7 @@ async function onMIDIMessage(msg) {
     const channel = (status & 0x0f) + 1;
 
     if (cmd === 0x90 && data2 > 0) { // Note ON with velocity > 0
-        audioEngine.log(`MIDI In ON: note=${midiNoteNumber} vel=${data2} ch=${channel}`);
+        audioEngine.midiAttack(midiNoteNumber, data2 / 127, channel);
         midiNoteListeners.forEach(listener => {
             try {
                 // Pass raw velocity (0-127) to listeners
@@ -81,7 +81,7 @@ async function onMIDIMessage(msg) {
             }
         });
     } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) { // Note OFF
-        audioEngine.log(`MIDI In OFF: note=${midiNoteNumber}`);
+        audioEngine.logKey('LOG_MIDI_OFF', 'info', midiNoteNumber);
         audioEngine.midiRelease(midiNoteNumber);
     }
 }
@@ -98,34 +98,35 @@ export function initMidi() {
         if (!ok) return;
 
         if (midiAccess) {
-            log('重新檢查 MIDI 裝置...');
+            logKey('LOG_MIDI_RECHECKING');
             if (Array.from(midiAccess.inputs.values()).filter(input => input.state === 'connected').length === 0) {
-                log('沒有偵測到 MIDI 裝置。');
+                logKey('LOG_MIDI_NOT_FOUND', 'warning');
             }
             _updateMIDIConnectionState();
             return;
         }
 
-        log('正在請求 MIDI 連接權限...');
+        logKey('LOG_MIDI_REQUESTING');
         btnMidi.disabled = true;
 
         if (!navigator.requestMIDIAccess) {
-            log('錯誤: 您的瀏覽器不支援 Web MIDI API。');
+            logKey('LOG_MIDI_NOT_SUPPORTED', 'error');
             btnMidi.disabled = false;
             return;
         }
 
         try {
             const midi = await navigator.requestMIDIAccess();
-            log('MIDI 存取權限已授予。');
+            logKey('LOG_MIDI_GRANTED');
             midiAccess = midi;
 
             midiAccess.onstatechange = (e) => {
-                log(`MIDI 裝置狀態變更: ${e.port.name}, 狀態: ${e.port.state}`);
+                logKey('LOG_MIDI_STATE_CHANGE', 'info', e.port.name, e.port.state);
                 // 針對斷線狀態，加入短暫延遲，確保瀏覽器有時間更新 midiAccess.inputs
                 if (e.port.state === 'disconnected') {
                     setTimeout(() => _updateMIDIConnectionState(), 100);
-                } else {
+                }
+                else {
                     _updateMIDIConnectionState();
                 }
             };
@@ -133,7 +134,7 @@ export function initMidi() {
             _updateMIDIConnectionState();
 
         } catch(e) {
-            log('MIDI 連接失敗: ' + e.message);
+            logKey('LOG_MIDI_CONN_FAIL', 'error', e.message);
             console.error(e);
             btnMidi.disabled = false;
         }

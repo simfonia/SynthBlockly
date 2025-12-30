@@ -2,7 +2,7 @@
 import * as Blockly from 'blockly/core';
 import 'blockly/javascript';
 import { javascriptGenerator } from 'blockly/javascript'; // Explicitly import javascriptGenerator
-import { log } from '../ui/logger.js';
+import { log, logKey } from '../ui/logger.js';
 import { registerAll } from '../blocks/index.js'; // Module to handle block registration
 import { registerMidiListener, unregisterMidiListener } from './midiEngine.js';
 import { audioEngine } from './audioEngine.js'; // Import audioEngine for cleanup functions
@@ -150,10 +150,10 @@ function registerListenerForBlock(block) {
         const listenerFunction = new Function(varData, `(async () => { ${code} })();`);
         window.registerSerialDataListener(listenerFunction);
         blockListeners[block.id] = { type: 'serial', listener: listenerFunction }; // Store type
-        log(`即時註冊了積木 ${block.id} 的序列埠監聽器。`);
+        logKey('LOG_SERIAL_REGISTERED', 'info', block.id);
     } catch (e) {
         console.error("Failed to create or register listener function:", e);
-        log(`建立監聽器失敗: ${e.message}`);
+        logKey('LOG_EXEC_ERR', 'error', e.message);
     }
 }
 
@@ -162,7 +162,7 @@ function unregisterListenerForBlock(blockId) {
     if (listenerToRemove && listenerToRemove.type === 'serial') {
         window.unregisterSerialDataListener(listenerToRemove.listener);
         delete blockListeners[blockId];
-        log(`註銷了積木 ${blockId} 的序列埠監聽器。`);
+        logKey('LOG_SERIAL_UNREGISTERED', 'info', blockId);
     }
 }
 
@@ -187,7 +187,7 @@ function registerListenerForMidiBlock(block) {
     const channelVar = block.workspace.getVariableMap().getVariableById(channelVarId);
 
     if (!noteVar || !velocityVar || !channelVar) {
-        log(`建立 MIDI 監聽器失敗: 變數未找到。`);
+        logKey('LOG_MIDI_VAR_ERR', 'error');
         return;
     }
 
@@ -203,10 +203,10 @@ function registerListenerForMidiBlock(block) {
         })();`);
         registerMidiListener(listenerFunction);
         blockListeners[block.id] = { type: 'midi', listener: listenerFunction }; // Store type
-        log(`即時註冊了積木 ${block.id} 的 MIDI 監聽器。`);
+        logKey('LOG_MIDI_REGISTERED', 'info', block.id);
     } catch (e) {
         console.error("Failed to create or register MIDI listener function:", e);
-        log(`建立 MIDI 監聽器失敗: ${e.message}`);
+        logKey('LOG_EXEC_ERR', 'error', e.message);
     }
 }
 
@@ -215,7 +215,7 @@ function unregisterListenerForMidiBlock(blockId) {
     if (listenerEntry && listenerEntry.type === 'midi') {
         unregisterMidiListener(listenerEntry.listener);
         delete blockListeners[blockId];
-        log(`註銷了積木 ${blockId} 的 MIDI 監聽器。`);
+        logKey('LOG_MIDI_UNREGISTERED', 'info', blockId);
     }
 }
 
@@ -223,19 +223,21 @@ function unregisterListenerForMidiBlock(blockId) {
  * Initializes Blockly workspace and registers blocks/generators.
  */
 export async function initBlocklyManager() {
-    log('開始初始化 Blockly...');
-
     try {
-        // 在初始化 Blockly 或載入任何積木之前，先清除舊的音頻狀態
-        audioEngine.resetAudioEngineState();
-
         // Step 1: Register all blocks, generators, and dynamically load the locale data.
+        // This MUST be done first so that Blockly.Msg is populated for logKey to work.
         await registerAll();
-        log('✓ 所有模組已載入 (via js/blocks/index.js)');
+        
+        // Now that locales are loaded, we can log localized messages.
+        logKey('LOG_BLOCKLY_INIT'); 
+        logKey('LOG_MODULES_LOADED');
+
+        // Reset audio engine state (now with working localized logs)
+        audioEngine.resetAudioEngineState();
 
         // Step 2: Manually process the toolbox XML string with the now-populated Blockly.Msg
         const processedToolboxXml = processXmlString(TOOLBOX_XML_STRING);
-        log('✓ Toolbox XML 已手動處理佔位符');
+        logKey('LOG_TOOLBOX_PROCESSED');
 
         // Step 3: Inject Blockly Workspace with the processed and cleaned toolbox XML.
         workspace = Blockly.inject('blocklyDiv', {
@@ -253,15 +255,15 @@ export async function initBlocklyManager() {
             },
             media: import.meta.env.BASE_URL + 'blockly/media/'
         });
-        log('✓ Blockly workspace 已注入');
+        logKey('LOG_WORKSPACE_INJECTED');
 
         // Attach live event listener for hat blocks
         workspace.addChangeListener(onWorkspaceChanged);
-        log('✓ 已附加工作區即時事件監聽器。');
+        logKey('LOG_LISTENERS_ATTACHED');
 
     } catch (e) {
         console.error('Blockly initialization failed:', e);
-        log('❌ Blockly 初始化失敗: ' + e.message);
+        logKey('LOG_BLOCKLY_INIT_FAIL', 'error', e.message);
     }
 }
 
@@ -271,11 +273,11 @@ export async function initBlocklyManager() {
  */
 export async function getBlocksCode() {
     if (!workspace) {
-        log('Blockly workspace 尚未初始化');
+        logKey('LOG_WORKSPACE_NOT_INIT', 'error');
         return '';
     }
     if (typeof javascriptGenerator === 'undefined') {
-        log('Blockly JavaScript generator is not ready');
+        logKey('LOG_GENERATOR_NOT_READY', 'error');
         return '';
     }
 
@@ -283,7 +285,7 @@ export async function getBlocksCode() {
     audioEngine.resetAudioEngineState();
 
     try {
-        // Ensure the code generator is initialized for this workspace (prevents "init was not called" issues)
+        // ... [init logic] ...
         try {
             if (javascriptGenerator && typeof javascriptGenerator.init === 'function') {
                 try { javascriptGenerator.init(workspace); } catch (e) { console.warn('javascriptGenerator.init threw', e); }
@@ -305,13 +307,17 @@ export async function getBlocksCode() {
         // --- Dynamic Effect Chain Refactoring ---
         // 1. Collect effect configurations from all 'sb_setup_effect' blocks
         const effectConfigs = [];
-        const effectBlocks = workspace.getBlocksByType('sb_setup_effect', false);
+        let effectBlocks = workspace.getBlocksByType('sb_setup_effect', false);
+        
+        // Sort blocks by vertical position to ensure the effect chain matches the visual order
+        effectBlocks.sort((a, b) => a.getRelativeToSurfaceXY().y - b.getRelativeToSurfaceXY().y);
+
         const configRegex = /\/\* EFFECT_CONFIG:(.*?) \*\//;
 
         effectBlocks.forEach(block => {
             try {
-                // Generate the comment string for this block only
-                const blockCode = javascriptGenerator.blockToCode(block);
+                // Generate the comment string for this block only (opt_thisOnly = true)
+                const blockCode = javascriptGenerator.blockToCode(block, true);
                 if (blockCode) {
                     const match = blockCode.match(configRegex);
                     if (match && match[1]) {
@@ -319,7 +325,7 @@ export async function getBlocksCode() {
                     }
                 }
             } catch (err) {
-                log(`處理效果器積木 ${block.id} 時出錯: ${err.message}`);
+                logKey('LOG_EFFECT_BLOCK_ERR', 'error', block.id, err.message);
                 console.error(err);
             }
         });
@@ -333,14 +339,14 @@ export async function getBlocksCode() {
         code = javascriptGenerator.finish(code);
 
         if (!code || code.trim() === '') {
-            log('產生的程式碼為空');
+            logKey('LOG_CODE_EMPTY', 'warning');
         } else {
-            log('✓ 程式碼已產生（原生 Blockly 產生器）');
+            logKey('LOG_CODE_GENERATED');
         }
         return code;
     } catch (e) {
         console.warn('原生 Blockly 產生器失敗:', e);
-        log('備援模式：手動遍歷積木...');
+        logKey('LOG_FALLBACK_MODE');
         try {
             javascriptGenerator.init(workspace); // Re-initialize the generator for the fallback
             const top = workspace.getTopBlocks(true);
@@ -382,17 +388,17 @@ export async function getBlocksCode() {
                     cur = cur.getNextBlock ? cur.getNextBlock() : null;
                 }
             });
-            if (out.trim() === '') log('備援產生器：產生的程式碼為空');
-            else log('✓ 備援產生器成功產生程式碼');
+            if (out.trim() === '') logKey('LOG_FALLBACK_EMPTY', 'warning');
+            else logKey('LOG_FALLBACK_SUCCESS');
 
             // Call finish() to prepend definitions and setup code
             out = javascriptGenerator.finish(out);
-            log('✓ 備援產生器完成最終程式碼組合');
+            logKey('LOG_FALLBACK_DONE');
 
             return out;
         } catch (err) {
             console.error('備援產生器錯誤', err);
-            log('❌ 備援產生器錯誤: ' + err);
+            logKey('LOG_FALLBACK_ERR', 'error', err);
             return '';
         }
     }
@@ -406,8 +412,8 @@ export function resetWorkspaceAndAudio() {
     if (workspace) {
         workspace.clear();
         workspace.clearUndo();
-        log('✓ Blockly 工作區已清除。');
+        logKey('LOG_WORKSPACE_CLEARED');
     }
     audioEngine.resetAudioEngineState();
-    log('✓ 音訊引擎狀態已重設。');
+    logKey('LOG_ENGINE_RESTARTED');
 }

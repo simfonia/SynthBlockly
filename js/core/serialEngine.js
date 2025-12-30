@@ -1,6 +1,6 @@
 // js/core/serialEngine.js
 import { ensureAudioStarted } from './audioEngine.js';
-import { log } from '../ui/logger.js';
+import { log, logKey } from '../ui/logger.js';
 
 let serialPort = null;
 let serialReader = null;
@@ -21,19 +21,19 @@ window.unregisterSerialDataListener = function (callback) {
 
 async function connectSerial() {
     if (!('serial' in navigator)) {
-        log('瀏覽器不支援 Web Serial');
+        logKey('LOG_SERIAL_NOT_SUPPORTED', 'error');
         return;
     }
     try {
         serialPort = await navigator.serial.requestPort();
         await serialPort.open({ baudRate: 9600 });
-        log('Serial opened');
+        logKey('LOG_SERIAL_OPENED');
         const decoder = new TextDecoderStream();
         serialPort.readable.pipeTo(decoder.writable);
         serialReader = decoder.readable.getReader();
         readSerialLoop();
     } catch (e) {
-        log('Serial error: ' + e);
+        logKey('LOG_SERIAL_ERR', 'error', e);
     }
 }
 
@@ -55,16 +55,16 @@ async function readSerialLoop() {
             }
         }
     } catch (e) {
-        log('Serial read error: ' + e);
+        logKey('LOG_SERIAL_READ_ERR', 'error', e);
         serialBuffer = ''; // Reset buffer on error
     }
 }
 
 async function handleSerialLine(line) {
-    log('Serial: ' + line);
+    logKey('LOG_SERIAL_MSG', 'info', line);
     const ok = await ensureAudioStarted();
     if (!ok) {
-        log('無法處理音效：音訊尚未由使用者手動啟用（請點擊頁面上任一按鈕）。');
+        logKey('LOG_AUDIO_NOT_ENABLED', 'warning');
         return;
     }
 

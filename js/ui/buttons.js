@@ -1,26 +1,27 @@
-// js/ui/buttons.js
-import { log } from './logger.js';
+import { log, logKey, clearLogs } from './logger.js';
 import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js';
 import { getBlocksCode, resetWorkspaceAndAudio } from '../core/blocklyManager.js'; // Import resetWorkspaceAndAudio
 import * as Blockly from 'blockly'; // Import Blockly
 
 // New function to encapsulate run logic
 async function runBlocksAction() {
+    clearLogs(); // Clear logs before running new code
     const ok = await ensureAudioStarted();
     if (!ok) return;
     const code = await getBlocksCode();
-    if (!code) { log('沒有程式碼可執行'); return; }
-    log('執行積木程式碼...');
-    log('--- 產生的程式碼 START ---');
+    if (!code) { logKey('LOG_NO_CODE_EXPORT', 'warning'); return; }
+    logKey('LOG_RUNNING_CODE');
+    logKey('LOG_CODE_START');
     log(code);
-    log('--- 產生的程式碼 END ---');
+    logKey('LOG_CODE_END');
     try {
         const runner = new Function(`(async () => { ${code} })();`);
+        audioEngine.isExecutionActive = true; // Set flag to true before execution
         runner();
-        log('程式執行完畢');
+        logKey('LOG_EXEC_DONE');
     } catch (e) {
         console.error('RunBlocks execution error', e);
-        log('執行積木程式發生錯誤: ' + e);
+        logKey('LOG_EXEC_ERR', 'error', e);
     }
 }
 
@@ -63,10 +64,10 @@ export function initButtons() {
     if (exportBtn) {
         exportBtn.addEventListener('click', async () => {
             const code = await getBlocksCode(); // Using getBlocksCode from blocklyManager
-            if (!code) { log('沒有程式碼可匯出'); return; }
+            if (!code) { logKey('LOG_NO_CODE_EXPORT', 'warning'); return; }
             codeOut.style.display = 'block';
             codeOut.innerText = code;
-            try { await navigator.clipboard.writeText(code); log('程式碼已複製到剪貼簿'); } catch (e) { log('複製失敗: ' + e); }
+            try { await navigator.clipboard.writeText(code); logKey('LOG_CODE_COPIED'); } catch (e) { logKey('LOG_COPY_FAIL', 'error', e); }
             try {
                 const blob = new Blob([code], { type: 'text/javascript' });
                 const url = URL.createObjectURL(blob);
@@ -78,8 +79,8 @@ export function initButtons() {
                 a.click();
                 a.remove();
                 URL.revokeObjectURL(url);
-                log('已下載 blockly_export_*.js');
-            } catch (e) { log('下載失敗: ' + e); }
+                logKey('LOG_DOWNLOAD_SUCCESS');
+            } catch (e) { logKey('LOG_DOWNLOAD_FAIL', 'error', e); }
         });
     }
 
@@ -90,7 +91,7 @@ export function initButtons() {
             // workspace is not directly available here, need to get it from blocklyManager or global Blockly
             const workspace = Blockly.getMainWorkspace();
             if (!workspace) {
-                log('Workspace not ready.');
+                logKey('LOG_WORKSPACE_NOT_READY', 'error');
                 return;
             }
             try {
@@ -107,9 +108,9 @@ export function initButtons() {
                 a.click();
                 a.remove();
                 URL.revokeObjectURL(url);
-                log('Workspace saved to XML file.');
+                logKey('LOG_XML_SAVED');
             } catch (e) {
-                log('Error saving workspace: ' + e);
+                logKey('LOG_XML_SAVE_ERR', 'error', e);
                 console.error('Error saving workspace', e);
             }
         });
@@ -122,7 +123,7 @@ export function initButtons() {
             // workspace is not directly available here, need to get it from blocklyManager or global Blockly
             const workspace = Blockly.getMainWorkspace();
             if (!workspace) {
-                log('Workspace not ready.');
+                logKey('LOG_WORKSPACE_NOT_READY', 'error');
                 return;
             }
             const input = document.createElement('input');
@@ -140,9 +141,9 @@ export function initButtons() {
                         resetWorkspaceAndAudio(); // Call the new reset function
                         const xml = Blockly.utils.xml.textToDom(xmlText);
                         Blockly.Xml.domToWorkspace(xml, workspace);
-                        log(`Workspace loaded from ${file.name}`);
+                        logKey('LOG_XML_LOADED', 'info', file.name);
                     } catch (err) {
-                        log(`Error loading workspace: ${err}`);
+                        logKey('LOG_XML_LOAD_ERR', 'error', err);
                         console.error('Error loading workspace', err);
                     }
                 };
@@ -158,7 +159,7 @@ export function initButtons() {
         btnNewProject.addEventListener('click', () => {
             if (confirm('確定要開新專案嗎？現有的程式碼將會被清除。')) {
                 resetWorkspaceAndAudio();
-                log('✓ 已開新專案，工作區已清除。');
+                logKey('LOG_NEW_PROJECT_CLEARED');
             }
         });
     }
@@ -169,7 +170,7 @@ export function initButtons() {
             const newScale = parseFloat(event.target.value);
             if (typeof newScale === 'number') {
                 window.visualizerScale = newScale;
-                log(`示波器振幅縮放設定為: ${newScale.toFixed(1)}x`);
+                logKey('LOG_OSC_AMP_SET', 'info', newScale.toFixed(1));
             }
             // Release focus from the slider so keyboard events can be captured again
             event.target.blur();
@@ -188,7 +189,7 @@ export function initButtons() {
 
             if (window.audioEngine && window.audioEngine.analyser && window.audioEngine.analyser.size !== newSize) {
                 window.audioEngine.analyser.size = newSize;
-                log(`示波器時間縮放設定為: ${newSize} 點`);
+                logKey('LOG_OSC_TIME_SET', 'info', newSize);
             }
         });
 
@@ -198,5 +199,6 @@ export function initButtons() {
         });
     }
 
-    log("Button event listeners initialized.");
+    logKey("LOG_BUTTONS_INIT");
 }
+

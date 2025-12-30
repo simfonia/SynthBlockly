@@ -1,5 +1,5 @@
 // js/ui/keyboardController.js
-import { log } from './logger.js';
+import { log, logKey } from './logger.js';
 import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js'; // Note: audioEngine contains the pressedKeys, chords, etc.
 
 const KEY_TO_NOTE_MAP = {
@@ -16,7 +16,7 @@ const MIN_OCTAVE = 0;
 const MAX_OCTAVE = 8;
 
 const updateLogOctave = () => {
-    log(`當前八度: ${currentOctave}`);
+    logKey('LOG_KEYBOARD_OCTAVE', 'info', currentOctave);
 };
 
 const shiftOctave = (direction) => {
@@ -48,7 +48,7 @@ const getNoteForKeyCode = (keyCode) => {
 const switchInstrument = (direction) => {
     const instrumentNames = Object.keys(audioEngine.instruments);
     if (instrumentNames.length < 2) {
-        audioEngine.log('沒有其他樂器可供切換。');
+        audioEngine.logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', 'Other');
         return; // Not enough instruments to switch
     }
     const currentIndex = instrumentNames.indexOf(audioEngine.currentInstrumentName);
@@ -132,7 +132,7 @@ const handleKeyDown = async (e) => {
         notesToPlay = audioEngine.chords[chordName];
         notePlayedType = 'Chord';
         if (!notesToPlay) {
-            audioEngine.log(`錯誤: 和弦 "${chordName}" 未定義。`);
+            audioEngine.logKey('LOG_CHORD_UNDEFINED', 'error', chordName);
             return;
         }
     } else {
@@ -146,11 +146,11 @@ const handleKeyDown = async (e) => {
 
         const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
         if (!currentInstrument || !currentInstrument.triggerAttack) {
-            audioEngine.log(`錯誤: PC鍵盤無法播放。樂器 "${audioEngine.currentInstrumentName}" 不存在或不支持 triggerAttack。`);
+            audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName);
             return;
         }
         if (currentInstrument instanceof audioEngine.Tone.Sampler && !currentInstrument.loaded) {
-            audioEngine.log(`警告: PC鍵盤無法播放。樂器 "${audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+            audioEngine.logKey('LOG_SAMPLER_NOT_LOADED', 'warning', audioEngine.currentInstrumentName);
             return;
         }
 
@@ -158,7 +158,7 @@ const handleKeyDown = async (e) => {
         try {
             currentInstrument.triggerAttack(notesToPlay, audioEngine.Tone.now(), velocity);
         } catch (e) {
-            audioEngine.log(`triggerAttack failed for keyboard: ${e.message}`);
+            audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName + ": " + e.message);
             console.error(e);
         }
         audioEngine.pressedKeys.set(e.code, notesToPlay);
@@ -183,12 +183,12 @@ const handleKeyUp = async (e) => {
 
         const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
         if (!currentInstrument || !currentInstrument.triggerRelease) {
-            audioEngine.log(`錯誤: PC鍵盤無法釋放。樂器 "${audioEngine.currentInstrumentName}" 不存在或不支持 triggerRelease。`);
+            audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName);
             audioEngine.pressedKeys.delete(e.code);
             return;
         }
         if (currentInstrument instanceof audioEngine.Tone.Sampler && !currentInstrument.loaded) {
-            audioEngine.log(`警告: PC鍵盤無法釋放。樂器 "${audioEngine.currentInstrumentName}" (Sampler) 樣本尚未載入。`);
+            audioEngine.logKey('LOG_SAMPLER_NOT_LOADED', 'warning', audioEngine.currentInstrumentName);
             audioEngine.pressedKeys.delete(e.code);
             return;
         }
@@ -211,7 +211,7 @@ export function initKeyboardController() {
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
             isPcKeyboardMidiEnabled = true;
-            log('PC 鍵盤 MIDI 功能已開啟');
+            logKey('LOG_KEYBOARD_MIDI_ON');
             updateLogOctave();
         }
     };
@@ -221,12 +221,12 @@ export function initKeyboardController() {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
             isPcKeyboardMidiEnabled = false;
-            log('PC 鍵盤 MIDI 功能已關閉');
+            logKey('LOG_KEYBOARD_MIDI_OFF');
             audioEngine.pressedKeys.clear(); // Clear any lingering pressed keys
         }
     };
     
     // Default to disabled
     audioEngine.disablePcKeyboardMidi();
-    log("PC Keyboard MIDI Controller initialized (defaulting to disabled).");
+    logKey("LOG_KEYBOARD_INIT");
 }

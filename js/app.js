@@ -1,5 +1,5 @@
 // SynthBlockly - Main Application Entry Point
-import { initLogger, log } from './ui/logger.js';
+import { initLogger, log, logKey } from './ui/logger.js';
 import { initResizer } from './ui/resizer.js';
 import { audioEngine } from './core/audioEngine.js'; // Ensure window.audioEngine is set up early
 import { initMidi } from './core/midiEngine.js';
@@ -18,31 +18,31 @@ log("Logger module loaded.");
 log("Audio Engine loaded. Window.audioEngine is now available.");
 
 document.addEventListener('DOMContentLoaded', async () => {
-    log("SynthBlockly DOM loaded. Ready to initialize modules.");
+    logKey("LOG_DOM_LOADED");
     initLogger();
-    log("Logger initialized.");
+    logKey("LOG_LOGGER_INIT");
     initResizer();
-    log("Resizer initialized.");
+    logKey("LOG_RESIZER_INIT");
     initMidi();
-    log("MIDI Engine initialized.");
+    logKey("LOG_MIDI_INIT");
     initSerial();
-    log("Serial Engine initialized.");
+    logKey("LOG_SERIAL_INIT");
     
     // Initialize Blockly after all core engines are set up
     await initBlocklyManager();
-    log("Blockly Manager initialized.");
+    logKey("LOG_BLOCKLY_MGR_INIT");
 
     initUIManager();
     initButtons();
     initKeyboardController();
-    log("Keyboard Controller initialized.");
+    logKey("LOG_KEYBOARD_CTRL_INIT");
     initVisualizer(analyser);
-    log("Visualizer initialized.");
+    logKey("LOG_VISUALIZER_INIT");
     initHelpModal();
-    log("Help Modal initialized.");
+    logKey("LOG_HELP_MODAL_INIT");
 
     startAudioOnFirstInteraction(); // Start audio context on first interaction
-    log("Audio context starter initialized.");
+    logKey("LOG_AUDIO_STARTER_INIT");
     
     // Other initializations will go here as modules are moved
 });
