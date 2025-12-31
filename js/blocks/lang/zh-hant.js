@@ -189,6 +189,15 @@ export const MSG_ZH_HANT = {
     'SB_EFFECT_FILTER_Q_FIELD': 'Q值 (共振)',
     'SB_EFFECT_ROLLOFF_FIELD': '滾降斜率',
 
+    // SFX
+    'SB_PLAY_SFX_MESSAGE': '播放音效 %1',
+    'SB_PLAY_SFX_REVERSE_FIELD': '%1 反轉',
+    'SB_PLAY_SFX_SPEED_FIELD': '速度 %1',
+    'SB_PLAY_SFX_VOLUME_FIELD': '音量 %1',
+    'SB_PLAY_SFX_TOOLTIP': '播放單次音效。可選擇內建音效或輸入自訂 URL。支援反轉、速度調整與音量控制。',
+    'SB_SF_CUSTOM_OPTION': '自訂 URL...',
+    'SB_SFX_CUSTOM_URL_LABEL': 'URL',
+
     // MIDI
     'SB_MIDI_NOTE_RECEIVED_MESSAGE': '當 MIDI 音符 %1 力度 %2 頻道 %3 接收時',
     'SB_MIDI_NOTE_RECEIVED_TOOLTIP': '當收到 MIDI 音符時觸發。提供音符編號、力度和頻道。',
@@ -226,6 +235,10 @@ export const MSG_ZH_HANT = {
     'LOG_AUDIO_STARTED': 'AudioContext 已啟動',
     'LOG_AUDIO_START_FAIL': '無法啟動 AudioContext: %1',
     'LOG_JAZZKIT_LOADED': 'Jazz Kit 樣本已載入。',
+    'LOG_SFX_LOADING': '正在載入音效: %1',
+    'LOG_SFX_PLAYING': '播放音效: %1',
+    'LOG_SFX_LOAD_ERR': '載入音效失敗 %1: %2',
+    'LOG_SFX_ERR': '音效播放錯誤: %1',
     'LOG_EFFECT_CLEARED': '舊效果器鏈已清除。',
     'LOG_TIME_PARSE_ERR': '時間字串 "%1" 無法解析。使用預設值 0.25 秒。錯誤: %2',
     'LOG_TIME_INVALID': '無效的時間輸入 "%1"。使用預設值 0.25 秒。',

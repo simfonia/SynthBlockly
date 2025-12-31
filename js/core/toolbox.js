@@ -237,10 +237,31 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_setup_effect"></block>
       </category>
       <category name="%{BKY_MSG_SFX_CATEGORY}" colour="%{BKY_SFX_HUE}">
-        <category name="%{BKY_MSG_NOISE_CATEGORY}" colour="%{BKY_NOISE_HUE}">
-          <block type="sb_play_background_noise"></block>
-          <block type="sb_stop_background_noise"></block>
-        </category>
+        <block type="sb_play_sfx">
+          <value name="SPEED">
+            <shadow type="math_number">
+              <field name="NUM">1</field>
+            </shadow>
+          </value>
+          <value name="VOLUME">
+            <shadow type="math_number">
+              <field name="NUM">0.5</field>
+            </shadow>
+          </value>
+          <value name="CUSTOM_URL">
+            <shadow type="text">
+              <field name="TEXT">https://example.com/sound.mp3</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="sb_play_background_noise">
+          <value name="VOLUME">
+            <shadow type="math_number">
+              <field name="NUM">0.5</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="sb_stop_background_noise"></block>
       </category>
       <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">
         <block type="sb_midi_note_received"></block>

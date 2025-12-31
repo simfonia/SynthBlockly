@@ -20,6 +20,7 @@ import { registerBlocks as registerMathBlocks } from './math_blocks.js';
 import { registerBlocks as registerNoiseBlocks } from './noise_blocks.js';
 import { registerBlocks as registerCustomWaveBlocks } from './instruments_custom_wave_blocks.js'; // NEW
 import { registerBlocks as registerSamplerBlocks } from './sampler_blocks.js'; // NEW
+import { registerBlocks as registerSfxBlocks } from './sfx_blocks.js'; // NEW
 
 import { registerGenerators as registerInstrumentGenerators } from './instruments_generators.js';
 import { registerGenerators as registerMidiGenerators } from './midi_generators.js';
@@ -31,6 +32,7 @@ import { registerGenerators as registerMathGenerators } from './math_generators.
 import { registerGenerators as registerNoiseGenerators } from './noise_generators.js';
 import { registerGenerators as registerCustomWaveGenerators } from './instruments_custom_wave_generators.js'; // NEW
 import { registerGenerators as registerSamplerGenerators } from './sampler_generators.js'; // NEW
+import { registerGenerators as registerSfxGenerators } from './sfx_generators.js'; // NEW
 
 // --- End of Imports ---
 
@@ -117,6 +119,7 @@ export async function registerAll() {
     registerNoiseBlocks(Blockly);
     registerCustomWaveBlocks(Blockly); // NEW
     registerSamplerBlocks(Blockly); // NEW
+    registerSfxBlocks(Blockly); // NEW
     console.log('Blocks registered.');
 
     // 4. Register Custom Generators
@@ -130,6 +133,7 @@ export async function registerAll() {
     registerNoiseGenerators(Blockly, javascriptGenerator);
     registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW
     registerSamplerGenerators(Blockly, javascriptGenerator); // NEW
+    registerSfxGenerators(Blockly, javascriptGenerator); // NEW
     console.log('Generators registered.');
 
   } catch (e) {

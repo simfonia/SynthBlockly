@@ -85,6 +85,7 @@ export const audioEngine = {
     jazzKit: jazzKit,
     effects: {},
     _activeEffects: [], // Internal array to track the current effect chain
+    activeSFXPlayers: [], // Track active SFX players for stopping
 
     rebuildEffectChain: function(effectsConfig = []) {
         // 1. Dispose of all previously active effects
@@ -651,7 +652,70 @@ export const audioEngine = {
         this.jazzKit.triggerAttackRelease(drumNote, '8n', time, finalVelocity);
     },
 
+    /**
+     * Plays a sound effect (SFX) from a URL.
+     * @param {string} url The URL of the sound file.
+     * @param {object} options Options: { reverse: boolean, playbackRate: number, volume: number }
+     */
+    playSFX: async function(url, options = {}) {
+        const ok = await ensureAudioStarted();
+        if (!ok || !this.isExecutionActive) return;
+
+        // Default options
+        const reverse = options.reverse || false;
+        const playbackRate = options.playbackRate || 1;
+        const volume = options.volume !== undefined ? options.volume : 1; // 0-1 linear gain
+
+        try {
+            this.logKey('LOG_SFX_LOADING', 'info', url);
+            
+            // Create a new Player for this one-shot
+            const player = new Tone.Player({
+                url: url,
+                loop: false,
+                autostart: false,
+                onload: () => {
+                    this.logKey('LOG_SFX_PLAYING', 'info', url);
+                    // Check if execution is still active before starting
+                    if (!this.isExecutionActive) {
+                        player.dispose();
+                        return;
+                    }
+                    player.start();
+                },
+                onerror: (e) => {
+                    this.logKey('LOG_SFX_LOAD_ERR', 'error', url, e);
+                    const idx = this.activeSFXPlayers.indexOf(player);
+                    if (idx > -1) this.activeSFXPlayers.splice(idx, 1);
+                    player.dispose();
+                },
+                onstop: () => {
+                    // Cleanup after playback
+                    const idx = this.activeSFXPlayers.indexOf(player);
+                    if (idx > -1) this.activeSFXPlayers.splice(idx, 1);
+                    player.dispose();
+                }
+            });
+
+            // Track this player
+            this.activeSFXPlayers.push(player);
+
+            // Apply settings
+            player.reverse = reverse;
+            player.playbackRate = playbackRate;
+            player.volume.value = Tone.gainToDb(volume);
+
+            // Connect to effects chain
+            player.chain(...this._activeEffects, analyser);
+
+        } catch (e) {
+            this.logKey('LOG_SFX_ERR', 'error', e.message);
+            console.error(e);
+        }
+    },
+
     clearPressedKeys: function() {
+
         this.pressedKeys.clear();
         this.midiPressedNotes.clear();
         this.midiPlayingNotes.clear();
@@ -746,7 +810,16 @@ export const audioEngine = {
         this.Tone.Transport.stop();
         this.Tone.Transport.cancel(0); // Explicitly cancel from the beginning
         this.Tone.Transport.seconds = 0; // Reset position to 0
-        logKey('LOG_TRANSPORT_STOPPED');
+        this.log('✓ 主時鐘 (Transport) 已停止、重設並清除排程。');
+
+        // Stop all active SFX players
+        this.activeSFXPlayers.forEach(player => {
+            try {
+                player.stop();
+                player.dispose();
+            } catch (e) { /* ignore */ }
+        });
+        this.activeSFXPlayers = [];
 
         // Disconnect and release all instruments
         const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);

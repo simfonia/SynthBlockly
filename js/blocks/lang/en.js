@@ -190,6 +190,15 @@ For detailed usage, right-click and select "Help".`,
     'SB_EFFECT_FILTER_Q_FIELD': 'Q (Resonance)',
     'SB_EFFECT_ROLLOFF_FIELD': 'Rolloff',
 
+    // SFX
+    'SB_PLAY_SFX_MESSAGE': 'Play SFX %1',
+    'SB_PLAY_SFX_REVERSE_FIELD': '%1 Reverse',
+    'SB_PLAY_SFX_SPEED_FIELD': 'Speed %1',
+    'SB_PLAY_SFX_VOLUME_FIELD': 'Volume %1',
+    'SB_PLAY_SFX_TOOLTIP': 'Plays a one-shot sound effect. Choose a preset or enter a custom URL. Supports reverse, speed (playback rate), and volume control.',
+    'SB_SF_CUSTOM_OPTION': 'Custom URL...',
+    'SB_SFX_CUSTOM_URL_LABEL': 'URL',
+
     // MIDI
     'SB_MIDI_NOTE_RECEIVED_MESSAGE': 'When MIDI Note %1 Velocity %2 Channel %3 Received',
     'SB_MIDI_NOTE_RECEIVED_TOOLTIP': 'Triggers when a MIDI note is received. Provides the note number, velocity, and channel.',
@@ -227,6 +236,10 @@ Usage:
     'LOG_AUDIO_STARTED': 'AudioContext started',
     'LOG_AUDIO_START_FAIL': 'Unable to start AudioContext: %1',
     'LOG_JAZZKIT_LOADED': 'Jazz Kit samples loaded.',
+    'LOG_SFX_LOADING': 'Loading SFX: %1',
+    'LOG_SFX_PLAYING': 'Playing SFX: %1',
+    'LOG_SFX_LOAD_ERR': 'Failed to load SFX %1: %2',
+    'LOG_SFX_ERR': 'SFX Error: %1',
     'LOG_EFFECT_CLEARED': 'Old effect chain cleared.',
     'LOG_TIME_PARSE_ERR': 'Time string "%1" could not be parsed. Using default 0.25s. Error: %2',
     'LOG_TIME_INVALID': 'Invalid time input "%1". Using default 0.25s.',
