@@ -139,6 +139,7 @@ export function initButtons() {
                     const xmlText = e.target.result;
                     try {
                         resetWorkspaceAndAudio(); // Call the new reset function
+                        clearLogs(); // Clear logs on successful load
                         const xml = Blockly.utils.xml.textToDom(xmlText);
                         Blockly.Xml.domToWorkspace(xml, workspace);
                         logKey('LOG_XML_LOADED', 'info', file.name);

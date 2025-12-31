@@ -30,7 +30,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_NOISE_HUE}",
+                "colour": "%{BKY_SFX_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_BACKGROUND_NOISE_TOOLTIP}",
                 "helpUrl": ""
             });
@@ -47,7 +47,7 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_STOP_BACKGROUND_NOISE_MESSAGE}",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_NOISE_HUE}",
+                "colour": "%{BKY_SFX_HUE}",
                 "tooltip": "%{BKY_SB_STOP_BACKGROUND_NOISE_TOOLTIP}",
                 "helpUrl": ""
             });

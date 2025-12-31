@@ -44,12 +44,8 @@ if (Blockly && Blockly.Workspace && Blockly.Workspace.prototype) {
 function processXmlString(xmlString) {
     // This regex finds all placeholders like %{BKY_...}
     return xmlString.replace(/%{BKY_([^}]+)}/g, (match, key) => {
-        // Blockly.Msg keys are typically the placeholder key without the 'BKY_' prefix.
-        // e.g., %{BKY_MSG_LOGIC_CATEGORY} maps to Blockly.Msg.LOGIC_CATEGORY
-        const effectiveKey = key.startsWith('MSG_') ? key.substring(4) : key;
-        
         // Return the value from Blockly.Msg if it exists, otherwise return the original placeholder.
-        return Blockly.Msg[effectiveKey] || match;
+        return Blockly.Msg[key] || match;
     });
 }
 
@@ -78,7 +74,21 @@ window.unregisterSerialDataListener = function (callback) {
 
 function onWorkspaceChanged(event) {
     if (!workspace) return;
-    if (event.isUiEvent) return; // Don't run on UI events like zoom or selection
+    
+    // --- Real-time ADSR Preview ---
+    if (event.type === Blockly.Events.BLOCK_CHANGE && event.name && ['A', 'D', 'S', 'R'].includes(event.name)) {
+        const block = workspace.getBlockById(event.blockId);
+        if (block && block.type === 'sb_set_adsr') {
+            const a = Number(block.getFieldValue('A')) || 0.01;
+            const d = Number(block.getFieldValue('D')) || 0.1;
+            const s = Number(block.getFieldValue('S')) || 0.5;
+            const r = Number(block.getFieldValue('R')) || 1.0;
+            // Update the global visualizer state
+            audioEngine.updateADSR(a, d, s, r);
+        }
+    }
+
+    if (event.isUiEvent) return; // Don't run logic on UI events like zoom or selection
 
     // A block was changed, moved, created, or deleted.
     // This is a broad but effective net to catch any changes that might

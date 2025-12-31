@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>How to Use "Create Custom Sampler" Block</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #5CB85C; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; }
+        .important { background-color: #fffbe6; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <h1>How to Use "Create Custom Sampler" Block</h1>
+    <p>This block allows you to create a completely new instrument from your own audio samples.</p>
+
+    <div class="type-box">
+        <h2>How it works: Resampling</h2>
+        <p>The core of this block is based on Tone.js's powerful <code>Sampler</code>, which relies on <strong>Digital Audio Resampling</strong>:</p>
+        <ul>
+            <li><strong>Single Sample</strong>: If you provide only one sample (e.g., a C4 violin recording), the sampler can generate the full range of notes by speeding up or slowing down playback.</li>
+            <li><strong>Multisampling</strong>: For higher quality, you can provide multiple samples at different pitches. The sampler will automatically pick the closest recording to ensure the best sound quality.</li>
+        </ul>
+    </div>
+
+    <h2>Step 1: Prepare Your Samples</h2>
+    <ol>
+        <li><strong>Find Samples</strong>: Search for single-note audio files (<code>.wav</code>, <code>.mp3</code>). Sites like <code>Freesound.org</code> are great resources.</li>
+        <li><strong>Check License</strong>: Ensure the files are free to use (e.g., CC0 or Public Domain).</li>
+    </ol>
+
+    <h2>Step 2: Host Your Audio Online</h2>
+    <p>To use your samples, they must be accessible via a public URL. <strong>GitHub Pages</strong> is a highly recommended free method:</p>
+    <ol>
+        <li>Create a new public GitHub repository (e.g., <code>my-samples</code>).</li>
+        <li>Upload your files and commit the changes.</li>
+        <li>Enable GitHub Pages in <code>Settings > Pages</code>.</li>
+        <li>Get your base URL, e.g., <code>https://user.github.io/my-samples/</code></li>
+    </ol>
+
+    <h2>Step 3: Configure the Block</h2>
+    <p>Drag the "Create Custom Sampler" block from the Samplers category and fill in the fields:</p>
+    <ul>
+        <li><strong>Name</strong>: Give your instrument a name (e.g., <code>MyViolin</code>).</li>
+        <li><strong>Base URL</strong>: Paste your GitHub Pages URL.</li>
+        <li><strong>Sample Map</strong>: Use a JSON string to map note names to filenames.</li>
+    </ul>
+
+    <div class="important">
+        <p><strong>Example Format</strong>: <code>'{"A4": "violin-a4.wav", "C5": "violin-c5.wav"}'</code></p>
+        <p><strong>Note</strong>: The entire string must be wrapped in <strong>single quotes</strong>, while keys and values inside must use <strong>double quotes</strong>.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>Supported Formats</h2>
+        <p>We recommend <code>.wav</code> (best quality) or <code>.mp3</code> (best compatibility). Modern browsers also support <code>.m4a</code>, <code>.ogg</code>, and <code>.flac</code>.</p>
+    </div>
+</body>
+</html>

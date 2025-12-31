@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>如何使用「創建自訂取樣器」積木</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #5CB85C; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; }
+        .important { background-color: #fffbe6; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <h1>如何使用「創建自訂取樣器」積木</h1>
+    <p>這個積木讓你從自己的音訊樣本中，打造一個獨一無二的全新樂器。</p>
+
+    <div class="type-box">
+        <h2>運作原理：重新取樣 (Resampling)</h2>
+        <p>這個積木的核心是基於 Tone.js 強大的 <code>Sampler</code> 功能，其運作依賴「數位音訊重新取樣」技術：</p>
+        <ul>
+            <li><strong>單一樣本</strong>：如果你只提供一個音訊樣本（例如 C4 錄音），取樣器就能產生完整的音高範圍。播高音時會加速，播低音時則會放慢。</li>
+            <li><strong>多重樣本 (Multisampling)</strong>：為了獲得更真實、高品質的聲音，你可以提供多個不同音高的樣本。取樣器會聰明地選取最接近的原始樣本進行微調，減少音質劣化。</li>
+        </ul>
+    </div>
+
+    <h2>步驟一：準備音訊樣本</h2>
+    <ol>
+        <li><strong>尋找樣本</strong>：在網路上尋找單音符檔案 (<code>.wav</code>, <code>.mp3</code>)。例如 <code>Freesound.org</code>。</li>
+        <li><strong>檢查授權</strong>：確保檔案允許自由使用 (如 CC0 授權)。</li>
+    </ol>
+
+    <h2>步驟二：託管音訊檔案</h2>
+    <p>為了讓積木能夠讀取樣本，檔案必須存放在公開網址上。<strong>GitHub Pages</strong> 是最推薦的免費方法：</p>
+    <ol>
+        <li>建立新的公開 GitHub 儲存庫（如 <code>my-samples</code>）。</li>
+        <li>上傳你的檔案並提交。</li>
+        <li>在 <code>Settings > Pages</code> 中啟用 GitHub Pages。</li>
+        <li>獲取你的基礎網址，例如：<code>https://user.github.io/my-samples/</code></li>
+    </ol>
+
+    <h2>步驟三：配置積木</h2>
+    <p>從「取樣器」分類中拖出「創建自訂取樣器」積木並填寫：</p>
+    <ul>
+        <li><strong>名稱</strong>：為樂器命名 (如 <code>MyViolin</code>)。</li>
+        <li><strong>基礎網址</strong>：貼上你的 GitHub Pages 網址。</li>
+        <li><strong>樣本映射</strong>：使用 JSON 格式將音符對應到檔案。</li>
+    </ul>
+
+    <div class="important">
+        <p><strong>格式範例</strong>：<code>'{"A4": "violin-a4.wav", "C5": "violin-c5.wav"}'</code></p>
+        <p><strong>注意</strong>：整個字串必須用<strong>單引號</strong>包裹，內部的音高與檔名則必須使用<strong>雙引號</strong>。</p>
+    </div>
+
+    <div class="type-box">
+        <h2>支援格式</h2>
+        <p>推薦使用 <code>.wav</code>（音質最佳）或 <code>.mp3</code>（相容性最好）。現代瀏覽器也支援 <code>.m4a</code>, <code>.ogg</code>, <code>.flac</code> 等格式。</p>
+    </div>
+</body>
+</html>

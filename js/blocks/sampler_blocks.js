@@ -24,13 +24,13 @@ const samplerBlock = {
             ],
             "previousStatement": null,
             "nextStatement": null,
-            "colour": "%{BKY_SAMPLERS_HUE}",
+            "colour": "%{BKY_SOUND_SOURCES_HUE}",
             "tooltip": "%{BKY_SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP}",
             "helpUrl": function() {
                 const lang = window.currentLanguage || 'en';
-                let docFile = 'custom_sampler_en.html';
+                let docFile = 'custom_sampler_readme_en.html';
                 if (lang === 'zh-hant') {
-                    docFile = 'custom_sampler_zh-hant.html';
+                    docFile = 'custom_sampler_readme_zh-hant.html';
                 }
                 return `${import.meta.env.BASE_URL}docs/${docFile}`;
             },

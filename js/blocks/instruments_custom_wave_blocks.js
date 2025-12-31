@@ -92,7 +92,7 @@ export function registerBlocks(BlocklyInstance) {
   BlocklyInstance.Blocks['sb_create_harmonic_synth'] = {
     init: function() {
       this.jsonInit({
-        "message0": "創建諧波合成器 名稱 %1",
+        "message0": "%{BKY_MSG_HARMONIC_ADDER_CATEGORY} 名稱 %1",
         "args0": [
           {
             "type": "field_input",
@@ -102,7 +102,7 @@ export function registerBlocks(BlocklyInstance) {
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+        "colour": "%{BKY_SOUND_SOURCES_HUE}",
         "tooltip": "%{BKY_MSG_HARMONIC_SYNTH_TOOLTIP}",
         "helpUrl": ""
       });
@@ -128,7 +128,7 @@ export function registerBlocks(BlocklyInstance) {
         "type": "input_statement",
         "name": "STACK"
       }],
-      "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+      "colour": "%{BKY_SOUND_SOURCES_HUE}",
       "tooltip": "為自訂波形添加、刪除或重新排序泛音。",
       "enableContextMenu": false
     },
@@ -137,7 +137,7 @@ export function registerBlocks(BlocklyInstance) {
       "message0": "泛音項目",
       "previousStatement": null,
       "nextStatement": null,
-      "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+      "colour": "%{BKY_SOUND_SOURCES_HUE}",
       "tooltip": "泛音項目，用於設定振幅。",
       "enableContextMenu": false
     }
@@ -264,7 +264,7 @@ export function registerBlocks(BlocklyInstance) {
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+        "colour": "%{BKY_SOUND_SOURCES_HUE}",
         "tooltip": "%{BKY_MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP}",
         "helpUrl": ""
       });
@@ -281,7 +281,7 @@ export function registerBlocks(BlocklyInstance) {
       "message0": "振盪器",
       "message1": "%1",
       "args1": [{ "type": "input_statement", "name": "STACK" }],
-      "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+      "colour": "%{BKY_SOUND_SOURCES_HUE}",
       "tooltip": "為加法合成器添加、刪除或重新排序振盪器。",
       "enableContextMenu": false
     },
@@ -290,7 +290,7 @@ export function registerBlocks(BlocklyInstance) {
       "message0": "振盪器項目",
       "previousStatement": null,
       "nextStatement": null,
-      "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+      "colour": "%{BKY_SOUND_SOURCES_HUE}",
       "tooltip": "一個振盪器項目。",
       "enableContextMenu": false
     }

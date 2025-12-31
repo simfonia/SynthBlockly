@@ -55,4 +55,6 @@
 
 - [x] **動態效果器管理與效果鏈重構 (Dynamic Effect Management and Chain Refactoring)**
 - [x] **自訂取樣器**:可以用自訂的wav檔創建樂器音色
-- [ ] **實現 ADSR 包絡的視覺化**
+- [x] **實現 ADSR 包絡的視覺化**
+- [x] **日誌系統多語系化與區塊化**
+- [x] **音效播放 (SFX) 積木實作**

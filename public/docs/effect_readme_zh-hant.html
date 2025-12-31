@@ -2,111 +2,128 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>效果器積木說明</title>
+    <title>音訊效果器原理與參數說明</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
-        h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-        h3 { color: #333; }
-        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
-        .param { font-weight: bold; }
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #9B59B6; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        .theory { font-size: 0.9em; color: #666; font-style: italic; margin-top: 10px; border-left: 3px solid #ccc; padding-left: 10px; margin-bottom: 10px; }
+        .params { font-size: 0.95em; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #eee; }
+        .params strong { color: #9B59B6; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h1>效果器積木詳細指南</h1>
+    <h1>音訊效果器：原理與參數詳解</h1>
+    <p>透過「設定效果器」積木，你可以為樂器添加各種專業的後製效果。了解每個參數的意義與範圍，能幫助你精確掌控聲音的細節。</p>
 
-    <h2>通用參數</h2>
-    <ul>
-        <li><span class="param">濕度 (Wet):</span> 控制效果的乾濕混合比例 (0 到 1)。數值為 0 表示聽不到效果 (乾聲)，數值為 1 表示只聽到效果聲 (濕聲)。</li>
-    </ul>
+    <div class="type-box">
+        <h2>通用參數：乾濕比 (Wet)</h2>
+        <p>這代表了「原始訊號 (Dry)」與「處理後訊號 (Wet)」的混合比例。0 為純原音，1 為純效果音。通常設為 0.5 能在保留原音清晰度的同時獲得明顯的效果。</p>
+    </div>
 
-    <h2>失真 (Distortion)</h2>
-    <p>「失真」是透過非線性方式對音訊訊號進行處理。它會刻意改變輸入波形的形狀，通常是將其峰值「削平」或「飽和化」。這種非線性操作會引入原始訊號中不存在的新的諧波成分（泛音），特別是奇次諧波，從而產生「毛躁」或「粗糙」的聽感。</p>
-    <p>為聲音增添諧波、砂礫感和飽和度。</p>
-    <ul>
-        <li><span class="param">量 (Amount):</span> 失真的強度，範圍從 0 (乾淨) 到 1 (嚴重失真)。</li>
-        <li><span class="param">超取樣 (Oversample):</span> 減少因數位取樣產生的高頻混疊雜訊。使用 '2x' 或 '4x' 可以獲得更平滑、更高品質的聲音，但會稍微增加處理器負擔。</li>
-    </ul>
+    <div class="type-box">
+        <h2>1. 混響 (Reverb)</h2>
+        <div class="theory">
+            <strong>物理原理</strong>：模擬聲波在空間內多次反射形成的餘韻（尾巴）。<br>
+            <strong>訊號處理</strong>：利用延遲矩陣模擬空間大小與牆面吸收率。
+        </div>
+        <div class="params">
+            <strong>調整參數：</strong>
+            <ul>
+                <li><strong>衰減 (Decay)</strong> [0.1 - 10+ 秒]：數值越大，空間聽起來越開闊（如大教堂）；越小則像小房間。</li>
+                <li><strong>預延遲 (PreDelay)</strong> [0 - 0.1 秒]：原始聲音與第一次反射聲之間的時間差，增加此值可讓聲音更具層次感。</li>
+                <li><strong>濕度 (Wet)</strong> [0 - 1]：效果音的比例。</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>混響 (Reverb)</h2>
-    <p>「混響」模擬了聲音在封閉空間中反射的物理現象。當聲音在房間中產生時，它會撞擊牆壁、天花板、地板等表面，產生無數次的反射。這些反射以微小的時間差和逐漸衰減的響度到達聽者耳中。混響效果正是透過生成一系列密集且逐漸衰減的「回音」，讓這些回音相互融合，從而營造出空間感。</p>
-    <p>模擬聲音在特定空間（如房間、大廳等）中的反射效果。</p>
-    <ul>
-        <li><span class="param">衰減 (Decay):</span> 混響尾音的持續時間（秒）。較長的衰減時間模擬較大的空間。</li>
-        <li><span class="param">預延遲 (Predelay):</span> 原始聲音與第一個混響反射音之間的時間差（秒）。短暫的預延遲有助於保持原始聲音的清晰度。</li>
-    </ul>
+    <div class="type-box">
+        <h2>2. 回饋延遲 (Feedback Delay)</h2>
+        <div class="theory">
+            <strong>物理原理</strong>：模擬聲波遇到障礙物折返的回音現象。<br>
+            <strong>訊號處理</strong>：將訊號暫存後播放，並將部分輸出送回輸入端產生重複。
+        </div>
+        <div class="params">
+            <strong>調整參數：</strong>
+            <ul>
+                <li><strong>延遲時間 (Delay Time)</strong> [音樂時值，如 4n, 8n]：回音出現的時間間隔。</li>
+                <li><strong>回饋 (Feedback)</strong> [0 - 1]：決定回音重複的次數。0 為一次，接近 1 則會持續很久。</li>
+                <li><strong>濕度 (Wet)</strong> [0 - 1]：原音與回音的混合比。</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>回饋延遲 (Feedback Delay)</h2>
-    <p>「回饋延遲」透過將一部分延遲後的訊號再次送回延遲線的輸入端，來產生一系列逐漸衰減的回音。原始訊號首先被延遲，然後一小部分的延遲訊號被重新加回到輸入，使其再次被延遲，如此循環，便產生了連續且音量逐漸減小的重複聲音。</p>
-    <p>產生輸入聲音的回音。</p>
-    <ul>
-        <li><span class="param">延遲時間 (Delay Time):</span> 連續回音之間的間隔時間。可以是音樂時值（如 '8n' 代表八分音符）或以秒為單位的時間。</li>
-        <li><span class="param">回饋 (Feedback):</span> 回音的強度，範圍從 0 到 1。數值 0.25 表示每個回音的音量是前一個的 25%。過高的數值可能導致自我振盪。</li>
-    </ul>
+    <div class="type-box">
+        <h2>3. 濾波器 (Filter)</h2>
+        <div class="theory">
+            <strong>物理原理</strong>：模擬材質對不同頻率聲波的阻擋效果。<br>
+            <strong>訊號處理</strong>：選擇性地通過或移除特定頻率範圍。
+        </div>
+        <div class="params">
+            <strong>濾波器類型詳解：</strong>
+            <ul>
+                <li><strong>lowpass (低通)</strong>：只允許低於頻率的聲音通過。會移除高頻，使聲音變得悶悶的（像隔著牆聽音樂）。</li>
+                <li><strong>highpass (高通)</strong>：只允許高於頻率的聲音通過。會移除低頻，使聲音變得尖銳、單薄。</li>
+                <li><strong>bandpass (帶通)</strong>：只允許頻率附近的聲音通過。會同時移除極高與極低的聲音，產生類似電話或收音機的效果。</li>
+                <li><strong>lowshelf (低架)</strong>：調整低頻段的音量增益，而不完全切除。常用於增強或減弱重低音。</li>
+                <li><strong>highshelf (高架)</strong>：調整高頻段的音量增益。常用於調整聲音的明亮度。</li>
+                <li><strong>notch (陷波)</strong>：極度精準地移除特定頻率附近的聲音。常用於消除特定的雜音或回授。</li>
+                <li><strong>allpass (全通)</strong>：讓所有頻率通過，但改變它們的相位關係。常用於改變音色的質感。</li>
+                <li><strong>peaking (峰值)</strong>：增強或減弱特定頻率附近的聲音。類似一般等化器 (EQ) 的調整。</li>
+            </ul>
+            <strong>調整參數：</strong>
+            <ul>
+                <li><strong>頻率 (Frequency)</strong> [20 - 20000 Hz]：效果作用的基準點。</li>
+                <li><strong>Q值 (Resonance)</strong> [0.1 - 20]：共振強度。數值高會在切斷點產生強調感，產生類似口哨或變頻感。</li>
+                <li><strong>滾降 (Rolloff)</strong> [-12, -24, -48]：衰減斜率。數字越大表示切除得越乾淨、越生硬。</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>濾波器 (Filter)</h2>
-    <p>「濾波器」透過衰減或增強特定的頻率範圍，來改變聲音的頻譜內容。它的原理是選擇性地讓某些頻率通過，同時減少其他頻率。這種操作改變了聲音的音色，因為它重新塑造了聲音的頻譜平衡。</p>
-    <p>透過增強或削減特定頻率來塑造聲音的音色特徵。</p>
-    <ul>
-        <li><span class="param">類型 (Type):</span> 應用的濾波器種類（例如 <code>lowpass</code> 讓低頻通過，<code>highpass</code> 讓高頻通過）。</li>
-        <li><span class="param">頻率 (Frequency):</span> 濾波器的截止或中心頻率，單位為赫茲 (Hz)。</li>
-        <li><span class="param">Q (共振):</span> 濾波器的頻寬。對於低通/高通濾波器，較高的 Q 值會在截止頻率處產生一個共振峰；對於帶通濾波器，則會使頻帶變窄。</li>
-        <li><span class="param">滾降斜率 (Rolloff):</span> 濾波器截止的陡峭程度，單位為分貝/八度。較陡峭的數值（如 -24, -48）會產生更強烈的濾波效果。</li>
-    </ul>
+    <div class="type-box">
+        <h2>4. 失真 (Distortion)</h2>
+        <div class="theory">
+            <strong>物理原理</strong>：模擬電路過載導致波形被削平產生的破音。<br>
+            <strong>訊號處理</strong>：非線性放大訊號，產生豐富的諧望（奇偶次諧波）。
+        </div>
+        <div class="params">
+            <strong>調整參數：</strong>
+            <ul>
+                <li><strong>量 (Amount)</strong> [0 - 1]：失真的程度。0 為微弱飽和，1 為極度狂野的噴破聲。</li>
+                <li><strong>超取樣 (Oversample)</strong>：改善高頻失真的品質，減少數位噪音。</li>
+                <li><strong>濕度 (Wet)</strong> [0 - 1]：原音與失真音的比例。</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>壓縮器 (Compressor)</h2>
-    <p>「壓縮器」旨在減小音訊訊號的動態範圍。當訊號的響度（振幅）超過設定的「閾值」時，壓縮器會依照一個特定的「比率」自動降低其增益（音量）。這使得響亮的部分相對於原始訊號變得較安靜，從而有效縮小了聲音最響亮和最安靜部分之間的差異。</p>
-    <p>減小聲音的動態範圍，使小聲的部分變大聲，大聲的部分變小聲。</p>
-    <ul>
-        <li><span class="param">閾值 (Threshold):</span> 開始壓縮的音量水平，單位為分貝 (dB)。範圍約為 -100 到 0。較低的數值（如 -50）意味著更多信號會被壓縮。</li>
-        <li><span class="param">比率 (Ratio):</span> 施加的壓縮量。例如，比率為 4 表示輸入信號每超過閾值 4 dB，輸出信號只會增加 1 dB。</li>
-        <li><span class="param">起始時間 (Attack):</span> 當信號超過閾值後，壓縮器開始降低增益所需的時間（秒）。</li>
-        <li><span class="param">釋放時間 (Release):</span> 當信號低於閾值後，壓縮器停止降低增益所需的時間（秒）。</li>
-    </ul>
+    <div class="type-box">
+        <h2>5. 壓縮器 (Compressor) 與 限幅器 (Limiter)</h2>
+        <div class="theory">
+            <strong>物理原理</strong>：自動化控制音量，讓聲音更穩定或防止爆音。<br>
+            <strong>訊號處理</strong>：當音量超過閾值時，依照比率將音量壓低。
+        </div>
+        <div class="params">
+            <strong>調整參數：</strong>
+            <ul>
+                <li><strong>閾值 (Threshold)</strong> [-100 - 0 dB]：超過此音量後開始作用。</li>
+                <li><strong>比率 (Ratio)</strong> [1 - 20]：壓縮的強度。Limiter 固定為極高比率。</li>
+                <li><strong>起始/釋放時間</strong>：壓縮作用與消失的速度。</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>限幅器 (Limiter)</h2>
-    <p>「限幅器」是一種具有極高（通常是無限大）壓縮比的特殊壓縮器，旨在防止音訊訊號的響度超過絕對的最大值（閾值）。任何試圖超過此閾值的訊號部分都會立即被壓低到閾值水平，從而有效防止了削波失真和不必要的音量峰值。</p>
-    <p>一種極端的壓縮器，可防止信號超過設定的閾值。</p>
-    <ul>
-        <li><span class="param">閾值 (Threshold):</span> 信號不允許超過的音量水平，單位為分貝 (dB)。最大值為 0。範圍約為 -100 到 0。</li>
-    </ul>
-
-    <h2>低傳真 (Lo-Fi)</h2>
-    <p>「低傳真 (Lo-Fi)」效果透過刻意降低音訊品質來創造其獨特的聲音，主要手段包括位元破壞 (Bit Crushing) 和/或降採樣 (Downsampling)。</p>
-    <ul>
-        <li><b>位元破壞 (Bit Crushing):</b> 減少訊號的數位位元深度。這意味著用來表示波形的離散振幅層次變少，會引入量化誤差和雜訊，導致波形產生「階梯狀」變化，形成顆粒感和數位失真。</li>
-        <li><b>降採樣 (Downsampling):</b> 降低訊號的採樣率。這會限制能被精確表示的最高頻率（奈奎斯特頻率），並引入混疊 (aliasing) 現象（高頻率會折疊回較低頻率），從而產生較不細膩且帶有「低傳真」感的聲音。</li>
-    </ul>
-    <p>模擬早期數位設備的音質，透過降低位元深度來產生獨特的顆粒感和復古效果。</p>
-    <ul>
-        <li><span class="param">位元深度 (Bit Depth):</span> 設定音訊的位元深度。較低的位元深度會產生更明顯的 Lo-Fi 效果和量化雜訊。可選值為 4, 8, 12, 16。</li>
-    </ul>
-
-    <h2>合唱 (Chorus)</h2>
-    <p>「合唱」效果旨在模擬多個聲部或樂器稍微不同步演奏的聽感。其原理是複製原始訊號一次或多次，然後對每個複製品進行微小的延遲，並使用一個緩慢的低頻振盪器 (LFO) 持續調變這些延遲時間。這種動態延遲會造成聲音輕微且持續的音高變化（都卜勒效應），從而產生飽滿、閃爍且寬廣的音場效果。</p>
-    <p>透過將原始聲音與其稍微延遲且音高略有變化的複製品混合，來模擬多個樂器同時演奏的效果，使聲音聽起來更飽滿、更寬廣。</p>
-    <ul>
-        <li><span class="param">頻率 (Frequency):</span> LFO（低頻振盪器）的頻率，單位為赫茲 (Hz)。這個頻率控制著音高調變的速度。</li>
-        <li><span class="param">延遲時間 (Delay Time):</span> 原始聲音與複製品之間的基礎延遲時間，單位為毫秒 (ms)。</li>
-        <li><span class="param">深度 (Depth):</span> 調變的深度，範圍從 0 到 1。這個值決定了音高變化的幅度。</li>
-    </ul>
-
-    <h2>相位器 (Phaser)</h2>
-    <p>相位器利用聲音的<b>相位偏移 (Phase Shift)</b> 和<b>波的干涉 (Wave Interference)</b> 來產生其獨特效果。它會將聲音訊號分成兩路：一路保持原始狀態，另一路則通過一系列特殊濾波器，這些濾波器會根據頻率不同地改變聲音的相位，但不改變響度。當這兩路訊號重新混合時，在某些頻率點會因相位同步而相互增強，而在另一些頻率點則因相位錯開而相互抵消，形成獨特的「梳狀濾波 (Comb Filtering)」效果。</p>
-    <p>為了產生標誌性的「掃頻」聲，相位器會使用一個低頻振盪器 (LFO) 緩慢且連續地改變這些濾波器的設定，使得梳狀濾波的「齒狀凹陷」在頻譜上來回移動，從而產生旋渦或呼嘯般的聽感。</p>
-    <p>相位器透過創建一系列交錯的濾波器凹口 (notches)，為聲音帶來獨特的掃頻和旋轉效果。</p>
-    <ul>
-        <li><span class="param">頻率 (Frequency):</span> LFO（低頻振盪器）的頻率，單位為赫茲 (Hz)。控制相位掃描的速度。</li>
-        <li><span class="param">八度音程 (Octaves):</span> 相位掃描的頻率範圍，以八度音程表示。較高的值會導致更寬廣的頻率掃描。</li>
-        <li><span class="param">基礎頻率 (Base Frequency):</span> 相位掃描的起始頻率，單位為赫茲 (Hz)。</li>
-    </ul>
-
-    <h2>自動搖攝 (AutoPanner)</h2>
-    <p>「自動搖攝」的核心原理是透過<b>振幅調變 (Amplitude Modulation)</b> 來模擬聲音在立體聲場中的移動。它使用一個<b>低頻振盪器 (LFO)</b> 來連續且獨立地改變左右聲道的音量（振幅）。通常，左聲道的音量會隨著 LFO 波形的升高而增加，同時右聲道的音量會隨著 LFO 波形的反向（反相）而降低。當左右聲道的相對音量動態變化時，人腦會感知到聲源在立體聲圖像中水平移動，從而營造出聲源在空間中「游移」的效果。</p>
-    <p>「自動搖攝」效果會透過一個低頻振盪器 (LFO) 自動改變聲音在立體聲場中的位置，使聲音在左右聲道之間來回移動。這模擬了聲音從一個方向移動到另一個方向的效果，增加了聲音的空間感和動態性。</p>
-    <ul>
-        <li><span class="param">頻率 (Frequency):</span> LFO 的頻率，單位為赫茲 (Hz)。控制聲音在立體聲場中移動的速度。</li>
-        <li><span class="param">深度 (Depth):</span> LFO 的振幅，範圍從 0 (不移動) 到 1 (在左右聲道之間完全移動)。控制聲音移動的幅度。</li>
-    </ul>
+    <div class="type-box">
+        <h2>6. 特殊效果 (Chorus / Phaser / Lofi)</h2>
+        <div class="params">
+            <strong>常見參數：</strong>
+            <ul>
+                <li><strong>頻率 (Frequency)</strong> [Hz]：效果變化的週期速度。</li>
+                <li><strong>深度 (Depth)</strong> [0 - 1]：效果作用的強度範圍。</li>
+                <li><strong>位元深度 (Lofi Bits)</strong> [4 - 16]：數值越低，聲音越具有粗糙的 8-bit 復古電玩感。</li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

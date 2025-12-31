@@ -2,103 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Effect Block Help</title>
+    <title>Audio Effects: Principles and Parameters</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
-        h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-        h3 { color: #333; }
-        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
-        .param { font-weight: bold; }
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #9B59B6; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        .theory { font-size: 0.9em; color: #666; font-style: italic; margin-top: 10px; border-left: 3px solid #ccc; padding-left: 10px; margin-bottom: 10px; }
+        .params { font-size: 0.95em; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #eee; }
+        .params strong { color: #9B59B6; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h1>Effect Block Detailed Guide</h1>
+    <h1>Audio Effects: Principles & Parameters</h1>
+    <p>Using the "Set Effect" block, you can add professional post-processing to your instruments. Understanding the meaning and range of each parameter will help you shape your sound precisely.</p>
 
-    <h2>General Parameters</h2>
-    <ul>
-        <li><span class="param">Wet:</span> Controls the dry/wet mix of the effect (0 to 1). A value of 0 means no effect is audible (dry), while 1 means only the effect's output is heard (wet).</li>
-    </ul>
+    <div class="type-box">
+        <h2>Common Parameter: Wet/Dry Mix</h2>
+        <p>This represents the ratio between the original "Dry" signal and the processed "Wet" signal. 0 is all dry, 1 is all wet. Usually, 0.5 provides a clear balance between the original sound and the effect.</p>
+    </div>
 
-    <h2>Distortion</h2>
-    <p>Distortion processes an audio signal non-linearly. It intentionally alters the shape of the input waveform, typically by clipping or saturating its peaks. This non-linear operation introduces new harmonic content (overtones), often odd-order harmonics, that were not present in the original signal, resulting in a "fuzzier" or "grittier" sound.</p>
-    <p>Adds harmonic grit and saturation to the sound.</p>
-    <ul>
-        <li><span class="param">Amount:</span> The intensity of the distortion, ranging from 0 (clean) to 1 (heavily distorted).</li>
-        <li><span class="param">Oversample:</span> Reduces aliasing, which can cause unwanted high-frequency noise. Using '2x' or '4x' results in a smoother, higher-quality sound at the cost of slightly more processing power.</li>
-    </ul>
+    <div class="type-box">
+        <h2>1. Reverb</h2>
+        <div class="theory">
+            <strong>Physics</strong>: Simulates the reflection of sound in a physical space, creating a "tail" after the original sound.<br>
+            <strong>Signal Processing</strong>: Uses delay matrices to simulate room size and absorption.
+        </div>
+        <div class="params">
+            <strong>Parameters:</strong>
+            <ul>
+                <li><strong>Decay</strong> [0.1 - 10+ seconds]: Larger values create a bigger space (like a cathedral), smaller values sound like a small room.</li>
+                <li><strong>PreDelay</strong> [0 - 0.1 seconds]: The time gap between the original sound and the start of the reverb. Adds clarity.</li>
+                <li><strong>Wet</strong> [0 - 1]: The ratio of the processed effect sound.</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>Reverb</h2>
-    <p>Reverb simulates the physical phenomenon of sound reflections in an enclosed space. When sound is produced in a room, it bounces off surfaces, creating numerous reflections that reach the listener's ear at slightly different times and with gradually reduced amplitude. Reverb effects create a dense, decaying series of echoes that blend together, giving a sense of space.</p>
-    <p>Simulates the sound of a space (a room, hall, etc.).</p>
-    <ul>
-        <li><span class="param">Decay:</span> The length of the reverb tail in seconds. Longer decay times simulate larger spaces.</li>
-        <li><span class="param">Predelay:</span> The time in seconds between the original sound and the start of the reverb reflections. A short predelay can help maintain the clarity of the original sound.</li>
-    </ul>
+    <div class="type-box">
+        <h2>2. Feedback Delay</h2>
+        <div class="theory">
+            <strong>Physics</strong>: Simulates sound waves bouncing off distant objects and returning as echoes.<br>
+            <strong>Signal Processing</strong>: Stores signal in a buffer and plays it back, re-routing output to input for repetition.
+        </div>
+        <div class="params">
+            <strong>Parameters:</strong>
+            <ul>
+                <li><strong>Delay Time</strong> [Musical duration, e.g., 4n, 8n]: The interval between echoes.</li>
+                <li><strong>Feedback</strong> [0 - 1]: Determines how many times the echo repeats. Close to 1 means it lasts a very long time.</li>
+                <li><strong>Wet</strong> [0 - 1]: Mix between original sound and echoes.</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>Feedback Delay</h2>
-    <p>Feedback Delay creates a series of decaying echoes by feeding a portion of the delayed signal back into the input of the delay line. The original signal is delayed, and then a fraction of this delayed signal is added back to the input, causing it to be delayed again. This process creates successive, progressively quieter repetitions of the sound.</p>
-    <p>Creates echoes of the input sound.</p>
-    <ul>
-        <li><span class="param">Delay Time:</span> The time between successive echoes. This can be a musical duration (like '8n' for an eighth note) or a time in seconds.</li>
-        <li><span class="param">Feedback:</span> The strength of the echoes, from 0 to 1. A value of 0.25 means each echo will be 25% of the previous one's volume. High values can lead to self-oscillation.</li>
-    </ul>
+    <div class="type-box">
+        <h2>3. Filter</h2>
+        <div class="theory">
+            <strong>Physics</strong>: Mimics how materials selectively block certain frequencies.<br>
+            <strong>Signal Processing</strong>: Selectively passes or removes specific frequency ranges.
+        </div>
+        <div class="params">
+            <strong>Filter Types:</strong>
+            <ul>
+                <li><strong>lowpass</strong>: Only allows frequencies below the cutoff. Muffles the sound.</li>
+                <li><strong>highpass</strong>: Only allows frequencies above the cutoff. Makes the sound thin and sharp.</li>
+                <li><strong>bandpass</strong>: Only allows frequencies near the center. Removes both high and low extremes, like a radio or telephone.</li>
+                <li><strong>lowshelf</strong>: Adjusts gain for lower frequencies without cutting them completely. Good for boosting/reducing bass.</li>
+                <li><strong>highshelf</strong>: Adjusts gain for higher frequencies. Used for adjusting brightness.</li>
+                <li><strong>notch</strong>: Precisely removes frequencies around a specific point. Used to eliminate specific noise or feedback.</li>
+                <li><strong>allpass</strong>: Passes all frequencies but changes their phase relationship. Adds texture to the sound.</li>
+                <li><strong>peaking</strong>: Boosts or reduces frequencies around a center point. Like a standard EQ band.</li>
+            </ul>
+            <strong>Parameters:</strong>
+            <ul>
+                <li><strong>Frequency</strong> [20 - 20000 Hz]: The center or cutoff point for the filter.</li>
+                <li><strong>Q (Resonance)</strong> [0.1 - 20]: Intensity of the resonance at the cutoff point. High values create a "whistling" sweep effect.</li>
+                <li><strong>Rolloff</strong> [-12, -24, -48]: The steepness of the filter curve.</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>Filter</h2>
-    <p>A filter modifies the frequency content of a signal by attenuating or boosting specific frequency ranges. Filters work by selectively allowing certain frequencies to pass through while reducing others. This changes the timbre (tonal quality) of the sound by shaping its spectral balance.</p>
-    <p>Shapes the tonal characteristics of the sound by boosting or cutting specific frequencies.</p>
-    <ul>
-        <li><span class="param">Type:</span> The kind of filter to apply (e.g., <code>lowpass</code> lets low frequencies through, <code>highpass</code> lets high frequencies through).</li>
-        <li><span class="param">Frequency:</span> The cutoff or center frequency of the filter in Hertz (Hz).</li>
-        <li><span class="param">Q (Resonance):</span> The width of the filter band. For lowpass/highpass filters, a higher Q value creates a resonant peak at the cutoff frequency. For bandpass filters, it narrows the band.</li>
-        <li><span class="param">Rolloff:</span> The steepness of the filter cutoff in decibels per octave. Steeper values (e.g., -24, -48) create a more aggressive filtering effect.</li>
-    </ul>
+    <div class="type-box">
+        <h2>4. Distortion</h2>
+        <div class="theory">
+            <strong>Physics</strong>: Mimics circuit clipping when a signal exceeds hardware limits.<br>
+            <strong>Signal Processing</strong>: Non-linearly amplifies the signal to create rich harmonics.
+        </div>
+        <div class="params">
+            <strong>Parameters:</strong>
+            <ul>
+                <li><strong>Amount</strong> [0 - 1]: The degree of distortion. 0 is subtle saturation, 1 is aggressive growling.</li>
+                <li><strong>Oversample</strong>: Improves high-frequency quality and reduces digital aliasing noise.</li>
+                <li><strong>Wet</strong> [0 - 1]: Ratio of clean to distorted signal.</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>Compressor</h2>
-    <p>A compressor reduces the dynamic range of an audio signal. When the signal's amplitude exceeds a specified "threshold," the compressor automatically reduces its gain (volume) by a defined "ratio." This makes loud parts quieter relative to the original, effectively reducing the difference between the loudest and quietest parts of the sound.</p>
-    <p>Reduces the dynamic range of a sound, making quiet parts louder and loud parts quieter.</p>
-    <ul>
-        <li><span class="param">Threshold:</span> The audio level in decibels (dB) above which compression starts. The range is approximately -100 to 0. A lower value (e.g., -50) means more of the signal will be compressed.</li>
-        <li><span class="param">Ratio:</span> The amount of compression applied. For example, a ratio of 4 means for every 4 dB the input signal goes above the threshold, the output signal will only increase by 1 dB.</li>
-        <li><span class="param">Attack:</span> The time in seconds it takes for the compressor to start reducing the gain once the signal exceeds the threshold.</li>
-        <li><span class="param">Release:</span> The time in seconds it takes for the compressor to stop reducing the gain after the signal falls below the threshold.</li>
-    </ul>
+    <div class="type-box">
+        <h2>5. Compressor & Limiter</h2>
+        <div class="theory">
+            <strong>Physics</strong>: Automatic volume control to stabilize sound or prevent peaking.<br>
+            <strong>Signal Processing</strong>: Lowers volume by a specific ratio when it exceeds a threshold.
+        </div>
+        <div class="params">
+            <strong>Parameters:</strong>
+            <ul>
+                <li><strong>Threshold</strong> [-100 - 0 dB]: The volume level where compression starts.</li>
+                <li><strong>Ratio</strong> [1 - 20]: The strength of compression. Limiters use a fixed infinite ratio.</li>
+                <li><strong>Attack / Release</strong>: How quickly the compression kicks in and fades away.</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>Limiter</h2>
-    <p>A limiter is a specialized form of compressor with a very high (often infinite) ratio, designed to prevent the audio signal from exceeding an absolute maximum amplitude (threshold). Any part of the signal that attempts to go above this threshold is immediately brought down to the threshold level, effectively preventing clipping and unwanted distortion.</p>
-    <p>A type of extreme compressor that prevents a signal from exceeding a set threshold.</p>
-    <ul>
-        <li><span class="param">Threshold:</span> The level in decibels (dB) that the signal is not allowed to exceed. The maximum value is 0. The range is approximately -100 to 0.</li>
-    </ul>
-
-    <h2>Lo-Fi</h2>
-    <p>Lo-Fi effects achieve their characteristic sound by intentionally degrading audio quality through processes like bit crushing and/or downsampling.</p>
-    <ul>
-        <li><b>Bit Crushing:</b> Reduces the digital bit depth of the signal. This means fewer discrete amplitude levels are available to represent the waveform, introducing quantization error and noise, creating a "stair-step" effect on the waveform and a gritty, digital distortion.</li>
-        <li><b>Downsampling:</b> Reduces the sample rate of the signal. This limits the maximum frequency that can be accurately represented (Nyquist frequency) and introduces aliasing (high frequencies folding back into lower frequencies), resulting in a less detailed and often "lo-fi" sound.</li>
-    </ul>
-    <p>Simulates the sound quality of early digital equipment by reducing the bit depth, which creates a unique, gritty, and retro effect.</p>
-    <ul>
-        <li><span class="param">Bit Depth:</span> Sets the bit depth of the audio signal. A lower bit depth produces a more pronounced Lo-Fi effect and quantization noise. Available values are 4, 8, 12, 16.</li>
-    </ul>
-
-    <h2>Chorus</h2>
-    <p>Chorus effects simulate the sound of multiple voices or instruments playing slightly out of unison. It works by creating one or more copies of the original signal, subtly delaying each copy, and then modulating the delay time of these copies with a slow Low-Frequency Oscillator (LFO). This dynamic delay causes slight, continuous pitch variations (Doppler effect) and creates a rich, shimmering, and wider stereo image.</p>
-    <p>Simulates multiple instruments playing in unison by mixing the original sound with slightly delayed and pitch-modulated copies, creating a fuller, shimmering sound.</p>
-    <ul>
-        <li><span class="param">Frequency:</span> The frequency of the LFO (Low-Frequency Oscillator) in Hertz (Hz), which controls the rate of the pitch modulation.</li>
-        <li><span class="param">Delay Time:</span> The base delay time between the original and copied sounds, in milliseconds (ms).</li>
-        <li><span class="param">Depth:</span> The depth of the modulation, from 0 to 1. This determines the amount of pitch variation.</li>
-    </ul>
-
-    <h2>Phaser</h2>
-    <p>The Phaser effect fundamentally relies on <b>Phase Shift</b> and <b>Wave Interference</b> to produce its unique sound. It splits the audio signal into two paths: one remains untouched, while the other passes through a series of "all-pass filters." These filters change the phase of different frequencies without altering their amplitude. When these two signals are recombined, frequencies where phases align will constructively interfere (boosting volume), and frequencies where phases oppose will destructively interfere (creating "notches" or dips in volume). This pattern across the frequency spectrum is known as "comb filtering."</p>
-    <p>To create its signature sweeping sound, a Low-Frequency Oscillator (LFO) continuously varies the settings of these all-pass filters. This causes the comb filter's notches to move up and down the frequency spectrum, resulting in the characteristic swirling, "whooshing," or "jet plane" auditory effect.</p>
-    <p>The Phaser creates unique sweeping and swirling effects by generating a series of cascading filter notches.</p>
-    <ul>
-        <li><span class="param">Frequency:</span> The frequency of the LFO (Low-Frequency Oscillator) in Hertz (Hz), which controls the rate of the phase sweep.</li>
-        <li><span class="param">Octaves:</span> The range of the phase sweep in octaves. Higher values result in a wider frequency sweep.</li>
-        <li><span class="param">Base Frequency:</span> The starting frequency of the phase sweep in Hertz (Hz).</li>
-    </ul>
+    <div class="type-box">
+        <h2>6. Modulation (Chorus / Phaser / Lofi)</h2>
+        <div class="params">
+            <strong>Common Parameters:</strong>
+            <ul>
+                <li><strong>Frequency</strong> [Hz]: The speed of the modulation cycle.</li>
+                <li><strong>Depth</strong> [0 - 1]: The range of the modulation effect.</li>
+                <li><strong>Lofi Bits</strong> [4 - 16]: Lower values create a gritty, 8-bit retro video game sound.</li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

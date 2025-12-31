@@ -107,6 +107,7 @@ if (!window.audioEngine.isExecutionActive) return;
                     if (currentInstrument.type === 'CustomSampler' || currentInstrument instanceof window.audioEngine.Tone.Sampler || currentInstrument.name === 'Sampler') {
                         // For samplers, we only support Release (R) control effectively
                         currentInstrument.set({ release: ${r} });
+                        window.audioEngine.updateADSR(0, 0, 1, ${r}); // Visual feedback for sampler
                         window.audioEngine.logKey('LOG_SAMPLER_ADS_WARN', 'warning');
                     } else if (currentInstrument.get?.().voice0) {
                         // Special handling for PolySynth wrapping DuoSynth
@@ -114,10 +115,12 @@ if (!window.audioEngine.isExecutionActive) return;
                             voice0: { envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } },
                             voice1: { envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } }
                         });
+                        window.audioEngine.updateADSR(${a}, ${d}, ${s}, ${r});
                         window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', instrName);
                     } else if (typeof currentInstrument.set === 'function') {
                         // Standard Tone.js Instruments (PolySynth, etc.)
                         currentInstrument.set({ envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } });
+                        window.audioEngine.updateADSR(${a}, ${d}, ${s}, ${r});
                         window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', instrName);
                     } else {
                         window.audioEngine.logKey('LOG_ADSR_NOT_SUPPORTED_INSTR', 'error', instrName);

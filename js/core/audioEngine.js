@@ -1,6 +1,6 @@
-// js/core/audioEngine.js
 import * as Tone from 'tone';
 import { log, logKey, getMsg } from '../ui/logger.js';
+import { updateAdsrGraph, triggerAdsrOn, triggerAdsrOff } from '../ui/adsrVisualizer.js';
 
 export let blocklyLoops = {}; // Initialize as an exported module variable
 
@@ -76,6 +76,7 @@ jazzKit.chain(analyser);
 
 export const audioEngine = {
     isExecutionActive: false, // Flag to track if Blockly code execution is active
+    currentADSR: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 1.0 },
     Tone: Tone,
     analyser: analyser, // Make analyser accessible on the global engine object
     synth: synth,
@@ -86,6 +87,12 @@ export const audioEngine = {
     effects: {},
     _activeEffects: [], // Internal array to track the current effect chain
     activeSFXPlayers: [], // Track active SFX players for stopping
+
+    updateADSR: function(a, d, s, r) {
+        this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
+        const isSampler = this.currentInstrumentName.toLowerCase().includes('sampler');
+        updateAdsrGraph(a, d, s, r, isSampler);
+    },
 
     rebuildEffectChain: function(effectsConfig = []) {
         // 1. Dispose of all previously active effects
@@ -411,7 +418,9 @@ export const audioEngine = {
             }
 
             const newInstrument = {
+                type: 'AdditiveSynth',
                 voices: voices,
+                detune: new Tone.Signal(0), // Add a detune signal
                 
                 _findVoice: function(note) {
                     return this.voices.find(v => v.note === note && v.busy);
@@ -429,7 +438,11 @@ export const audioEngine = {
                     voiceToUse.note = note;
                     voiceToUse.attackTime = time;
                     
-                    const freq = new Tone.Frequency(note).toFrequency();
+                    // Calculate frequency and apply detune
+                    const baseFreq = new Tone.Frequency(note).toFrequency();
+                    // detune is in cents (100 cents = 1 semitone)
+                    const detuneMultiplier = Math.pow(2, this.detune.value / 1200);
+                    const freq = baseFreq * detuneMultiplier;
 
                     voiceToUse.oscillators.forEach(item => {
                         item.osc.frequency.setValueAtTime(freq * item.freqRatio, time);
@@ -438,6 +451,17 @@ export const audioEngine = {
                         }
                     });
                     voiceToUse.envelope.triggerAttack(time, velocity);
+                },
+
+                // --- Support ADSR and Detune via set method ---
+                set: function(options) {
+                    if (options.detune !== undefined) {
+                        this.detune.value = options.detune;
+                    }
+                    // If options.envelope is passed, update all voice envelopes
+                    if (options.envelope) {
+                        this.voices.forEach(v => v.envelope.set(options.envelope));
+                    }
                 },
 
                 triggerRelease: function(note, time) {
@@ -596,40 +620,92 @@ export const audioEngine = {
         const oldInstrument = this.instruments[oldInstrumentName];
         const newInstrument = this.instruments[newInstrumentName];
 
+        // 1. SILENCE OLD INSTRUMENT: Release all notes currently being tracked
+        if (oldInstrument) {
+            // For MIDI notes
+            this.midiPlayingNotes.forEach((notes, midiNoteNumber) => {
+                if (typeof oldInstrument.triggerRelease === 'function') {
+                    oldInstrument.triggerRelease(notes, Tone.now());
+                }
+            });
+
+            // For PC keyboard notes
+            this.pressedKeys.forEach((notes, keyCode) => {
+                if (typeof oldInstrument.triggerRelease === 'function') {
+                    oldInstrument.triggerRelease(notes, Tone.now());
+                }
+            });
+            
+            // If it's a PolySynth, use releaseAll for a clean sweep
+            if (typeof oldInstrument.releaseAll === 'function') {
+                oldInstrument.releaseAll();
+            }
+        }
+
+        // 2. SWITCH IDENTITY
+        this.currentInstrumentName = newInstrumentName;
+
+        // 3. TRIGGER NEW INSTRUMENT: Resume notes if needed, or just clear state
+        // To prevent 'ghost' notes from lingering, we clear the internal pressed maps
+        // so the user must re-press keys to hear the new instrument. 
+        // This is more robust than trying to transfer active voices.
+        this.clearPressedKeys(); 
+
         if (!oldInstrument) {
-            // This case is unlikely if currentInstrumentName is managed properly, but as a fallback...
-            this.currentInstrumentName = newInstrumentName;
-            logKey('LOG_SWITCHED_TO', 'info', newInstrumentName);
+            logKey('LOG_SWITCHED_TO', 'important', newInstrumentName);
+            this.syncAdsrToUI();
             return;
         }
 
-        // For MIDI notes that are currently playing
-        this.midiPlayingNotes.forEach((notes, midiNoteNumber) => {
-            oldInstrument.triggerRelease(notes, Tone.now());
-            // We need the original velocity, but we don't store it. Use a default for now.
-            const velocity = 0.8;
-            newInstrument.triggerAttack(notes, Tone.now(), velocity);
-        });
-
-        // For PC keyboard notes that are currently held down
-        this.pressedKeys.forEach((notes, keyCode) => {
-            oldInstrument.triggerRelease(notes, Tone.now());
-            const velocity = 0.7; // Default keyboard velocity
-            newInstrument.triggerAttack(notes, Tone.now(), velocity);
-        });
-
         // Apply current semitone offset to the new instrument
-        if (newInstrument && newInstrument.set) { // Check only for the .set method, as it handles parameters robustly
+        if (newInstrument && newInstrument.set) {
             const targetDetune = this.currentSemitoneOffset * 100;
             newInstrument.set({ detune: targetDetune });
-            logKey('LOG_DETUNE_APPLIED', 'info', targetDetune, newInstrumentName);
+            logKey('LOG_DETUNE_APPLIED', 'important', targetDetune, newInstrumentName);
         } else {
             logKey('LOG_DETUNE_NOT_SUPPORTED', 'warning', newInstrumentName);
         }
 
+        logKey('LOG_SWITCHED_TO', 'important', newInstrumentName);
 
-        this.currentInstrumentName = newInstrumentName;
-        logKey('LOG_SWITCHED_WITH_CONVERT', 'info', newInstrumentName);
+        // --- SYNC ADSR VISUALIZER ---
+        this.syncAdsrToUI();
+    },
+
+    /**
+     * Reads current ADSR values from the active instrument and updates the visualizer.
+     */
+    syncAdsrToUI: function() {
+        const instr = this.instruments[this.currentInstrumentName];
+        if (!instr) return;
+
+        let a = 0.01, d = 0.1, s = 1.0, r = 0.5;
+
+        try {
+            if (this.currentInstrumentName.toLowerCase().includes('sampler') || instr.type === 'CustomSampler' || instr.name === 'Sampler') {
+                // For Samplers, read native attack/release
+                const sampler = instr.sampler || instr;
+                a = sampler.attack !== undefined ? sampler.attack : 0;
+                r = sampler.release !== undefined ? sampler.release : 0.5;
+                d = 0; s = 1.0; // Fixed for samplers
+            } else {
+                // For Synths, try to get envelope settings
+                // Handle different nesting levels of Tone.js instruments
+                const env = instr.envelope || (instr.get?.().envelope) || (instr.get?.().voice0?.envelope);
+                if (env) {
+                    a = env.attack;
+                    d = env.decay;
+                    s = env.sustain;
+                    r = env.release;
+                }
+            }
+            // Update the internal state and the graph
+            this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
+            const isSampler = this.currentInstrumentName.toLowerCase().includes('sampler');
+            updateAdsrGraph(a, d, s, r, isSampler);
+        } catch (e) {
+            console.warn('Failed to sync ADSR to UI:', e);
+        }
     },
 
     playKick: async function(velocity = 1, time = Tone.now()) {
@@ -731,6 +807,11 @@ export const audioEngine = {
                 logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
                 return;
             }
+            // Trigger visual
+            triggerAdsrOn();
+            const durSeconds = Tone.Time(dur).toSeconds();
+            setTimeout(() => triggerAdsrOff(), durSeconds * 1000);
+
             currentInstrument.triggerAttackRelease(note, dur, time, velocity);
         } else {
             logKey('LOG_PLAY_NOTE_FAIL', 'error', this.currentInstrumentName);
@@ -768,6 +849,8 @@ export const audioEngine = {
 
         if (notesToPlay) {
             try {
+                // Trigger visual
+                triggerAdsrOn();
                 currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
             } catch (e) {
                 logKey('LOG_MIDI_PLAY_FAIL', 'error', this.currentInstrumentName + ": " + e.message);
@@ -792,6 +875,8 @@ export const audioEngine = {
         }
         const notesToRelease = this.midiPlayingNotes.get(midiNoteNumber);
         if (notesToRelease) {
+            // Trigger visual
+            triggerAdsrOff();
             currentInstrument.triggerRelease(notesToRelease, Tone.now());
             this.midiPlayingNotes.delete(midiNoteNumber);
         }
@@ -810,7 +895,11 @@ export const audioEngine = {
         this.Tone.Transport.stop();
         this.Tone.Transport.cancel(0); // Explicitly cancel from the beginning
         this.Tone.Transport.seconds = 0; // Reset position to 0
-        this.log('✓ 主時鐘 (Transport) 已停止、重設並清除排程。');
+        logKey('LOG_TRANSPORT_STOPPED');
+
+        // Reset Visualizer
+        this.updateADSR(0.01, 0.1, 0.5, 1.0);
+        triggerAdsrOff(); // Ensure playhead is idle
 
         // Stop all active SFX players
         this.activeSFXPlayers.forEach(player => {

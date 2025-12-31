@@ -1,6 +1,7 @@
 // js/ui/keyboardController.js
 import { log, logKey } from './logger.js';
 import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js'; // Note: audioEngine contains the pressedKeys, chords, etc.
+import { triggerAdsrOn, triggerAdsrOff } from './adsrVisualizer.js';
 
 const KEY_TO_NOTE_MAP = {
     'KeyQ': 'C', 'Digit2': 'C#', 'KeyW': 'D', 'Digit3': 'D#', 'KeyE': 'E',
@@ -16,7 +17,7 @@ const MIN_OCTAVE = 0;
 const MAX_OCTAVE = 8;
 
 const updateLogOctave = () => {
-    logKey('LOG_KEYBOARD_OCTAVE', 'info', currentOctave);
+    logKey('LOG_KEYBOARD_OCTAVE', 'important', currentOctave);
 };
 
 const shiftOctave = (direction) => {
@@ -76,12 +77,12 @@ const handleKeyDown = async (e) => {
         e.preventDefault();
         return;
     }
-    if (e.code === 'ArrowDown' && currentOctave > MIN_OCTAVE) { // Removed NumpadSubtract
+    if (e.code === 'ArrowDown' && currentOctave > MIN_OCTAVE) {
         shiftOctave(-1);
         e.preventDefault();
         return;
     }
-    if (e.code === 'ArrowUp' && currentOctave < MAX_OCTAVE) { // Removed NumpadAdd
+    if (e.code === 'ArrowUp' && currentOctave < MAX_OCTAVE) {
         shiftOctave(1);
         e.preventDefault();
         return;
@@ -89,7 +90,7 @@ const handleKeyDown = async (e) => {
 
     // --- Semitone Adjustment ---
     const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
-    if (currentInstrument && currentInstrument.set) { // Check if the instrument supports .set()
+    if (currentInstrument && currentInstrument.set) {
         let detuneChange = 0;
         if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
             detuneChange = -100; // -1 semitone = -100 cents
@@ -98,9 +99,9 @@ const handleKeyDown = async (e) => {
         }
 
         if (detuneChange !== 0) {
-            audioEngine.currentSemitoneOffset += (detuneChange / 100); // Store in semitones
+            audioEngine.currentSemitoneOffset += (detuneChange / 100);
             currentInstrument.set({ detune: audioEngine.currentSemitoneOffset * 100 });
-            audioEngine.log(`Semitone adjusted to ${audioEngine.currentSemitoneOffset}. Detune: ${audioEngine.currentSemitoneOffset * 100} cents.`);
+            audioEngine.logKey('LOG_SEMITONE_ADJUSTED', 'important', audioEngine.currentSemitoneOffset, audioEngine.currentSemitoneOffset * 100);
             e.preventDefault();
             return;
         }
@@ -109,16 +110,7 @@ const handleKeyDown = async (e) => {
         if (e.code === 'Backspace') {
             audioEngine.currentSemitoneOffset = 0;
             currentInstrument.set({ detune: 0 });
-            audioEngine.log('Semitone offset reset to 0.');
-            e.preventDefault();
-            return;
-        }
-
-        // --- Reset Semitone Adjustment ---
-        if (e.code === 'Backspace') {
-            audioEngine.currentSemitoneOffset = 0;
-            currentInstrument.set({ detune: 0 });
-            audioEngine.log('Semitone offset reset to 0.');
+            audioEngine.logKey('LOG_SEMITONE_RESET', 'important');
             e.preventDefault();
             return;
         }
@@ -156,6 +148,7 @@ const handleKeyDown = async (e) => {
 
         const velocity = 0.7;
         try {
+            triggerAdsrOn(); // Trigger ADSR visualizer
             currentInstrument.triggerAttack(notesToPlay, audioEngine.Tone.now(), velocity);
         } catch (e) {
             audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName + ": " + e.message);
@@ -193,6 +186,7 @@ const handleKeyUp = async (e) => {
             return;
         }
 
+        triggerAdsrOff(); // Trigger ADSR visualizer release
         currentInstrument.triggerRelease(note, audioEngine.Tone.now());
         audioEngine.pressedKeys.delete(e.code);
         audioEngine.log(`Keyboard OFF: ${e.code} -> ${note}`);
@@ -202,10 +196,8 @@ const handleKeyUp = async (e) => {
 
 /**
  * Initializes the PC Keyboard MIDI controller.
- * Exposes enable/disable functions via window.audioEngine for Blockly blocks.
  */
 export function initKeyboardController() {
-    // Expose functions to enable/disable PC Keyboard MIDI
     audioEngine.enablePcKeyboardMidi = () => {
         if (!isPcKeyboardMidiEnabled) {
             window.addEventListener('keydown', handleKeyDown);
@@ -222,11 +214,10 @@ export function initKeyboardController() {
             window.removeEventListener('keyup', handleKeyUp);
             isPcKeyboardMidiEnabled = false;
             logKey('LOG_KEYBOARD_MIDI_OFF');
-            audioEngine.pressedKeys.clear(); // Clear any lingering pressed keys
+            audioEngine.pressedKeys.clear();
         }
     };
     
-    // Default to disabled
     audioEngine.disablePcKeyboardMidi();
     logKey("LOG_KEYBOARD_INIT");
 }

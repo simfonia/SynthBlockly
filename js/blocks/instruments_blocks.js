@@ -32,7 +32,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SYNTHESIZERS_HUE}",
+                "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_TOOLTIP}"
             });
         }
@@ -62,7 +62,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SYNTHESIZERS_HUE}",
+                "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_AND_WAIT_TOOLTIP}"
             });
         }
@@ -88,7 +88,7 @@ export function registerBlocks() {
                 "inputsInline": true, // ADDED FOR CONSISTENCY
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SYNTHESIZERS_HUE}",
+                "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_DRUM_TOOLTIP}"
             });
         }
@@ -178,7 +178,7 @@ export function registerBlocks() {
                 "inputsInline": true, // Often helpful for blocks with many fields
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SAMPLERS_HUE}",
+                "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_JAZZKIT_PLAY_DRUM_TOOLTIP}"
             });
         }
@@ -207,8 +207,16 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+                "colour": "%{BKY_SOUND_SOURCES_HUE}",
                 "tooltip": "%{BKY_SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP}"
+            });
+
+            this.setHelpUrl(() => {
+                const currentLang = window.currentLanguage || 'en';
+                if (currentLang === 'zh-hant') {
+                    return 'docs/instrument_readme_zh-hant.html';
+                }
+                return 'docs/instrument_readme_en.html';
             });
         }
     };
