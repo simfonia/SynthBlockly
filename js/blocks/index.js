@@ -1,6 +1,5 @@
 // js/blocks/index.js - Block-related registration manager
-import * as Blockly from 'blockly/core';
-import * as libraryBlocks from 'blockly/blocks';
+import * as Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
 
 // --- i18n ---
@@ -21,6 +20,7 @@ import { registerBlocks as registerNoiseBlocks } from './noise_blocks.js';
 import { registerBlocks as registerCustomWaveBlocks } from './instruments_custom_wave_blocks.js'; // NEW
 import { registerBlocks as registerSamplerBlocks } from './sampler_blocks.js'; // NEW
 import { registerBlocks as registerSfxBlocks } from './sfx_blocks.js'; // NEW
+import { registerBlocks as registerMelodyBlocks } from './melody_blocks.js'; // NEW
 
 import { registerGenerators as registerInstrumentGenerators } from './instruments_generators.js';
 import { registerGenerators as registerMidiGenerators } from './midi_generators.js';
@@ -33,6 +33,7 @@ import { registerGenerators as registerNoiseGenerators } from './noise_generator
 import { registerGenerators as registerCustomWaveGenerators } from './instruments_custom_wave_generators.js'; // NEW
 import { registerGenerators as registerSamplerGenerators } from './sampler_generators.js'; // NEW
 import { registerGenerators as registerSfxGenerators } from './sfx_generators.js'; // NEW
+import { registerGenerators as registerMelodyGenerators } from './melody_generators.js'; // NEW
 
 // --- End of Imports ---
 
@@ -101,14 +102,10 @@ async function loadBlocklyLocale(currentLang) {
  */
 export async function registerAll() {
   try {
-    // 1. Load language first, using window.currentLanguage
-    // window.currentLanguage is set in index.html, defaulting to 'en' if not detected.
+    // 1. Load language first
     await loadBlocklyLocale(window.currentLanguage || 'en'); 
 
-    // 2. Register built-in blocks
-    Blockly.common.defineBlocks(libraryBlocks);
-
-    // 3. Register Custom Blocks
+    // 2. Register Custom Blocks
     registerInstrumentBlocks(Blockly);
     registerMidiBlocks(Blockly);
     registerSerialBlocks(Blockly);
@@ -120,6 +117,7 @@ export async function registerAll() {
     registerCustomWaveBlocks(Blockly); // NEW
     registerSamplerBlocks(Blockly); // NEW
     registerSfxBlocks(Blockly); // NEW
+    registerMelodyBlocks(Blockly); // NEW
     console.log('Blocks registered.');
 
     // 4. Register Custom Generators
@@ -134,6 +132,7 @@ export async function registerAll() {
     registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW
     registerSamplerGenerators(Blockly, javascriptGenerator); // NEW
     registerSfxGenerators(Blockly, javascriptGenerator); // NEW
+    registerMelodyGenerators(Blockly, javascriptGenerator); // NEW
     console.log('Generators registered.');
 
   } catch (e) {

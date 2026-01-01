@@ -1,47 +1,50 @@
-# SynthBlockly檔案結構
+# SynthBlockly 專案檔案結構
 
-本文件說明 Vite 版本的 SynthBlockly 專案檔案結構。專案已經從傳統的全域腳本模式重構為使用 Vite 進行打包和管理的現代模組化架構。
+本文件說明 SynthBlockly 專案的現代化模組架構。
 
 - `synthblockly/`
-  - `index.html`: Vite 專案的 HTML 主入口點。負責載入主腳本 `main.js`。
-  - `main.js`: 應用程式的 **Vite 主入口點**。它的主要職責是匯入並啟動核心應用程式邏輯 `js/app.js`。
-  - `styles.css`: 全域的 CSS 樣式表。
-  - `package.json`: 定義專案依賴（如 Vite, Blockly, Tone.js）和執行腳本（如 `dev`, `build`）。
-  - `public/`: 存放不會被 Vite 建置流程處理的靜態檔案，例如音訊樣本 (`samples/`)。`toolbox.xml` 已內嵌至 JS，`locales` 資料夾已無作用。
-    - `docs/`: 存放 HTML 格式的說明文件。
-      - `custom_sampler_en.html`: 自訂取樣器英文說明文件。
-      - `custom_sampler_zh-hant.html`: 自訂取樣器正體中文說明文件。
-  - `examples/`: 存放 Blockly 工作區的 XML 範例檔案。
-  - `js/`: **模組化的 JavaScript 原始碼**
-    - `app.js`: **核心應用程式主入口**。負責初始化各個模組，是整個應用的指揮中心。
-    - `core/`: **核心商業邏輯**
-      - `audioEngine.js`: 封裝 Tone.js 的音訊引擎，負責管理樂器、**動態效果器鏈**、**自訂取樣器的高階語音管理**和音訊播放。
-      - `midiEngine.js`: 處理 Web MIDI API 的邏輯，包括設備連接和訊息監聽。
-      - `serialEngine.js`: 處理 Web Serial API 的邏輯，用於與 Arduino 等硬體通訊。
-      - `blocklyManager.js`: 負責 Blockly 工作區的初始化、事件監聽和動態積木邏輯。
-      - `eventManager.js`: 集中管理由帽子積木註冊的各類事件監聽器。
-      - `toolbox.js`: 新增檔案，內含 Blockly 工具箱的 XML 定義字串。
-    - `ui/`: **使用者介面相關邏輯**
-      - `dom.js`: 集中管理所有 DOM 元素的參考。
-      - `buttons.js`: 處理所有 UI 按鈕的事件綁定。
-      - `keyboardController.js`: 實現 PC 鍵盤模擬 MIDI 輸入的功能。
-      - `resizer.js`: 管理 Blockly 工作區和 p5 畫布的縮放邏輯。
-      - `visualizer.js`: 使用 p5.js 實現音訊的波形視覺化。
-      - `logger.js`: 提供在前端介面顯示日誌的功能。
-    - `blocks/`: **積木定義與生成器**
-      - `index.js`: 統一註冊所有積木、生成器和語言檔的入口，並使用 `js/core/toolbox.js` 中的 XML 字串。
-      - `instruments_blocks.js` / `instruments_generators.js`: 樂器相關積木。
-      - `transport_blocks.js` / `transport_generators.js`: 節拍相關積木。
-      - `effects_blocks.js` / `effects_generators.js`: 效果器相關積木。
-      - `midi_blocks.js` / `midi_generators.js`: MIDI 相關積木。
-      - `keyboard_blocks.js` / `keyboard_generators.js`: PC 鍵盤相關積木。
-      - `serial_blocks.js` / `serial_generators.js`: 序列埠相關積木。
-      - `math_blocks.js` / `math_generators.js`: 數學相關積木。
-      - `sampler_blocks.js` / `sampler_generators.js`: 取樣器相關積木。
-      - `lang/`: **Blockly 自訂語言檔案** (en.js, zh-hant.js)
-        - `en.js`: 英文自訂語言設定，會與主要語言包合併。
-        - `zh-hant.js`: 正體中文自訂語言設定，會與主要語言包合併。
-  - `log/`: 存放開發日誌和任務清單。
-    - `todo.md`: 專案的待辦事項清單。
-    - `work/`: 存放每日工作日誌，格式為 `yyyy-mm-dd.md`。
-  - `src/`: **(未使用)** Vite 初始化時產生的預設資料夾，目前專案的核心邏輯在 `js/` 資料夾中。
+  - `index.html`: Vite 專案主入口點，包含語系偵測邏輯。
+  - `main.js`: Vite 進入點，載入 Tone.js 與 p5.js。
+  - `styles.css`: 全域樣式，包含示波器與 ADSR 視覺化版面。
+  - `vite.config.js`: 構建配置。
+  - `public/`: 靜態資源（音訊樣本、說明文件、i18n 檔案）。
+    - `docs/`: 積木說明文件 (HTML 格式，支援中英雙語)。
+      - `performance_readme_*.html`: 演奏音符積木說明。
+    - `locales/`: Blockly 核心語言包 (JSON)。
+    - `samples/`: 音訊樣本庫（包含爵士鼓、小提琴與特殊音效 SFX）。
+  - `js/`: 核心 JavaScript 代碼。
+    - `app.js`: 應用程式啟動中心，負責初始化所有模組。
+    - `core/`: 核心引擎與管理。
+      - `audioEngine.js`: Tone.js 封裝，管理「音源」、效果鏈與旋律解析。
+      - `blocklyManager.js`: Blockly 工作區管理、動態積木註冊與程式碼產生邏輯。
+      - `midiEngine.js`: 處理外部 MIDI 設備通訊。
+      - `serialEngine.js`: 處理序列埠設備通訊。
+      - `toolbox.js`: 定義三位一體專業工具箱 (Sources, Performance, Control)。
+    - `ui/`: 介面組件。
+      - `adsrVisualizer.js`: Canvas 實作的 ADSR 包絡線預覽與動態光點。
+      - `visualizer.js`: p5.js 實作的即時示波器。
+      - `buttons.js`: 工具列按鈕邏輯。
+      - `logger.js`: 多語系日誌系統。
+      - `keyboardController.js`: PC 鍵盤演奏邏輯。
+      - `resizer.js`: 介面佈局調整。
+      - `uiManager.js`: UI 翻譯與效果管理。
+      - `helpModal.js`: 說明視窗與文件顯示邏輯。
+    - `blocks/`: 積木與產生器定義。
+      - `index.js`: 積木註冊入口點。
+      - `instruments_blocks.js` / `_generators.js`: 標準音源與參數控制。
+      - `instruments_custom_wave_blocks.js` / `_generators.js`: 自訂波形 (加法合成) 音源。
+      - `sampler_blocks.js` / `_generators.js`: 取樣器音源 (內建/自訂)。
+      - `effects_blocks.js` / `_generators.js`: 音訊效果器。
+      - `melody_blocks.js` / `_generators.js`: 旋律清單演奏。
+      - `midi_blocks.js` / `_generators.js`: MIDI 事件處理。
+      - `serial_blocks.js` / `_generators.js`: 序列埠事件處理。
+      - `keyboard_blocks.js` / `_generators.js`: PC 鍵盤對應。
+      - `transport_blocks.js` / `_generators.js`: 播放控制 (BPM, Loop)。
+      - `noise_blocks.js` / `_generators.js`: 噪音產生器。
+      - `sfx_blocks.js` / `_generators.js`: 環境音效播放。
+      - `math_blocks.js` / `_generators.js`: 數學運算擴充。
+      - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。
+    - `plugins/`: Blockly 欄位插件（如多行文字輸入框）。
+  - `log/`: 開發紀錄。
+    - `todo.md`: 任務清單。
+    - `work/`: 每日工作日誌。

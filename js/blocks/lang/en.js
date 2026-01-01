@@ -75,12 +75,12 @@ export const MSG_EN = {
     'SB_NOISE_TYPE_BROWN': 'Brown Noise',
 
     'MSG_HARMONIC_ADDER_CATEGORY': 'Harmonic Sound Source',
-    'MSG_HARMONIC_SYNTH_TOOLTIP': 'Creates a harmonic additive synthesizer sound source.',
+    'MSG_HARMONIC_SYNTH_TOOLTIP': 'Creates a harmonic additive synthesizer sound source. Right-click for Help.',
     'MSG_FUNDAMENTAL_FIELD': 'Fundamental (1x) Amplitude (0-1)',
     'MSG_HARMONIC_FIELD': 'Harmonic ({0}x) Amplitude (0-1)',
 
     'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': 'Create Custom Synth Source Name %1',
-    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer sound source using multiple oscillators.',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer sound source using multiple oscillators. Right-click for Help.',
     'MSG_MAIN_OSCILLATOR_FIELD': 'Main Oscillator (Fundamental)',
     'MSG_OSCILLATOR_FIELD': 'Oscillator {0}',
     'MSG_AMPLITUDE_INPUT_FIELD': 'Amplitude',
@@ -101,9 +101,13 @@ export const MSG_EN = {
 
     // PERFORMANCE
     'SB_PLAY_NOTE_MESSAGE': 'Play Note %1 Duration %2 Velocity %3 (non-blocking)',
+    'SB_PLAY_NOTE_TOOLTIP': 'Plays a note instantly without waiting for it to finish. Right-click for Help.',
     'SB_PLAY_NOTE_AND_WAIT_MESSAGE': 'Play Note %1 Duration %2 Velocity %3 and wait',
+    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': 'Plays a note and waits for its duration before continuing. Right-click for Help.',
     'SB_PLAY_DRUM_MESSAGE_WITH_VELOCITY': 'Play Electronic Drum (Synth) %1 Velocity %2',
     'SB_PLAY_DRUM_TOOLTIP': 'Trigger a synth-based drum sound.',
+    'SB_PLAY_MELODY_MESSAGE': 'Play melody list: %1',
+    'SB_PLAY_MELODY_TOOLTIP': 'Enter melody (e.g., C4Q, D4H, RE). Supports spaces/commas. Use R for rests. Right-click for Help.',
 
         // SAMPLERS
 
@@ -136,7 +140,7 @@ export const MSG_EN = {
     
 
         'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': 'Create Sampler Source %1 Type %2',
-    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': 'Creates a sound source based on recorded samples.',
+    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': 'Creates a sound source based on recorded samples. Right-click for Help.',
     'SB_SAMPLER_TYPE_DEFAULT': 'Default Piano',
     'SB_SAMPLER_TYPE_VIOLIN_PIZZ': 'Violin (Pizzicato)',
     'SB_SAMPLER_TYPE_VIOLIN_SUSTAIN': 'Violin (Sustain)',
@@ -156,6 +160,7 @@ export const MSG_EN = {
 
     // EFFECTS
     'SB_SETUP_EFFECT_MESSAGE': 'Set %1 effect',
+    'SB_SETUP_EFFECT_TOOLTIP': 'Add professional post-processing effects. Right-click for Help.',
     'SB_EFFECT_DISTORTION_TYPE_FIELD': 'Distortion',
     'SB_EFFECT_REVERB_TYPE_FIELD': 'Reverb',
     'SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD': 'Delay',
@@ -333,6 +338,7 @@ export const MSG_EN = {
     'LOG_MIDI_MAP_ERR': 'Error: Chord %1 not found, MIDI mapping failed.',
     'LOG_CHORD_DEFINED': 'Chord %1 defined: %2',
     'LOG_CHORD_ERR': 'Error: Chord %1 definition invalid.',
+    'LOG_MELODY_PARSE_ERR': 'Warning: Invalid note format in melody list: "%1". Skipped.',
     'LOG_KEY_MAPPED': 'Keyboard key %1 bound to chord %2.',
     'LOG_KEY_MAP_ERR': 'Error: Chord %1 not found, key mapping failed.',
     'LOG_SERIAL_REGISTERED': 'Registered serial auto-trigger (Block: %1).',

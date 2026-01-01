@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>演奏音符積木說明</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #E74C3C; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #d63384; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        .important { background-color: #fffbe6; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>演奏音符積木說明</h1>
+    <p>「演奏與發聲」分類（紅色）提供了兩個主要的演奏積木。理解它們的行為與時值表達方式對於控制節奏至關重要。</p>
+
+    <div class="type-box">
+        <h2>1. 演奏音符... (不等待/non-blocking)</h2>
+        <p><strong>積木：</strong> <code>sb_play_note</code></p>
+        <p><strong>行為：</strong> 射後不理 (Fire and forget)。</p>
+        <ul>
+            <li>它會立即觸發聲音，並且<strong>立刻執行下一個積木</strong>。</li>
+            <li><strong>適用情境：</strong> 同時播放多個音符（如和弦）、在播放音樂的同時執行其他計算邏輯。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>2. 演奏音符... 並等待 (阻塞/blocking)</h2>
+        <p><strong>積木：</strong> <code>sb_play_note_and_wait</code></p>
+        <p><strong>行為：</strong> 阻塞 (Blocking)。</p>
+        <ul>
+            <li>它會觸發聲音，並<strong>暫停程式執行</strong>，直到該音符的時值結束後才繼續下一步。</li>
+            <li><strong>適用情境：</strong> 編寫單旋律線，讓音符一個接一個依序播放。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>音名與八度 (Note & Octave)</h2>
+        <p>音符格式為：<code>[音名][升降號][八度]</code></p>
+        <ul>
+            <li><strong>音名</strong>：A, B, C, D, E, F, G。</li>
+            <li><strong>升降號</strong>：<code>#</code> (升音) 或 <code>b</code> (降音)。例如 <code>C#</code>, <code>Eb</code>。</li>
+            <li><strong>八度</strong>：數字 0 到 8。<code>C4</code> 為中央 C，數字越大音高越高。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>時值表達方式 (Tone.js Duration)</h2>
+        <p>此積木支援標準的 Tone.js 時值符號。其格式為「數字」加上「單位」。</p>
+        
+        <h3>基本單位</h3>
+        <table>
+            <tr>
+                <th>符號</th>
+                <th>名稱</th>
+                <th>說明</th>
+            </tr>
+            <tr>
+                <td><code>1m</code></td>
+                <td>1 小節 (Measure)</td>
+                <td>在 4/4 拍中等於 4 拍。也可以是 <code>2m</code>, <code>4m</code> 等。</td>
+            </tr>
+            <tr>
+                <td><code>1n</code></td>
+                <td>全音符 (Whole note)</td>
+                <td>等於一個小節。</td>
+            </tr>
+            <tr>
+                <td><code>2n</code></td>
+                <td>二分音符 (Half note)</td>
+                <td>持續 2 拍。</td>
+            </tr>
+            <tr>
+                <td><code>4n</code></td>
+                <td>四分音符 (Quarter note)</td>
+                <td>持續 1 拍 (最常用的基本單位)。</td>
+            </tr>
+            <tr>
+                <td><code>8n</code></td>
+                <td>八分音符 (Eighth note)</td>
+                <td>持續 0.5 拍。</td>
+            </tr>
+            <tr>
+                <td><code>16n</code></td>
+                <td>十六分音符 (16th note)</td>
+                <td>持續 0.25 拍。</td>
+            </tr>
+            <tr>
+                <td><code>32n</code></td>
+                <td>三十二分音符 (32nd note)</td>
+                <td>極短促的音符。</td>
+            </tr>
+        </table>
+
+        <h3>進階修飾符號</h3>
+        <ul>
+            <li><strong>附點 (Dotted) <code>.</code></strong>：增加 50% 的時值。
+                <ul>
+                    <li><code>4n.</code>：附點四分音符 (1.5 拍)。</li>
+                    <li><code>8n.</code>：附點八分音符 (0.75 拍)。</li>
+                </ul>
+            </li>
+            <li><strong>三連音 (Triplet) <code>t</code></strong>：將原本單位的後綴 <code>n</code> 改為 <code>t</code>，代表將時值縮短為 2/3。
+                <ul>
+                    <li><code>4t</code>：四分三連音 (在兩拍的時間內平均彈奏三個)。</li>
+                    <li><code>8t</code>：八分三連音 (在一拍的時間內平均彈奏三個)。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="important">
+            <strong>提示：</strong>你可以直接輸入秒數（如 <code>0.5</code>），系統會將其視為 0.5 秒，但建議使用音樂時值符號（如 <code>4n</code>），這樣當你調整 BPM (速度) 時，節奏會自動保持同步。
+        </div>
+    </div>
+    <div class="type-box">
+        <h2>力度 (Velocity)</h2>
+        <p>力度代表按下琴鍵的力道，直接影響音量與音色。</p>
+        <ul>
+            <li><strong>範圍</strong>：<code>0</code> (靜音) 到 <code>1</code> (最大力度)。</li>
+            <li><strong>說明</strong>：
+                <ul>
+                    <li><code>1</code>：全力敲擊。</li>
+                    <li><code>0.5</code>：中等力道。</li>
+                    <li>對於某些合成器（如 FMSynth），較大的力度也會改變音色（通常更亮）。</li>
+                </ul>
+            </li>
+            <li><strong>MIDI 對應</strong>：如果你使用 MIDI 鍵盤，MIDI 力度 (0-127) 會自動轉換為 0-1 的小數 (例如 127 = 1)。</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -185,11 +185,13 @@ export const audioEngine = {
                         break;
                     }
                     case 'filter':
-                        // The main type remains 'filter', and we store the specific filter type in params
-                        params.type = block.getFieldValue('FILTER_TYPE_VALUE');
-                        params.frequency = getNumericValue('FILTER_FREQ', 20000);
-                        params.Q = getNumericValue('FILTER_Q', 1);
-                        params.rolloff = parseInt(block.getFieldValue('FILTER_ROLLOFF_VALUE'), 10);
+                        // Instantiate Filter with parameters from the config
+                        effectInstance = new Tone.Filter({
+                            type: params.type || 'lowpass',
+                            frequency: params.frequency !== undefined ? params.frequency : 20000,
+                            Q: params.Q !== undefined ? params.Q : 1,
+                            rolloff: params.rolloff !== undefined ? params.rolloff : -12
+                        });
                         break;
                     case 'compressor':
                         effectInstance = new Tone.Compressor(params);
@@ -800,7 +802,7 @@ export const audioEngine = {
 
     playCurrentInstrumentNote: async function(note, dur, time, velocity) {
         const ok = await ensureAudioStarted();
-        if (!ok) return; 
+        if (!ok) return; // Removed !this.isExecutionActive check to allow UI testing
         const currentInstrument = this.instruments[this.currentInstrumentName];
         if (currentInstrument && currentInstrument.triggerAttackRelease) {
             if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
@@ -815,6 +817,56 @@ export const audioEngine = {
             currentInstrument.triggerAttackRelease(note, dur, time, velocity);
         } else {
             logKey('LOG_PLAY_NOTE_FAIL', 'error', this.currentInstrumentName);
+        }
+    },
+
+    /**
+     * Parses and plays a melody string sequentially.
+     * Format: "C4Q, D4H, RE" (Note+Octave+Duration, or R+Duration for rest)
+     * Durations: W=1m, H=2n, Q=4n, E=8n, S=16n, T=32n. 
+     * Supports '.' for dotted and '_T' for triplet.
+     * @param {string} melodyStr The melody string to play.
+     */
+    playMelodyString: async function(melodyStr) {
+        const ok = await ensureAudioStarted();
+        if (!ok || !this.isExecutionActive) return;
+
+        const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
+        
+        // Robust splitting: Replace commas, newlines, and carriage returns with spaces first
+        const cleanStr = melodyStr.replace(/[,\r\n]/g, ' ');
+        const notes = cleanStr.split(/\s+/).map(s => s.trim()).filter(s => s.length > 0);
+
+        for (const noteStr of notes) {
+            if (!this.isExecutionActive) break;
+
+            // Regex: (Rest R)? (Pitch+Accidental)? (Octave)? (Duration) (Dotted .)? (Triplet _T)?
+            const match = noteStr.match(/^(R)?([A-G][#b]?)?([0-8])?([WHQEST])(\.?|_T)?$/i);
+            
+            if (match) {
+                const isRest = !!match[1];
+                let pitch = match[2] ? match[2].toUpperCase() : null;
+                let octave = match[3] ? match[3] : "4";
+                let durChar = match[4].toUpperCase();
+                let suffix = match[5] ? match[5].toUpperCase() : "";
+
+                let toneDur = durMap[durChar] || '4n';
+                if (suffix === '.') toneDur += '.';
+                if (suffix === '_T') toneDur = toneDur.replace('n', 't');
+
+                if (isRest) {
+                    // Wait for the duration of the rest
+                    await new Promise(resolve => setTimeout(resolve, Tone.Time(toneDur).toMilliseconds()));
+                } else {
+                    const fullNote = pitch ? (pitch + octave) : ("C" + octave);
+                    // Play note
+                    this.playCurrentInstrumentNote(fullNote, toneDur, Tone.now(), 0.8);
+                    // Wait for duration
+                    await new Promise(resolve => setTimeout(resolve, Tone.Time(toneDur).toMilliseconds()));
+                }
+            } else {
+                logKey('LOG_MELODY_PARSE_ERR', 'warning', noteStr);
+            }
         }
     },
 

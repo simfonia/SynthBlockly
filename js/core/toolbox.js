@@ -156,6 +156,9 @@ export const TOOLBOX_XML_STRING = `
                 <shadow type="math_number"><field name="NUM">1</field></shadow>
             </value>
         </block>
+        <block type="sb_play_melody">
+            <field name="MELODY_STRING">C4Q, D4Q, E4Q, F4Q, G4H</field>
+        </block>
     </category>
 
     <category name="%{BKY_MSG_INSTRUMENT_CONTROL_CATEGORY}" colour="%{BKY_INSTRUMENT_CONTROL_HUE}">

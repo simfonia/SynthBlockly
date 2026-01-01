@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>旋律清單編寫指南</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #E74C3C; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #d63384; font-weight: bold; }
+        .example { background: #fffbe6; padding: 10px; border-left: 4px solid #ffc107; margin: 10px 0; font-family: monospace; white-space: pre; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>旋律清單編寫指南</h1>
+    <p>「演奏旋律清單」積木使用一種簡化的文字格式來代表 Tone.js 的音樂時值。這讓你能像寫程式碼一樣快速編寫複雜的節奏。</p>
+
+    <div class="type-box">
+        <h2>1. 時值代碼對照表 (Duration Codes)</h2>
+        <p>此積木使用單一字母作為時值縮寫，對應標準 Tone.js 符號如下：</p>
+        <table>
+            <tr>
+                <th>代碼</th>
+                <th>名稱</th>
+                <th>Tone.js 寫法</th>
+                <th>說明</th>
+            </tr>
+            <tr>
+                <td><code>W</code></td>
+                <td>全音符 (Whole)</td>
+                <td><code>1m</code> / <code>1n</code></td>
+                <td>持續一整個小節 (4 拍)。</td>
+            </tr>
+            <tr>
+                <td><code>H</code></td>
+                <td>二分音符 (Half)</td>
+                <td><code>2n</code></td>
+                <td>持續 2 拍。</td>
+            </tr>
+            <tr>
+                <td><code>Q</code></td>
+                <td>四分音符 (Quarter)</td>
+                <td><code>4n</code></td>
+                <td>持續 1 拍 (標準拍點)。</td>
+            </tr>
+            <tr>
+                <td><code>E</code></td>
+                <td>八分音符 (Eighth)</td>
+                <td><code>8n</code></td>
+                <td>持續 0.5 拍。</td>
+            </tr>
+            <tr>
+                <td><code>S</code></td>
+                <td>十六分音符 (16th)</td>
+                <td><code>16n</code></td>
+                <td>持續 0.25 拍。</td>
+            </tr>
+            <tr>
+                <td><code>T</code></td>
+                <td>三十二分音符 (32nd)</td>
+                <td><code>32n</code></td>
+                <td>極短促的音符。</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="type-box">
+        <h2>2. 休止符 (Rests)</h2>
+        <p>在音樂中，沈默也是音樂的一部分。使用 <code>R</code> 開頭加上時值代碼來表示休止符。</p>
+        <ul>
+            <li><code>RQ</code>：四分休止符 (休息 1 拍)。</li>
+            <li><code>RH</code>：二分休止符 (休息 2 拍)。</li>
+            <li><code>RE</code>：八分休止符。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>3. 進階節奏修飾 (Modifiers)</h2>
+        <p>你可以混合使用修飾符號來創造更豐富的律動：</p>
+        
+        <h3>附點 (Dotted Note) - <code>.</code></h3>
+        <p>在時值後加上 <code>.</code>，代表<strong>增加該時值的一半長度</strong> (1.5倍)。</p>
+        <ul>
+            <li><code>Q.</code> (附點四分音符) = 1 拍 + 0.5 拍 = 1.5 拍。</li>
+            <li><code>H.</code> (附點二分音符) = 2 拍 + 1 拍 = 3 拍。</li>
+            <li>Tone.js 對應：<code>4n.</code>, <code>2n.</code></li>
+        </ul>
+
+        <h3>三連音 (Tuplets/Triplets) - <code>_T</code></h3>
+        <p>在時值後加上 <code>_T</code>，代表<strong>將三個音符塞進原本兩個音符的時間內</strong> (時值縮短為 2/3)。</p>
+        <ul>
+            <li><code>Q_T</code> (四分三連音)：長度是正常四分音符的 2/3。</li>
+            <li><code>E_T</code> (八分三連音)：常見於爵士樂 (Swing) 或華爾滋。</li>
+            <li>Tone.js 對應：<code>4t</code>, <code>8t</code></li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>4. 完整格式與範例</h2>
+        <p>單一音符格式：<code>[音高][八度][時值][修飾符]</code></p>
+        <div class="example">
+範例 1 (基本):
+C4Q E4Q G4H
+(Do 1拍, Mi 1拍, Sol 2拍)
+
+範例 2 (包含休止符):
+C4Q RQ E4Q RQ
+(Do 1拍, 休息 1拍, Mi 1拍, 休息 1拍)
+
+範例 3 (附點與複雜節奏):
+C4Q. D4E E4Q_T E4Q_T E4Q_T
+(附點四分, 八分, 連續三個三連音)</div>
+    </div>
+</body>
+</html>

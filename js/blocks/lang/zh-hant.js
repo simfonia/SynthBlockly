@@ -75,12 +75,12 @@ export const MSG_ZH_HANT = {
     'SB_NOISE_TYPE_BROWN': '棕色噪音',
 
     'MSG_HARMONIC_ADDER_CATEGORY': '諧波合成音源', 
-    'MSG_HARMONIC_SYNTH_TOOLTIP': '建立一個基於諧波加法合成的音源。可點擊齒輪增減泛音層級。',
+    'MSG_HARMONIC_SYNTH_TOOLTIP': '建立一個基於諧波加法合成的音源。可點擊齒輪增減泛音層級。按右鍵選擇「說明」查看加法合成原理。',
     'MSG_FUNDAMENTAL_FIELD': '基頻 (1x) 振幅 (0-1)',
     'MSG_HARMONIC_FIELD': '{0}倍頻 振幅 (0-1)',
 
     'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': '建立自訂合成音源 名稱 %1',
-    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': '建立一個由多個獨立振盪器疊加而成的加法合成音源。',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': '建立一個由多個獨立振盪器疊加而成的加法合成音源。按右鍵選擇「說明」查看加法合成原理。',
     'MSG_MAIN_OSCILLATOR_FIELD': '主振盪器 (基頻)',
     'MSG_OSCILLATOR_FIELD': '振盪器 {0}',
     'MSG_AMPLITUDE_INPUT_FIELD': '振幅',
@@ -106,11 +106,13 @@ export const MSG_ZH_HANT = {
 
     // PERFORMANCE
     'SB_PLAY_NOTE_MESSAGE': '演奏音符 %1 時值 %2 力度 %3 (不等待)',
-    'SB_PLAY_NOTE_TOOLTIP': '立即觸發音源發聲，不等待其結束。',
+    'SB_PLAY_NOTE_TOOLTIP': '立即觸發音源發聲，不等待其結束。按右鍵選擇「說明」查看詳細資訊。',
     'SB_PLAY_NOTE_AND_WAIT_MESSAGE': '演奏音符 %1 時值 %2 力度 %3 並等待結束',
-    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': '觸發音源發聲，並等待該音符時值結束後才繼續執行下一步。',
+    'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': '觸發音源發聲，並等待該音符時值結束後才繼續執行下一步。按右鍵選擇「說明」查看詳細資訊。',
     'SB_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '播放電子鼓聲 (合成音源) %1 力度 %2',
     'SB_PLAY_DRUM_TOOLTIP': '觸發基於合成技術的鼓聲 (Kick/Snare/HiHat)。',
+    'SB_PLAY_MELODY_MESSAGE': '演奏旋律清單: %1',
+    'SB_PLAY_MELODY_TOOLTIP': '輸入旋律字串（如 C4Q, D4H, RE）。支援空白或逗號分隔，建議每小節換行。使用 R 代表休止符。時值：W=全, H=二分, Q=四分, E=八分, S=16, T=32。支援附點(.)與三連音(_T)。按右鍵選擇「說明」查看編寫指南。',
 
         // SAMPLERS
 
@@ -143,7 +145,7 @@ export const MSG_ZH_HANT = {
     
 
         'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': '建立取樣音源 %1 型態 %2',
-    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': '建立一個基於錄音樣本的取樣器音源。可選擇預設鋼琴、小提琴或自訂 URL 樣本。',
+    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': '建立一個基於錄音樣本的取樣器音源。可選擇預設鋼琴、小提琴或自訂 URL 樣本。按右鍵選擇「說明」查看如何建立自己的取樣器。',
     'SB_SAMPLER_TYPE_DEFAULT': '預設鋼琴',
     'SB_SAMPLER_TYPE_VIOLIN_PIZZ': '小提琴 (撥奏)',
     'SB_SAMPLER_TYPE_VIOLIN_SUSTAIN': '小提琴 (持續音)',
@@ -355,6 +357,7 @@ export const MSG_ZH_HANT = {
     'LOG_MIDI_MAP_ERR': '錯誤: 找不到和弦 %1，無法進行 MIDI 映射。',
     'LOG_CHORD_DEFINED': '成功定義和弦 %1: %2',
     'LOG_CHORD_ERR': '錯誤: 和弦 %1 定義無效，請檢查音符列表。',
+    'LOG_MELODY_PARSE_ERR': '警告: 旋律清單中包含無效格式: "%1"，該項已被跳過。',
     'LOG_KEY_MAPPED': '電腦鍵盤按鍵 %1 已綁定至和弦 %2。',
     'LOG_KEY_MAP_ERR': '錯誤: 找不到和弦 %1，無法進行鍵盤映射。',
     'LOG_SERIAL_REGISTERED': '已註冊序列埠自動觸發器 (積木: %1)。',

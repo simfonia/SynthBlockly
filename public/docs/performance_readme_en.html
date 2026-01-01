@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Play Note Blocks Guide</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #E74C3C; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #d63384; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        .important { background-color: #fffbe6; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Play Note Blocks Guide</h1>
+    <p>The "Performance" category (Red) provides two main blocks for playing notes. Understanding their behavior and how to express durations is key to controlling rhythm.</p>
+
+    <div class="type-box">
+        <h2>1. Play Note ... (non-blocking)</h2>
+        <p><strong>Block:</strong> <code>sb_play_note</code></p>
+        <p><strong>Behavior:</strong> Fire and forget.</p>
+        <ul>
+            <li>It triggers the sound immediately and <strong>moves to the next block instantly</strong>.</li>
+            <li><strong>Use case:</strong> Playing chords (multiple notes at once), arpeggios, or processing logic while music plays.</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>2. Play Note ... and wait (blocking)</h2>
+        <p><strong>Block:</strong> <code>sb_play_note_and_wait</code></p>
+        <p><strong>Behavior:</strong> Blocking.</p>
+        <ul>
+            <li>It triggers the sound and <strong>pauses program execution</strong> until the note's duration is over.</li>
+            <li><strong>Use case:</strong> Writing simple melodies line by line where notes follow one another in sequence.</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>Note Name & Octave</h2>
+        <p>The note format is: <code>[Pitch][Accidental][Octave]</code></p>
+        <ul>
+            <li><strong>Pitch</strong>: A, B, C, D, E, F, G.</li>
+            <li><strong>Accidental</strong>: <code>#</code> (Sharp) or <code>b</code> (Flat). e.g., <code>C#</code>, <code>Eb</code>.</li>
+            <li><strong>Octave</strong>: Numbers 0 to 8. <code>C4</code> is Middle C; higher numbers mean higher pitch.</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>Duration Notation (Tone.js Time)</h2>
+        <p>These blocks use standard Tone.js time notation. The format is a "number" followed by a "unit".</p>
+        
+        <h3>Basic Units</h3>
+        <table>
+            <tr>
+                <th>Notation</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>1m</code></td>
+                <td>1 Measure</td>
+                <td>Equal to 4 beats in 4/4 time. Can also be <code>2m</code>, <code>4m</code>, etc.</td>
+            </tr>
+            <tr>
+                <td><code>1n</code></td>
+                <td>Whole note</td>
+                <td>Equal to one full measure.</td>
+            </tr>
+            <tr>
+                <td><code>2n</code></td>
+                <td>Half note</td>
+                <td>Lasts for 2 beats.</td>
+            </tr>
+            <tr>
+                <td><code>4n</code></td>
+                <td>Quarter note</td>
+                <td>Lasts for 1 beat (the standard pulse).</td>
+            </tr>
+            <tr>
+                <td><code>8n</code></td>
+                <td>Eighth note</td>
+                <td>Lasts for 0.5 beats.</td>
+            </tr>
+            <tr>
+                <td><code>16n</code></td>
+                <td>16th note</td>
+                <td>Lasts for 0.25 beats.</td>
+            </tr>
+            <tr>
+                <td><code>32n</code></td>
+                <td>32nd note</td>
+                <td>A very short, rapid note.</td>
+            </tr>
+        </table>
+
+        <h3>Modifiers</h3>
+        <ul>
+            <li><strong>Dotted Notes <code>.</code></strong>: Increases duration by 50%.
+                <ul>
+                    <li><code>4n.</code>: Dotted quarter note (1.5 beats).</li>
+                    <li><code>8n.</code>: Dotted eighth note (0.75 beats).</li>
+                </ul>
+            </li>
+            <li><strong>Triplets <code>t</code></strong>: Replacing the <code>n</code> suffix with <code>t</code> shortens the duration to 2/3 of its original length.
+                <ul>
+                    <li><code>4t</code>: Quarter note triplet (3 notes over 2 beats).</li>
+                    <li><code>8t</code>: Eighth note triplet (3 notes over 1 beat).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="important">
+            <strong>Pro Tip:</strong> You can use seconds (e.g., <code>0.5</code>), but using musical notation like <code>4n</code> is recommended so your rhythm stays in sync when you change the BPM (Tempo).
+        </div>
+    </div>
+    <div class="type-box">
+        <h2>Velocity (Dynamic)</h2>
+        <p>Velocity represents how hard a key is pressed, affecting volume and sometimes timbre.</p>
+        <ul>
+            <li><strong>Range</strong>: <code>0</code> (Silent) to <code>1</code> (Full Velocity).</li>
+            <li><strong>Details</strong>:
+                <ul>
+                    <li><code>1</code>: Maximum intensity.</li>
+                    <li><code>0.5</code>: Moderate intensity.</li>
+                    <li>For some synthesizers (like FMSynth), higher velocity may also make the sound brighter.</li>
+                </ul>
+            </li>
+            <li><strong>MIDI Mapping</strong>: If using a MIDI keyboard, MIDI velocity (0-127) is automatically normalized to a 0-1 float (e.g., 127 = 1).</li>
+        </ul>
+    </div>
+</body>
+</html>

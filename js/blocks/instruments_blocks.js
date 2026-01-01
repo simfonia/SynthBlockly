@@ -35,6 +35,14 @@ export function registerBlocks() {
                 "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_TOOLTIP}"
             });
+
+            this.setHelpUrl(() => {
+                const currentLang = window.currentLanguage || 'en';
+                if (currentLang === 'zh-hant') {
+                    return 'docs/performance_readme_zh-hant.html';
+                }
+                return 'docs/performance_readme_en.html';
+            });
         }
     };
 
@@ -64,6 +72,14 @@ export function registerBlocks() {
                 "nextStatement": null,
                 "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_AND_WAIT_TOOLTIP}"
+            });
+
+            this.setHelpUrl(() => {
+                const currentLang = window.currentLanguage || 'en';
+                if (currentLang === 'zh-hant') {
+                    return 'docs/performance_readme_zh-hant.html';
+                }
+                return 'docs/performance_readme_en.html';
             });
         }
     };

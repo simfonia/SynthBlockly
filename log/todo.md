@@ -58,3 +58,4 @@
 - [x] **實現 ADSR 包絡的視覺化**
 - [x] **日誌系統多語系化與區塊化**
 - [x] **音效播放 (SFX) 積木實作**
+- [x] **優化演奏旋律清單積木 (Melody List Block Optimization)**: 更新 Tooltip 加入休止符 (R) 用法說明，並連結至專屬說明文件 (HelpUrl)。

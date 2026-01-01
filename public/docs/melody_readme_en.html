@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Melody List Writing Guide</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #E74C3C; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #d63384; font-weight: bold; }
+        .example { background: #fffbe6; padding: 10px; border-left: 4px solid #ffc107; margin: 10px 0; font-family: monospace; white-space: pre; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Melody List Writing Guide</h1>
+    <p>The "Play Melody List" block uses a simplified text format to represent Tone.js musical durations. This allows you to code complex rhythms quickly.</p>
+
+    <div class="type-box">
+        <h2>1. Duration Codes Table</h2>
+        <p>This block uses single letters as shorthands, mapping to standard Tone.js notation as follows:</p>
+        <table>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Tone.js Syntax</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>W</code></td>
+                <td>Whole Note</td>
+                <td><code>1m</code> / <code>1n</code></td>
+                <td>Lasts for a full measure (4 beats).</td>
+            </tr>
+            <tr>
+                <td><code>H</code></td>
+                <td>Half Note</td>
+                <td><code>2n</code></td>
+                <td>Lasts for 2 beats.</td>
+            </tr>
+            <tr>
+                <td><code>Q</code></td>
+                <td>Quarter Note</td>
+                <td><code>4n</code></td>
+                <td>Lasts for 1 beat.</td>
+            </tr>
+            <tr>
+                <td><code>E</code></td>
+                <td>Eighth Note</td>
+                <td><code>8n</code></td>
+                <td>Lasts for 0.5 beats.</td>
+            </tr>
+            <tr>
+                <td><code>S</code></td>
+                <td>Sixteenth Note</td>
+                <td><code>16n</code></td>
+                <td>Lasts for 0.25 beats.</td>
+            </tr>
+            <tr>
+                <td><code>T</code></td>
+                <td>32nd Note</td>
+                <td><code>32n</code></td>
+                <td>Very short note.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="type-box">
+        <h2>2. Rests (Silence)</h2>
+        <p>Silence is music too. Use <code>R</code> followed by a duration code to create a rest.</p>
+        <ul>
+            <li><code>RQ</code>: Quarter Rest (Wait 1 beat).</li>
+            <li><code>RH</code>: Half Rest (Wait 2 beats).</li>
+            <li><code>RE</code>: Eighth Rest.</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>3. Advanced Rhythms (Modifiers)</h2>
+        <p>You can combine modifiers to create richer grooves:</p>
+        
+        <h3>Dotted Note - <code>.</code></h3>
+        <p>Adding a <code>.</code> after the duration <strong>increases the length by 50%</strong> (1.5x).</p>
+        <ul>
+            <li><code>Q.</code> (Dotted Quarter) = 1 beat + 0.5 beat = 1.5 beats.</li>
+            <li><code>H.</code> (Dotted Half) = 2 beats + 1 beat = 3 beats.</li>
+            <li>Tone.js Equivalent: <code>4n.</code>, <code>2n.</code></li>
+        </ul>
+
+        <h3>Triplets - <code>_T</code></h3>
+        <p>Adding <code>_T</code> after the duration means <strong>playing 3 notes in the time of 2</strong> (Length is 2/3 of original).</p>
+        <ul>
+            <li><code>Q_T</code> (Quarter Triplet): Length is 2/3 of a standard quarter note.</li>
+            <li><code>E_T</code> (Eighth Triplet): Common in Swing or Waltz music.</li>
+            <li>Tone.js Equivalent: <code>4t</code>, <code>8t</code></li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>4. Full Format & Examples</h2>
+        <p>Single Note Format: <code>[Pitch][Octave][Duration][Modifier]</code></p>
+        <div class="example">
+Example 1 (Basic):
+C4Q E4Q G4H
+(Do 1 beat, Mi 1 beat, Sol 2 beats)
+
+Example 2 (With Rests):
+C4Q RQ E4Q RQ
+(Do 1 beat, Rest 1 beat, Mi 1 beat, Rest 1 beat)
+
+Example 3 (Complex):
+C4Q. D4E E4Q_T E4Q_T E4Q_T
+(Dotted Quarter, Eighth, three Triplets)</div>
+    </div>
+</body>
+</html>
