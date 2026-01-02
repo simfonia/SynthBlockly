@@ -37,6 +37,10 @@ export const MSG_EN = {
     'SB_CONTROLS_DO': 'do %1',
     'SB_ACTION_ON': 'ON',
     'SB_ACTION_OFF': 'OFF',
+    'SB_WAVE_SINE': 'Sine Wave',
+    'SB_WAVE_SQUARE': 'Square Wave',
+    'SB_WAVE_TRIANGLE': 'Triangle Wave',
+    'SB_WAVE_SAWTOOTH': 'Sawtooth Wave',
 
     // --- SynthBlockly Custom Category Names and Colors ---
     'MSG_SYNTHBLOCKLY_CATEGORY': 'SynthBlockly',
@@ -148,6 +152,8 @@ export const MSG_EN = {
 
         'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': 'Create Sampler Source %1 Type %2',
     'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': 'Creates a sound source based on recorded samples. Right-click for Help.',
+    'SB_CREATE_LAYERED_INSTRUMENT_MESSAGE': 'Create Layered Source Name %1 with Layers %2',
+    'SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP': 'Combines multiple existing instruments into a single layered instrument. Use commas to separate names.',
     'SB_SAMPLER_TYPE_DEFAULT': 'Default Piano',
     'SB_SAMPLER_TYPE_VIOLIN_PIZZ': 'Violin (Pizzicato)',
     'SB_SAMPLER_TYPE_VIOLIN_SUSTAIN': 'Violin (Sustain)',

@@ -17,9 +17,9 @@
 
     <div class="intro-box">
         <h2>減法合成 vs 加法合成</h2>
-        <p>這兩種合成方式是聲音設計中最基礎也最對立的兩大門派，猶如<strong>雕刻</strong>與<strong>堆疊</strong>的差異。</p>
+        <p>這兩種合成方式是聲音設計中最基礎也最<strong>迥異</strong>的兩大門派，猶如<strong>雕刻</strong>與<strong>堆疊</strong>的差異。</p>
         
-        <p><strong>1. 減法合成 (Subtractive Synthesis) - 像「雕刻」</strong></p>
+        <p>1. <strong>減法合成 (Subtractive Synthesis) - 像「雕刻」</strong></p>
         <ul>
             <li><strong>核心邏輯</strong>：由多變少。先產生頻率豐富的波形，再用濾波器切掉不需要的頻率。</li>
             <li><strong>聽感</strong>：溫暖、有力、經典。適合基礎波形、PolySynth 等。</li>
@@ -76,10 +76,72 @@
         <p><strong>特性</strong>：音色複雜，帶有強烈的<strong>數位感與金屬感</strong>。適合鈴聲 (Bells) 或銳利的數位 Bass。</p>
     </div>
 
-    <div class="type-box">
-        <h2>8. DuoSynth (雙重合成器)</h2>
-        <p><strong>原理</strong>：疊加兩個獨立的合成器聲音，形成厚實的音層。</p>
-        <p><strong>特性</strong>：音色非常<strong>渾厚、強大且富有層次</strong>。適合宏偉的 Pads 或強力的銅管音色。</p>
-    </div>
-</body>
-</html>
+        <div class="type-box">
+
+            <h2>8. DuoSynth (雙重合成器)</h2>
+
+            <p><strong>原理</strong>：疊加兩個獨立的合成器聲音，形成厚實的音層。</p>
+
+            <p><strong>特性</strong>：音色非常<strong>渾厚、強大且富有層次</strong>。適合宏偉的 Pads 或強力的銅管音色。</p>
+
+        </div>
+
+    
+
+        <h1>加法合成的數學與物理意義</h1>
+
+            <div class="type-box">
+
+                <p>在「自訂合成音源（加法合成）」中，我們實際上是在用數學公式「畫」出聲波。其核心公式為：</p>
+
+                <p style="text-align: center; font-size: 1.2em; background: #eee; padding: 10px; border-radius: 4px;">
+
+                    <code>y(t) = A<sub>1</sub>·sin(2π f·k<sub>1</sub>·t) + A<sub>2</sub>·sin(2π f·k<sub>2</sub>·t) + ...</code>
+
+                </p>
+
+                <p>其中 <code>f</code> 是基礎頻率（基頻），而 <code>k<sub>n</sub></code> 就是積木中的<strong>頻率倍率</strong>。</p>
+
+                
+
+                <h3>1. 振幅 (Amplitude, A)</h3>
+
+        
+
+            <ul>
+
+                <li><strong>數學意義</strong>：波形的最高點（峰值）。在公式中是相乘的係數。</li>
+
+                <li><strong>物理意義</strong>：能量的大小。在聽感上直接對應<strong>音量 (Volume)</strong>。振幅越大，聲音越響。</li>
+
+            </ul>
+
+    
+
+            <h3>2. 頻率倍率 (Frequency Ratio)</h3>
+
+            <ul>
+
+                <li><strong>數學意義</strong>：控制波形的疏密程度。<code>f<sub>n</sub> = 倍率 × 基礎頻率</code>。</li>
+
+                <li><strong>物理意義</strong>：對應<strong>音高 (Pitch)</strong>。
+
+                    <ul>
+
+                        <li>整數倍率（1, 2, 3...）：稱為「諧波」，會產生悅耳、和諧的樂器音色。</li>
+
+                        <li>非整數倍率（如 1.414, 2.73...）：會產生不和諧、金屬感或類似敲擊鐘聲的特殊音效。</li>
+
+                    </ul>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </body>
+
+    </html>
+
+    

@@ -301,27 +301,151 @@ export function registerBlocks() {
     };
 
 
-    Blockly.Blocks['sb_define_chord'] = {
-        init: function () {
-            this.jsonInit({
-                "message0": "%{BKY_SB_DEFINE_CHORD_MESSAGE}",
-                "args0": [
-                    {
-                        "type": "field_input",
-                        "name": "NAME",
-                        "text": "C Major"
-                    },
-                    {
-                        "type": "field_input",
-                        "name": "NOTES_STRING",
-                        "text": "C4,E4,G4"
-                    }
-                ],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
-                "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
-            });
-        }
-    };
-}
+        Blockly.Blocks['sb_define_chord'] = {
+
+
+            init: function () {
+
+
+                this.jsonInit({
+
+
+                    "message0": "%{BKY_SB_DEFINE_CHORD_MESSAGE}",
+
+
+                    "args0": [
+
+
+                        {
+
+
+                            "type": "field_input",
+
+
+                            "name": "NAME",
+
+
+                            "text": "C Major"
+
+
+                        },
+
+
+                        {
+
+
+                            "type": "field_input",
+
+
+                            "name": "NOTES_STRING",
+
+
+                            "text": "C4,E4,G4"
+
+
+                        }
+
+
+                    ],
+
+
+                    "previousStatement": null,
+
+
+                    "nextStatement": null,
+
+
+                    "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+
+
+                    "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
+
+
+                });
+
+
+            }
+
+
+        };
+
+
+    
+
+
+        // 建立疊加樂器
+
+
+        Blockly.Blocks['sb_create_layered_instrument'] = {
+
+
+            init: function () {
+
+
+                this.jsonInit({
+
+
+                    "message0": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_MESSAGE}",
+
+
+                    "args0": [
+
+
+                        {
+
+
+                            "type": "field_input",
+
+
+                            "name": "NAME",
+
+
+                            "text": "MyLayeredSynth"
+
+
+                        },
+
+
+                        {
+
+
+                            "type": "field_input",
+
+
+                            "name": "LAYER_LIST",
+
+
+                            "text": "BassLayer,LeadLayer"
+
+
+                        }
+
+
+                    ],
+
+
+                    "previousStatement": null,
+
+
+                    "nextStatement": null,
+
+
+                    "colour": "%{BKY_SOUND_SOURCES_HUE}",
+
+
+                    "tooltip": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP}"
+
+
+                });
+
+
+            }
+
+
+        };
+
+
+    }
+
+
+    

@@ -37,6 +37,10 @@ export const MSG_ZH_HANT = {
     'SB_CONTROLS_DO': '執行 %1',
     'SB_ACTION_ON': '開啟',
     'SB_ACTION_OFF': '關閉',
+    'SB_WAVE_SINE': '弦波 (Sine)',
+    'SB_WAVE_SQUARE': '方波 (Square)',
+    'SB_WAVE_TRIANGLE': '三角波 (Triangle)',
+    'SB_WAVE_SAWTOOTH': '鋸齒波 (Sawtooth)',
 
     // --- SynthBlockly Custom Category Names and Colors ---
     'MSG_SYNTHBLOCKLY_CATEGORY': 'SynthBlockly',
@@ -149,6 +153,8 @@ export const MSG_ZH_HANT = {
 
         'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': '建立取樣音源 %1 型態 %2',
     'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': '建立一個基於錄音樣本的取樣器音源。可選擇預設鋼琴、小提琴或自訂 URL 樣本。按右鍵選擇「說明」查看如何建立自己的取樣器。',
+    'SB_CREATE_LAYERED_INSTRUMENT_MESSAGE': '建立疊加音源 名稱 %1 包含樂器清單 %2',
+    'SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP': '將多個已定義的樂器組合成一個疊加音源。請使用逗號分隔名稱。',
     'SB_SAMPLER_TYPE_DEFAULT': '預設鋼琴',
     'SB_SAMPLER_TYPE_VIOLIN_PIZZ': '小提琴 (撥奏)',
     'SB_SAMPLER_TYPE_VIOLIN_SUSTAIN': '小提琴 (持續音)',

@@ -229,5 +229,32 @@ if (!window.audioEngine.isExecutionActive) return;
     try { if (JSConstructorProto) JSConstructorProto['sb_set_instrument_volume'] = G['sb_set_instrument_volume']; } catch (e) { } 
     try { G.forBlock['sb_set_instrument_volume'] = G['sb_set_instrument_volume']; } catch (e) { }
 
-    return true;
-}
+        G['sb_create_layered_instrument'] = function (block) {
+
+            var name = G.quote_(block.getFieldValue('NAME'));
+
+            var layers = block.getFieldValue('LAYER_LIST') || "";
+
+            var layersArray = JSON.stringify(layers.split(',').map(s => s.trim()).filter(s => s.length > 0));
+
+            
+
+            return `window.audioEngine.createLayeredInstrument(${name}, ${layersArray});\n`;
+
+        }.bind(G);
+
+        try { if (Gproto) Gproto['sb_create_layered_instrument'] = G['sb_create_layered_instrument']; } catch (e) { } 
+
+        try { if (GeneratorProto) GeneratorProto['sb_create_layered_instrument'] = G['sb_create_layered_instrument']; } catch (e) { } 
+
+        try { if (JSConstructorProto) JSConstructorProto['sb_create_layered_instrument'] = G['sb_create_layered_instrument']; } catch (e) { } 
+
+        try { G.forBlock['sb_create_layered_instrument'] = G['sb_create_layered_instrument']; } catch (e) { }
+
+    
+
+        return true;
+
+    }
+
+    

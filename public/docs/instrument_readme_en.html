@@ -17,9 +17,10 @@
 
     <div class="intro-box">
         <h2>Subtractive vs. Additive Synthesis</h2>
-        <p>These are the two most fundamental approaches to sound design, representing opposing philosophies: <strong>Sculpting</strong> vs. <strong>Stacking</strong>.</p>
+        <p>These are the two most fundamental approaches to sound design, representing <strong>distinct</strong> philosophies: <strong>Sculpting</strong> vs. <strong>Stacking</strong>.</p>
         
-        <p><strong>1. Subtractive Synthesis - Like "Sculpting"</strong></p>
+        <p>1. <strong>Subtractive Synthesis - Like "Sculpting"</strong></p>
+
         <ul>
             <li><strong>Core Logic</strong>: Start with more, end with less. Begin with harmonically rich waveforms and use a Filter to cut away unwanted frequencies.</li>
             <li><strong>Sound</strong>: Warm, powerful, classic. Suitable for basic waveforms, PolySynth, etc.</li>
@@ -76,10 +77,72 @@
         <p><strong>Sound</strong>: Complex and bright, with a strong <strong>digital or metallic</strong> character. Perfect for bells or sharp digital bass.</p>
     </div>
 
-    <div class="type-box">
-        <h2>8. DuoSynth</h2>
-        <p><strong>Method</strong>: Layers two independent synthesizer voices to create a thick, rich texture.</p>
-        <p><strong>Sound</strong>: Very <strong>thick and powerful</strong>. Ideal for grand pads or aggressive lead sounds.</p>
-    </div>
-</body>
-</html>
+        <div class="type-box">
+
+            <h2>8. DuoSynth</h2>
+
+            <p><strong>Method</strong>: Layers two independent synthesizer voices to create a thick, rich texture.</p>
+
+            <p><strong>Sound</strong>: Very <strong>thick and powerful</strong>. Ideal for grand pads or aggressive lead sounds.</p>
+
+        </div>
+
+    
+
+        <h1>Mathematical & Physical Significance</h1>
+
+            <div class="type-box">
+
+                <p>In "Additive Synthesis", we are essentially "drawing" sound waves using mathematical equations. The core formula is:</p>
+
+                <p style="text-align: center; font-size: 1.2em; background: #eee; padding: 10px; border-radius: 4px;">
+
+                    <code>y(t) = A<sub>1</sub>·sin(2π f·k<sub>1</sub>·t) + A<sub>2</sub>·sin(2π f·k<sub>2</sub>·t) + ...</code>
+
+                </p>
+
+                <p>Where <code>f</code> is the base frequency, and <code>k<sub>n</sub></code> represents the <strong>Frequency Ratio</strong> in the blocks.</p>
+
+                
+
+                <h3>1. Amplitude (A)</h3>
+
+        
+
+            <ul>
+
+                <li><strong>Mathematical Meaning</strong>: The peak value of the wave. It acts as a multiplier in the equation.</li>
+
+                <li><strong>Physical Meaning</strong>: The amount of energy. In auditory terms, this corresponds directly to <strong>Volume</strong>. The larger the amplitude, the louder the sound.</li>
+
+            </ul>
+
+    
+
+            <h3>2. Frequency Ratio</h3>
+
+            <ul>
+
+                <li><strong>Mathematical Meaning</strong>: Controls the density of the wave cycles. <code>f<sub>n</sub> = Ratio × Base Frequency</code>.</li>
+
+                <li><strong>Physical Meaning</strong>: Corresponds to <strong>Pitch</strong>.
+
+                    <ul>
+
+                        <li>Integer Ratios (1, 2, 3...): Known as "Harmonics", these create pleasing, musical instrument timbres.</li>
+
+                        <li>Non-integer Ratios (e.g., 1.414, 2.73...): Create inharmonic, metallic, or bell-like textures.</li>
+
+                    </ul>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </body>
+
+    </html>
+
+    

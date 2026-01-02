@@ -31,7 +31,8 @@ export function registerGenerators(BlocklyInstance, javascriptGeneratorInstance)
     for (let i = 0; i < block.itemCount_; i++) {
       const amp = generator.valueToCode(block, 'AMP' + i, generator.ORDER_ATOMIC) || '0';
       const freqRatio = generator.valueToCode(block, 'FREQ_RATIO' + i, generator.ORDER_ATOMIC) || '1';
-      components.push(`{amp: ${amp}, freqRatio: ${freqRatio}}`);
+      const waveform = block.getFieldValue('WAVE' + i) || 'sine';
+      components.push(`{amp: ${amp}, freqRatio: ${freqRatio}, waveform: '${waveform}'}`);
     }
     const componentsArrayString = '[' + components.join(', ') + ']';
 

@@ -249,6 +249,7 @@ export const audioEngine = {
     },
 
     instruments: {},
+    layeredInstruments: {}, // Maps name -> string[] (child instrument names)
     currentInstrumentName: 'DefaultSynth',
     currentSemitoneOffset: 0, // Tracks the current semitone adjustment
     pressedKeys: new Map(),
@@ -419,7 +420,7 @@ export const audioEngine = {
                 const envelope = new Tone.AmplitudeEnvelope({ attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.5 });
                 const oscillators = [];
                 components.forEach(comp => {
-                    const osc = new Tone.Oscillator(0, "sine");
+                    const osc = new Tone.Oscillator(0, comp.waveform || "sine");
                     const gain = new Tone.Gain(comp.amp).connect(envelope);
                     osc.connect(gain);
                     oscillators.push({ osc: osc, freqRatio: comp.freqRatio });
@@ -528,100 +529,18 @@ export const audioEngine = {
     },
 
     createCustomSampler: function(name, urls, baseUrl, envelopeSettings = null) {
+        // ... (existing code)
+    },
+
+    createLayeredInstrument: function(name, childNames) {
         if (!name) {
-            logKey('LOG_SAMPLER_NAME_EMPTY', 'error');
+            logKey('LOG_INSTR_NAME_EMPTY', 'error');
             return;
         }
-        if (this.instruments[name]) {
-            logKey('LOG_INSTR_EXISTS', 'warning', name);
-            if (typeof this.instruments[name].dispose === 'function') {
-                this.instruments[name].dispose();
-            }
-        }
-
-        try {
-            const defaultEnvelope = { // Default envelope if none provided
-                attack: 0.01,
-                decay: 0.1,
-                sustain: 1.0,
-                release: 0.5,
-            };
-
-            const sampler = new Tone.Sampler({
-                urls: urls,
-                baseUrl: baseUrl || '',
-                volume: 0,
-                attack: 0.01,
-                release: 0.5,
-                curve: 'exponential',
-                onload: () => {
-                    instrumentWrapper.loaded = true;
-                    logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name);
-                },
-                onerror: (e) => {
-                    logKey('LOG_SAMPLER_SAMPLES_ERR', 'error', name, e);
-                }
-            });
-
-            // Store the sampler
-            const instrumentWrapper = {
-                type: 'CustomSampler',
-                sampler: sampler,
-                loaded: false, 
-                
-                // --- Playback methods for the wrapper ---
-                triggerAttack: function(notes, time, velocity) {
-                    if (this.sampler && this.loaded) {
-                        this.sampler.triggerAttack(notes, time, velocity); 
-                    } else {
-                        logKey('LOG_SAMPLER_NOT_LOADED', 'warning', name);
-                    }
-                },
-                triggerRelease: function(notes, time) {
-                    if (this.sampler && this.loaded) {
-                        this.sampler.triggerRelease(notes, time);
-                    }
-                },
-                triggerAttackRelease: function(notes, duration, time, velocity) {
-                    if (this.sampler && this.loaded) {
-                        this.sampler.triggerAttackRelease(notes, duration, time, velocity);
-                    }
-                    else {
-                        logKey('LOG_SAMPLER_NOT_LOADED', 'warning', name);
-                    }
-                },
-
-                // --- Configuration methods ---
-                set: function(options) {
-                    if (options.attack !== undefined) this.sampler.attack = options.attack;
-                    if (options.release !== undefined) this.sampler.release = options.release;
-                    if (options.volume !== undefined && this.sampler.volume) {
-                        this.sampler.volume.value = options.volume;
-                    }
-                    if (options.detune !== undefined && this.sampler.detune) {
-                        this.sampler.detune.value = options.detune;
-                    }
-                },
-                chain: function(...args) {
-                    this.sampler.chain(...args);
-                },
-                disconnect: function() {
-                    if (this.sampler) this.sampler.disconnect();
-                },
-                dispose: function() {
-                    if (this.sampler) this.sampler.dispose();
-                }
-            };
-            
-            // Chain the sampler directly
-            instrumentWrapper.chain(...this._activeEffects, analyser);
-            this.instruments[name] = instrumentWrapper;
-            logKey('LOG_SAMPLER_CREATED', 'info', name);
-
-        } catch (e) {
-            logKey('LOG_SAMPLER_CREATE_FAIL', 'error', name, e.message);
-            console.error(e);
-        }
+        this.layeredInstruments[name] = childNames;
+        // 我們將其註冊在 instruments 中，但不賦予實例，僅作為一個標記標籤
+        this.instruments[name] = { type: 'Layered', children: childNames };
+        logKey('LOG_INSTR_CREATED', 'info', name, 'Layered (' + childNames.length + ')');
     },
 
     transitionToInstrument: function(newInstrumentName) {
@@ -692,8 +611,14 @@ export const audioEngine = {
      * Reads current ADSR values from the active instrument and updates the visualizer.
      */
     syncAdsrToUI: function() {
-        const instr = this.instruments[this.currentInstrumentName];
+        let instr = this.instruments[this.currentInstrumentName];
         if (!instr) return;
+
+        // 如果是疊加樂器，顯示第一個子樂器的 ADSR 作為代表
+        if (instr.type === 'Layered' && instr.children && instr.children.length > 0) {
+            instr = this.instruments[instr.children[0]];
+            if (!instr) return;
+        }
 
         let a = 0.01, d = 0.1, s = 1.0, r = 0.5;
 
@@ -824,22 +749,27 @@ export const audioEngine = {
 
     playCurrentInstrumentNote: async function(note, dur, time, velocity) {
         const ok = await ensureAudioStarted();
-        if (!ok) return; // Removed !this.isExecutionActive check to allow UI testing
-        const currentInstrument = this.instruments[this.currentInstrumentName];
-        if (currentInstrument && currentInstrument.triggerAttackRelease) {
-            if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-                logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
-                return;
+        if (!ok) return; 
+        
+        const trigger = (name) => {
+            const instr = this.instruments[name];
+            if (instr) {
+                if (instr.type === 'Layered') {
+                    instr.children.forEach(child => trigger(child));
+                } else if (instr.triggerAttackRelease) {
+                    if (instr instanceof Tone.Sampler && !instr.loaded) return;
+                    instr.triggerAttackRelease(note, dur, time, velocity);
+                }
             }
-            // Trigger visual
-            triggerAdsrOn();
-            const durSeconds = Tone.Time(dur).toSeconds();
-            setTimeout(() => triggerAdsrOff(), durSeconds * 1000);
+        };
 
-            currentInstrument.triggerAttackRelease(note, dur, time, velocity);
-        } else {
-            logKey('LOG_PLAY_NOTE_FAIL', 'error', this.currentInstrumentName);
-        }
+        const currentName = this.currentInstrumentName;
+        // Trigger visual
+        triggerAdsrOn();
+        const durSeconds = Tone.Time(dur).toSeconds();
+        setTimeout(() => triggerAdsrOff(), durSeconds * 1000);
+
+        trigger(currentName);
     },
 
     /**
@@ -896,16 +826,6 @@ export const audioEngine = {
         const ok = await ensureAudioStarted();
         if (!ok) return;
 
-        const currentInstrument = this.instruments[this.currentInstrumentName];
-        if (!currentInstrument || !currentInstrument.triggerAttack || !currentInstrument.triggerRelease) {
-            logKey('LOG_MIDI_PLAY_FAIL', 'error', this.currentInstrumentName);
-            return;
-        }
-        if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-            logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
-            return;
-        }
-
         const chordName = this.midiChordMap[midiNoteNumber];
         let notesToPlay = null;
         let notePlayedType = 'Single';
@@ -922,14 +842,19 @@ export const audioEngine = {
         }
 
         if (notesToPlay) {
-            try {
-                // Trigger visual
-                triggerAdsrOn();
-                currentInstrument.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
-            } catch (e) {
-                logKey('LOG_MIDI_PLAY_FAIL', 'error', this.currentInstrumentName + ": " + e.message);
-                console.error(e);
-            }
+            triggerAdsrOn();
+            const trigger = (name) => {
+                const instr = this.instruments[name];
+                if (instr) {
+                    if (instr.type === 'Layered') {
+                        instr.children.forEach(child => trigger(child));
+                    } else if (instr.triggerAttack) {
+                        if (instr instanceof Tone.Sampler && !instr.loaded) return;
+                        instr.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
+                    }
+                }
+            };
+            trigger(this.currentInstrumentName);
             this.midiPlayingNotes.set(midiNoteNumber, notesToPlay);
             logKey('LOG_MIDI_ON', 'info', notePlayedType, midiNoteNumber, (velocityNormalized*127).toFixed(0), channel, Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay);
         }
@@ -938,20 +863,21 @@ export const audioEngine = {
     midiRelease: async function(midiNoteNumber) {
         const ok = await ensureAudioStarted();
         if (!ok) return;
-        const currentInstrument = this.instruments[this.currentInstrumentName];
-        if (!currentInstrument || !currentInstrument.triggerRelease) {
-            logKey('LOG_MIDI_PLAY_FAIL', 'warning', this.currentInstrumentName);
-            return;
-        }
-        if (currentInstrument instanceof Tone.Sampler && !currentInstrument.loaded) {
-            logKey('LOG_SAMPLER_NOT_LOADED', 'warning', this.currentInstrumentName);
-            return;
-        }
+
         const notesToRelease = this.midiPlayingNotes.get(midiNoteNumber);
         if (notesToRelease) {
-            // Trigger visual
             triggerAdsrOff();
-            currentInstrument.triggerRelease(notesToRelease, Tone.now());
+            const release = (name) => {
+                const instr = this.instruments[name];
+                if (instr) {
+                    if (instr.type === 'Layered') {
+                        instr.children.forEach(child => release(child));
+                    } else if (instr.triggerRelease) {
+                        instr.triggerRelease(notesToRelease, Tone.now());
+                    }
+                }
+            };
+            release(this.currentInstrumentName);
             this.midiPlayingNotes.delete(midiNoteNumber);
         }
     },

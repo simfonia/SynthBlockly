@@ -131,8 +131,10 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_create_synth_instrument"></block>
         <block type="sb_create_harmonic_synth"></block>
         <block type="sb_create_additive_synth"></block>
+        <block type="sb_create_layered_instrument"></block>
         <block type="sb_create_sampler_instrument"></block>
     </category>
+
 
     <category name="%{BKY_MSG_PERFORMANCE_CATEGORY}" colour="%{BKY_PERFORMANCE_HUE}">
         <block type="sb_play_note">

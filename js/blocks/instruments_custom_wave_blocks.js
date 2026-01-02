@@ -77,6 +77,12 @@ export function registerBlocks(BlocklyInstance) {
           } else {
             input.appendField(BlocklyInstance.Msg['MSG_HARMONIC_FIELD'].replace('{0}', i + 1));
           }
+
+          // Add shadow for Partial (Amplitude)
+          const shadowDom = BlocklyInstance.utils.xml.textToDom(
+              '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
+          );
+          input.connection.setShadowDom(shadowDom);
         }
       }
       // Remove deleted inputs.
@@ -179,10 +185,11 @@ export function registerBlocks(BlocklyInstance) {
     },
     compose: function(containerBlock) {
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
-      const connections = {amp: [], freq: []};
+      const connections = {amp: [], freq: [], wave: []};
       while (itemBlock) {
         connections.amp.push(itemBlock.ampConnection_);
         connections.freq.push(itemBlock.freqConnection_);
+        connections.wave.push(itemBlock.waveValue_);
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
       for (let i = 0; i < this.itemCount_; i++) {
@@ -201,6 +208,9 @@ export function registerBlocks(BlocklyInstance) {
         if (connections.freq[i]) {
             connections.freq[i].reconnect(this, 'FREQ_RATIO' + i);
         }
+        if (connections.wave[i]) {
+            this.setFieldValue(connections.wave[i], 'WAVE' + i);
+        }
       }
     },
     saveConnections: function(containerBlock) {
@@ -211,26 +221,41 @@ export function registerBlocks(BlocklyInstance) {
         const freqInput = this.getInput('FREQ_RATIO' + i);
         itemBlock.ampConnection_ = ampInput && ampInput.connection.targetConnection;
         itemBlock.freqConnection_ = freqInput && freqInput.connection.targetConnection;
+        itemBlock.waveValue_ = this.getFieldValue('WAVE' + i);
         i++;
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
     },
     updateShape_: function() {
+      const waveOptions = [
+        [BlocklyInstance.Msg['SB_WAVE_SINE'] || "弦波 (Sine)", "sine"],
+        [BlocklyInstance.Msg['SB_WAVE_SQUARE'] || "方波 (Square)", "square"],
+        [BlocklyInstance.Msg['SB_WAVE_TRIANGLE'] || "三角波 (Triangle)", "triangle"],
+        [BlocklyInstance.Msg['SB_WAVE_SAWTOOTH'] || "鋸齒波 (Sawtooth)", "sawtooth"]
+      ];
+
       for (let i = 0; i < this.itemCount_; i++) {
         if (!this.getInput('AMP' + i)) {
-          // Add Oscillator Label
+          // Add Oscillator Label and Waveform Dropdown
           const oscLabel = this.appendDummyInput('OSC_LABEL' + i);
-          if (i === 0) {
-            oscLabel.appendField(BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD']);
-          } else {
-            oscLabel.appendField(BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1));
-          }
+          const labelText = (i === 0) ? 
+            BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD'] : 
+            BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1);
+          
+          oscLabel.appendField(labelText)
+                  .appendField(new BlocklyInstance.FieldDropdown(waveOptions), 'WAVE' + i);
 
           // Add Amplitude Input
-          this.appendValueInput('AMP' + i)
+          const ampInput = this.appendValueInput('AMP' + i)
               .setCheck('Number')
               .setAlign(BlocklyInstance.ALIGN_RIGHT)
               .appendField(BlocklyInstance.Msg['MSG_AMPLITUDE_INPUT_FIELD']);
+          
+          // Add shadow for Amplitude
+          const ampShadowDom = BlocklyInstance.utils.xml.textToDom(
+              '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
+          );
+          ampInput.connection.setShadowDom(ampShadowDom);
           
           // Add Frequency Ratio Input
           const freqInput = this.appendValueInput('FREQ_RATIO' + i)
@@ -238,13 +263,11 @@ export function registerBlocks(BlocklyInstance) {
               .setAlign(BlocklyInstance.ALIGN_RIGHT)
               .appendField(BlocklyInstance.Msg['MSG_FREQ_RATIO_INPUT_FIELD']);
           
-          // Add a shadow block with default value '1' for the first frequency ratio
-          if (i === 0) {
-            const shadowDom = BlocklyInstance.utils.xml.textToDom(
-                '<shadow type="math_number"><field name="NUM">1</field></shadow>'
-            );
-            freqInput.connection.setShadowDom(shadowDom);
-          }
+          // Add a shadow block with default value '1' for all frequency ratios
+          const freqShadowDom = BlocklyInstance.utils.xml.textToDom(
+              '<shadow type="math_number"><field name="NUM">1</field></shadow>'
+          );
+          freqInput.connection.setShadowDom(freqShadowDom);
         }
       }
       // Remove deleted inputs.
