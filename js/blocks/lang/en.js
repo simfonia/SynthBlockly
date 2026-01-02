@@ -7,6 +7,7 @@ export const MSG_EN = {
     'UI_BTN_LOAD_PROJECT': 'Load Project (XML)',
     'UI_BTN_NEW_PROJECT': 'New Project',
     'UI_BTN_CONNECT_SERIAL': 'Connect Serial Device',
+    'UI_BTN_DISCONNECT_SERIAL': 'Disconnect Serial Device',
     'UI_BTN_CONNECT_MIDI': 'Connect MIDI Device',
     'UI_BTN_RUN_BLOCKS': 'Run Blocks (Ctrl+Enter)',
     'UI_BTN_EXPORT_CODE': 'Export Code to File & Clipboard',
@@ -85,6 +86,12 @@ export const MSG_EN = {
     'MSG_OSCILLATOR_FIELD': 'Oscillator {0}',
     'MSG_AMPLITUDE_INPUT_FIELD': 'Amplitude',
     'MSG_FREQ_RATIO_INPUT_FIELD': 'Frequency Ratio',
+
+    // MATH
+    'MATH_MAP_MESSAGE': 'map %1 from [%2, %3] to [%4, %5]',
+    'MATH_MAP_TOOLTIP': 'Linearly maps a value from one range to another.',
+    'MATH_CONSTRAIN_MESSAGE': 'constrain %1 between %2 and %3',
+    'MATH_CONSTRAIN_TOOLTIP': 'Restricts a value to be within the specified low and high bounds.',
 
     // SOUND SOURCE CONTROL
     'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': 'Create Synth Source %1 Type %2',
@@ -345,6 +352,13 @@ export const MSG_EN = {
     'LOG_SERIAL_UNREGISTERED': 'Unregistered serial auto-trigger (Block: %1).',
     'LOG_MIDI_REGISTERED': 'Registered MIDI auto-trigger (Block: %1).',
     'LOG_MIDI_UNREGISTERED': 'Unregistered MIDI auto-trigger (Block: %1).',
+    'LOG_MIDI_REQUESTING': 'Requesting MIDI access...',
+    'LOG_MIDI_GRANTED': 'MIDI access granted.',
+    'LOG_MIDI_CONN_FAIL': 'MIDI connection failed: %1',
+    'LOG_MIDI_CONNECTED': 'MIDI connected, %1 devices detected.',
+    'LOG_MIDI_ATTACHING': 'Attaching MIDI device: %1',
+    'LOG_MIDI_NOT_FOUND': 'No MIDI devices found.',
+    'LOG_MIDI_STATE_CHANGE': 'MIDI device state changed: %1 (%2)',
     'LOG_MIDI_VAR_ERR': 'Auto-trigger creation failed: missing dynamic variables.',
     'LOG_DOM_LOADED': 'SynthBlockly Core Interface loaded.',
     'LOG_LOGGER_INIT': 'Multilingual Logger active.',
@@ -356,4 +370,8 @@ export const MSG_EN = {
     'LOG_VISUALIZER_INIT': 'Real-time Oscilloscope active.',
     'LOG_HELP_MODAL_INIT': 'Help system ready.',
     'LOG_AUDIO_STARTER_INIT': 'Audio initiation listener active.',
+    'LOG_SERIAL_MSG': 'Received serial data: %1',
+    'LOG_SERIAL_ERR': 'Serial error: %1',
+    'LOG_SERIAL_PORT_BUSY': 'Serial port is busy or could not be opened.',
+    'LOG_SERIAL_DISCONNECTED': 'Serial connection disconnected.',
 };

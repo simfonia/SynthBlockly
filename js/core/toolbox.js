@@ -61,9 +61,6 @@ export const TOOLBOX_XML_STRING = `
         <block type="math_on_list"></block>
         <block type="math_modulo"></block>
         <block type="math_map">
-            <value name="VALUE">
-                <shadow type="math_number"><field name="NUM">512</field></shadow>
-            </value>
             <value name="FROM_LOW">
                 <shadow type="math_number"><field name="NUM">0</field></shadow>
             </value>
@@ -74,6 +71,14 @@ export const TOOLBOX_XML_STRING = `
                 <shadow type="math_number"><field name="NUM">0</field></shadow>
             </value>
             <value name="TO_HIGH">
+                <shadow type="math_number"><field name="NUM">100</field></shadow>
+            </value>
+        </block>
+        <block type="math_constrain">
+            <value name="LOW">
+                <shadow type="math_number"><field name="NUM">0</field></shadow>
+            </value>
+            <value name="HIGH">
                 <shadow type="math_number"><field name="NUM">100</field></shadow>
             </value>
         </block>

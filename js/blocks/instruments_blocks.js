@@ -214,6 +214,10 @@ export function registerBlocks() {
                         "type": "field_dropdown",
                         "name": "TYPE",
                         "options": [
+                            ["弦波 (Sine)", "SineWave"],
+                            ["三角波 (Triangle)", "TriangleWave"],
+                            ["方波 (Square)", "SquareWave"],
+                            ["鋸齒波 (Sawtooth)", "SawtoothWave"],
                             ["PolySynth", "PolySynth"],
                             ["AMSynth", "AMSynth"],
                             ["FMSynth", "FMSynth"],

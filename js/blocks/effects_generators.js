@@ -100,8 +100,21 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             params: params
         };
 
-        // Return a JSON string wrapped in a comment. This is data to be collected, not executed.
-        return `/* EFFECT_CONFIG:${JSON.stringify(config)} */`;
+        // 1. 註解格式供初始化效果鏈
+        const configComment = `/* EFFECT_CONFIG:${JSON.stringify(config)} */`;
+
+        // 2. 簡化即時更新代碼 (避免複雜語法在 new Function 中報錯)
+        let liveUpdateCode = "";
+        if (effectType === 'filter') {
+            const freq = G.valueToCode(block, 'FILTER_FREQ', G.ORDER_ATOMIC) || '20000';
+            const qValue = G.valueToCode(block, 'FILTER_Q', G.ORDER_ATOMIC) || '1';
+            liveUpdateCode = `window.audioEngine.updateFilter(${freq}, ${qValue});`;
+        } else {
+            // 其他效果暫不實作即時更新，避免頻繁 rebuild 造成卡頓
+            liveUpdateCode = ""; 
+        }
+
+        return configComment + liveUpdateCode + '\n';
     }.bind(G);
     try { if (Gproto) Gproto['sb_setup_effect'] = G['sb_setup_effect']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_setup_effect'] = G['sb_setup_effect']; } catch (e) { }

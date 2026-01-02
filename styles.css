@@ -85,6 +85,16 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
     background-color: #e0e0e0;
 }
 
+/* 啟動狀態樣式 (連線中) */
+.icon-button.active {
+    background-color: #75FB4C !important;
+    opacity: 1 !important;
+}
+
+.icon-button.active:hover {
+    background-color: #75FB4C !important; /* 防止懸停時變淡 */
+}
+
 .icon-button img {
     width: 24px; /* Standard icon size */
     height: 24px;

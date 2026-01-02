@@ -1,6 +1,7 @@
 import * as Tone from 'tone';
-import { log, logKey, getMsg } from '../ui/logger.js';
+import { log, logKey, getMsg, clearErrorLog } from '../ui/logger.js';
 import { updateAdsrGraph, triggerAdsrOn, triggerAdsrOff } from '../ui/adsrVisualizer.js';
+import { requestMidiAccess } from './midiEngine.js';
 
 export let blocklyLoops = {}; // Initialize as an exported module variable
 
@@ -21,6 +22,7 @@ export async function ensureAudioStarted() {
             }
         } catch (e) { /* ignore */ }
         audioStarted = true;
+        clearErrorLog('AUDIO'); // 啟動成功，清除舊的「音訊未啟用」警告
         logKey('LOG_AUDIO_STARTED');
         return true;
     } catch (e) {
@@ -315,6 +317,18 @@ export const audioEngine = {
                     break;
                 case 'DuoSynth':
                     newInstrument = new Tone.PolySynth(Tone.DuoSynth);
+                    break;
+                case 'SineWave':
+                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' } });
+                    break;
+                case 'SquareWave':
+                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } });
+                    break;
+                case 'TriangleWave':
+                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } });
+                    break;
+                case 'SawtoothWave':
+                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } });
                     break;
                 case 'Sampler':
                     newInstrument = new Tone.Sampler({
@@ -792,6 +806,14 @@ export const audioEngine = {
         }
     },
 
+    updateFilter: function(freq, q) {
+        const filterEffect = this._activeEffects.find(e => e instanceof this.Tone.Filter);
+        if (filterEffect) {
+            if (freq !== undefined) filterEffect.frequency.value = freq;
+            if (q !== undefined) filterEffect.Q.value = q;
+        }
+    },
+
     clearPressedKeys: function() {
 
         this.pressedKeys.clear();
@@ -1037,7 +1059,10 @@ export const audioEngine = {
  */
 export function startAudioOnFirstInteraction() {
     const oneStart = async function () {
-        await ensureAudioStarted();
+        const ok = await ensureAudioStarted();
+        if (ok) {
+            requestMidiAccess(); // 自動嘗試連線 MIDI
+        }
         document.body.removeEventListener('pointerdown', oneStart);
     };
     document.body.addEventListener('pointerdown', oneStart, { passive: true });

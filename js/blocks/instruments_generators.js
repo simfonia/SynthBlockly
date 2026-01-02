@@ -68,7 +68,7 @@ if (!window.audioEngine.isExecutionActive) return;
 
     G['sb_play_drum'] = function (block) {
         var type = block.getFieldValue('TYPE');
-        var velocity = G.valueToCode(block, 'VELOCITY', G.ORDER_ATOMIC) || 1; // Default to 1 (full velocity)
+        var velocity = G.valueToCode(block, 'VELOCITY', G.ORDER_ATOMIC) || "1"; // Ensure default string "1"
 
         // Ensure velocity is always a number
         velocity = `Number(${velocity})`;

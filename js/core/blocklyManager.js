@@ -1,11 +1,49 @@
 // js/core/blocklyManager.js
 import * as BlocklyModule from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript'; 
-import { log, logKey } from '../ui/logger.js';
+import { log, logKey, clearErrorLog } from '../ui/logger.js';
 import { registerAll } from '../blocks/index.js'; 
 import { registerMidiListener, unregisterMidiListener } from './midiEngine.js';
 import { audioEngine } from './audioEngine.js'; 
 import { TOOLBOX_XML_STRING } from './toolbox.js';
+
+// --- 手動註冊標準產生器 (解決 Vite 環境下 side-effects 失效問題) ---
+const G = javascriptGenerator;
+if (G) {
+    if (!G.forBlock['math_number']) G.forBlock['math_number'] = b => [b.getFieldValue('NUM'), G.ORDER_ATOMIC];
+    if (!G.forBlock['variables_set']) G.forBlock['variables_set'] = b => {
+        const val = G.valueToCode(b, 'VALUE', G.ORDER_ASSIGNMENT) || '0';
+        const name = b.workspace.getVariableMap().getVariableById(b.getFieldValue('VAR')).name;
+        return name + ' = ' + val + ';\n';
+    };
+    if (!G.forBlock['controls_if']) G.forBlock['controls_if'] = b => {
+        let n = 0;
+        let code = '';
+        do {
+            const condition = G.valueToCode(b, 'IF' + n, G.ORDER_NONE) || 'false';
+            const branch = G.statementToCode(b, 'DO' + n);
+            code += (n > 0 ? ' else ' : '') + 'if (' + condition + ') {\n' + branch + '}';
+            n++;
+        } while (b.getInput('IF' + n));
+        if (b.getInput('ELSE')) code += ' else {\n' + G.statementToCode(b, 'ELSE') + '}';
+        return code + '\n';
+    };
+    if (!G.forBlock['text_indexOf']) G.forBlock['text_indexOf'] = b => {
+        const str = G.valueToCode(b, 'VALUE', G.ORDER_MEMBER) || "''";
+        const find = G.valueToCode(b, 'FIND', G.ORDER_NONE) || "''";
+        return [str + '.indexOf(' + find + ') + 1', G.ORDER_MEMBER];
+    };
+    if (!G.forBlock['lists_split']) G.forBlock['lists_split'] = b => {
+        const input = G.valueToCode(b, 'INPUT', G.ORDER_MEMBER) || "''";
+        const delim = G.valueToCode(b, 'DELIM', G.ORDER_NONE) || "''";
+        return [input + '.split(' + delim + ')', G.ORDER_MEMBER];
+    };
+    if (!G.forBlock['lists_getIndex']) G.forBlock['lists_getIndex'] = b => {
+        const list = G.valueToCode(b, 'VALUE', G.ORDER_MEMBER) || '[]';
+        const at = G.valueToCode(b, 'AT', G.ORDER_NONE) || '1';
+        return [list + '[' + at + ' - 1]', G.ORDER_MEMBER];
+    };
+}
 
 // --- 1. 建立可擴充的全域 Blockly 物件 ---
 // ESM 命名空間不可擴充，建立副本以供 UMD 插件掛載屬性
@@ -62,20 +100,6 @@ function processXmlString(xmlString) {
 let workspace = null; 
 const blockListeners = {};
 
-window.registerSerialDataListener = function (callback) {
-    if (typeof callback === 'function') {
-        if (!window.__synthBlocklySerialListeners) window.__synthBlocklySerialListeners = [];
-        if (!window.__synthBlocklySerialListeners.includes(callback)) {
-            window.__synthBlocklySerialListeners.push(callback);
-        }
-    }
-};
-window.unregisterSerialDataListener = function (callback) {
-    if (window.__synthBlocklySerialListeners) {
-        window.__synthBlocklySerialListeners = window.__synthBlocklySerialListeners.filter(listener => listener !== callback);
-    }
-};
-
 
 function onWorkspaceChanged(event) {
     if (!workspace) return; 
@@ -110,13 +134,35 @@ function onWorkspaceChanged(event) {
     });
 
     allCurrentHats.forEach(block => {
+        // 如果已經存在，檢查內容是否改變
         if (blockListeners[block.id]) {
-            if (blockListeners[block.id].type === 'serial') {
+            const current = blockListeners[block.id];
+            javascriptGenerator.init(workspace);
+            const newCode = javascriptGenerator.statementToCode(block, 'DO');
+            javascriptGenerator.finish('');
+            
+            let newVarName = "";
+            if (block.type === 'sb_serial_data_received') {
+                const varId = block.getFieldValue('DATA');
+                newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
+            } else if (block.type === 'sb_midi_note_received') {
+                const varId = block.getFieldValue('NOTE');
+                newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
+            }
+
+            // 只有當程式碼或變數名稱改變時才更新
+            if (current.code === newCode && current.varName === newVarName) {
+                return; // 沒變，跳過
+            }
+
+            // 有變，先移除舊的
+            if (current.type === 'serial') {
                 unregisterListenerForBlock(block.id);
-            } else if (blockListeners[block.id].type === 'midi') {
+            } else {
                 unregisterListenerForMidiBlock(block.id);
             }
         }
+
         if (block.type === 'sb_serial_data_received') {
             registerListenerForBlock(block);
         } else if (block.type === 'sb_midi_note_received') {
@@ -127,18 +173,74 @@ function onWorkspaceChanged(event) {
 
 function registerListenerForBlock(block) {
     if (!block || blockListeners[block.id]) return;
+
+    // --- 確保所有產生器都已掛載至 javascriptGenerator.forBlock ---
+    const pbsxGens = [
+        'sb_play_note', 'sb_play_note_and_wait', 'sb_play_drum', 'sb_set_adsr', 
+        'jazzkit_play_drum', 'sb_create_synth_instrument', 'sb_select_current_instrument',
+        'sb_set_instrument_vibrato', 'sb_set_instrument_volume', 'math_map'
+    ];
+    pbsxGens.forEach(name => {
+        if (javascriptGenerator[name] && !javascriptGenerator.forBlock[name]) {
+            javascriptGenerator.forBlock[name] = javascriptGenerator[name];
+        }
+    });
+
+    // --- 確保標準產生器存在 ---
+    if (!javascriptGenerator.forBlock['logic_compare']) {
+        javascriptGenerator.forBlock['logic_compare'] = function(block) {
+            const op = block.getFieldValue('OP');
+            const order = (op === 'EQ' || op === 'NEQ') ? javascriptGenerator.ORDER_EQUALITY : javascriptGenerator.ORDER_RELATIONAL;
+            const argument0 = javascriptGenerator.valueToCode(block, 'A', order) || '0';
+            const argument1 = javascriptGenerator.valueToCode(block, 'B', order) || '0';
+            return [argument0 + ' ' + (op === 'EQ' ? '==' : '!=') + ' ' + argument1, order];
+        };
+    }
+    if (!javascriptGenerator.forBlock['text']) {
+        javascriptGenerator.forBlock['text'] = function(block) {
+            return [javascriptGenerator.quote_(block.getFieldValue('TEXT')), javascriptGenerator.ORDER_ATOMIC];
+        };
+    }
+    if (!javascriptGenerator.forBlock['variables_get']) {
+        javascriptGenerator.forBlock['variables_get'] = function(block) {
+            const varId = block.getFieldValue('VAR');
+            const variable = block.workspace.getVariableMap().getVariableById(varId);
+            return [variable ? variable.name : 'undefined', javascriptGenerator.ORDER_ATOMIC];
+        };
+    }
+
     javascriptGenerator.init(workspace);
-    const code = javascriptGenerator.statementToCode(block, 'DO');
+    const rawCode = javascriptGenerator.statementToCode(block, 'DO');
     javascriptGenerator.finish('');
+    
+    // --- 關鍵修正：過濾掉 /* EFFECT_CONFIG:... */ 註解 ---
+    // 這些註解是給 rebuildEffectChain 看的，放在監聽器 Function 內只會增加語法解析錯誤的風險
+    const code = rawCode.replace(/\/\* EFFECT_CONFIG:.*? \*\//g, "").trim();
+
     if (!code) return;
     const variableId = block.getFieldValue('DATA');
     const variable = block.workspace.getVariableMap().getVariableById(variableId);
     if (!variable) return;
     const varData = variable.name;
     try {
-        const listenerFunction = new Function(varData, `(async () => { ${code} })();`);
+        // --- 關鍵修正：改用傳統字串拼接，避免樣板字串的巢狀解析問題 ---
+        const functionBody = 
+            "return (async () => { " +
+            "  try { " +
+            code + 
+            "  } catch (e) { " +
+            "    console.error('Error executing Blockly Serial Code:', e); " +
+            "  } " +
+            "})();";
+
+        const executeCode = new Function(varData, functionBody);
+
+        const listenerFunction = async (line) => {
+            const cleanedLine = (typeof line === 'string') ? line.trim() : line;
+            await executeCode(cleanedLine);
+        };
         window.registerSerialDataListener(listenerFunction);
-        blockListeners[block.id] = { type: 'serial', listener: listenerFunction };
+        blockListeners[block.id] = { type: 'serial', listener: listenerFunction, code: code, varName: varData };
         logKey('LOG_SERIAL_REGISTERED', 'info', block.id);
     } catch (e) {
         logKey('LOG_EXEC_ERR', 'error', e.message);
@@ -239,6 +341,11 @@ export async function getBlocksCode() {
         logKey('LOG_WORKSPACE_NOT_INIT', 'error');
         return '';
     }
+    
+    // 清除舊的執行期與效果器錯誤
+    clearErrorLog('EXEC');
+    clearErrorLog('EFFECT');
+
     if (typeof javascriptGenerator === 'undefined') {
         logKey('LOG_GENERATOR_NOT_READY', 'error');
         return '';

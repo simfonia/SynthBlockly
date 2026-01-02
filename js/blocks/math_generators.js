@@ -17,4 +17,13 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         const code = `((${value} - ${fromLow}) * (${toHigh} - ${toLow}) / (${fromHigh} - ${fromLow}) + ${toLow})`;
         return [code, javascriptGenerator.ORDER_ATOMIC];
     };
+
+    javascriptGenerator.forBlock['math_constrain'] = function(block) {
+        const value = javascriptGenerator.valueToCode(block, 'VALUE', javascriptGenerator.ORDER_ATOMIC) || '0';
+        const low = javascriptGenerator.valueToCode(block, 'LOW', javascriptGenerator.ORDER_ATOMIC) || '0';
+        const high = javascriptGenerator.valueToCode(block, 'HIGH', javascriptGenerator.ORDER_ATOMIC) || '100';
+
+        const code = `Math.min(Math.max(${value}, ${low}), ${high})`;
+        return [code, javascriptGenerator.ORDER_ATOMIC];
+    };
 }

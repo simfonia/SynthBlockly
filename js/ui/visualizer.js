@@ -19,17 +19,27 @@ export function initVisualizer(analyserNode) {
   new p5((p) => {
     p.setup = function () {
         const container = p.select('#waveformContainer');
-        const c = p.createCanvas(container.width, container.height);
+        if (!container || !container.elt) {
+            console.warn('Waveform container not found during p5 setup.');
+            return;
+        }
+        const w = container.width || 400;
+        const h = container.height || 150;
+        const c = p.createCanvas(w, h);
         c.parent('waveformContainer');
     };
 
     p.windowResized = function () {
         const container = p.select('#waveformContainer');
-        p.resizeCanvas(container.width, container.height);
+        if (container && container.elt) {
+            p.resizeCanvas(container.width, container.height);
+        }
     };
 
     p.draw = function () {
-        p.background(16);
+        if (!p.width || p.width <= 0 || !p.height || p.height <= 0) return;
+        try {
+            p.background(16);
         p.stroke(0, 200, 255);
         p.strokeWeight(2);
         
@@ -92,6 +102,9 @@ export function initVisualizer(analyserNode) {
             const y2 = p.map(y2_scaled, -1, 1, h, 0);
             
             p.line(x1, y1, x2, y2);
+        }
+        } catch (e) {
+            console.error('Visualizer draw error:', e);
         }
     };
   });

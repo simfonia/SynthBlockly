@@ -45,6 +45,7 @@
       - `math_blocks.js` / `_generators.js`: 數學運算擴充。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。
     - `plugins/`: Blockly 欄位插件（如多行文字輸入框）。
-  - `log/`: 開發紀錄。
-    - `todo.md`: 任務清單。
-    - `work/`: 每日工作日誌。
+    - `log/`: 開發紀錄。
+      - `todo.md`: 任務清單與待辦事項。
+      - `work/`: 每日開發工作日誌 (例如 `yyyy-mm-dd.md`)。
+  

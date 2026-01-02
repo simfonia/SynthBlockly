@@ -8,62 +8,78 @@
         h1 { color: #5CB85C; }
         h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
         .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        .intro-box { margin: 10px 0 30px 20px; padding: 15px; border-left: 4px solid #5CB85C; background: #f0fdf0; border-radius: 4px; }
         code { background: #eee; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <h1>Synthesizer Types Description</h1>
-    <p>In the "Create Instrument" block, you can choose from four different synthesis methods:</p>
+
+    <div class="intro-box">
+        <h2>Subtractive vs. Additive Synthesis</h2>
+        <p>These are the two most fundamental approaches to sound design, representing opposing philosophies: <strong>Sculpting</strong> vs. <strong>Stacking</strong>.</p>
+        
+        <p><strong>1. Subtractive Synthesis - Like "Sculpting"</strong></p>
+        <ul>
+            <li><strong>Core Logic</strong>: Start with more, end with less. Begin with harmonically rich waveforms and use a Filter to cut away unwanted frequencies.</li>
+            <li><strong>Sound</strong>: Warm, powerful, classic. Suitable for basic waveforms, PolySynth, etc.</li>
+        </ul>
+
+        <p><strong>2. Additive Synthesis - Like "Building Blocks"</strong></p>
+        <ul>
+            <li><strong>Core Logic</strong>: Start with less, end with more. Stack multiple pure Sine Waves to create complex timbres.</li>
+            <li><strong>Sound</strong>: Bright, metallic, glassy. Suitable for custom waveform instruments.</li>
+        </ul>
+    </div>
+
+    <p>In the "Create Instrument" block, you can choose from eight different waveforms and synthesis methods:</p>
 
     <div class="type-box">
-        <h2>1. PolySynth (Standard)</h2>
-        <p><strong>Method</strong>: Standard Subtractive Synthesis.</p>
-        <p><strong>Characteristics</strong>: Pure and intuitive sound. The "bread and butter" of the synth world.</p>
-        <p><strong>Best for</strong>: Basic electric pianos, simple leads, and bass lines. Perfect for learning how ADSR works.</p>
+        <h2>1. Sine Wave</h2>
+        <p><strong>Characteristics</strong>: The purest possible sound, consisting of a single frequency with no overtones.</p>
+        <p><strong>Sound</strong>: Very smooth and round. Ideal for deep sub-bass or pure flute-like tones.</p>
     </div>
 
     <div class="type-box">
-        <h2>2. AMSynth (Amplitude Modulation)</h2>
+        <h2>2. Triangle Wave</h2>
+        <p><strong>Characteristics</strong>: Contains a few odd harmonics, sitting somewhere between a sine and a square wave.</p>
+        <p><strong>Sound</strong>: Slightly brighter than a sine wave but still mellow. Common for woodwind sounds or soft leads.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>3. Square Wave</h2>
+        <p><strong>Characteristics</strong>: Rich in odd harmonics, with a distinct "staircase" waveform.</p>
+        <p><strong>Sound</strong>: Hollow and nasal, similar to a clarinet. Frequently heard in retro 8-bit game sounds or thick bass patches.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>4. Sawtooth Wave</h2>
+        <p><strong>Characteristics</strong>: Contains all integer harmonics, making it the most frequency-rich basic waveform.</p>
+        <p><strong>Sound</strong>: Bright, sharp, and aggressive. The go-to choice for powerful brass, string-like pads, and classic leads.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>5. PolySynth (Standard)</h2>
+        <p><strong>Method</strong>: Standard Subtractive Synthesis using mixed waveforms by default.</p>
+        <p><strong>Best for</strong>: Basic electric pianos and leads. The best starting point for understanding ADSR.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>6. AMSynth (Amplitude Modulation)</h2>
         <p><strong>Method</strong>: Uses one oscillator to rapidly modulate the <strong>volume (amplitude)</strong> of another.</p>
         <p><strong>Characteristics</strong>: Has a distinct "shimmering" or "vibrating" quality, often resembling a fast-moving organ.</p>
-        <p><strong>Best for</strong>: Retro electronic effects and unique organ-like timbres.</p>
     </div>
 
     <div class="type-box">
-        <h2>3. FMSynth (Frequency Modulation)</h2>
+        <h2>7. FMSynth (Frequency Modulation)</h2>
         <p><strong>Method</strong>: Uses one oscillator to rapidly modulate the <strong>pitch (frequency)</strong> of another.</p>
-        <p><strong>Characteristics</strong>: Complex, bright, and often carries a strong <strong>digital or metallic</strong> character.</p>
-        <p><strong>Best for</strong>: Bells, metallic percussion, and sharp digital bass. This is the iconic sound of 80s pop music.</p>
+        <p><strong>Sound</strong>: Complex and bright, with a strong <strong>digital or metallic</strong> character. Perfect for bells or sharp digital bass.</p>
     </div>
 
     <div class="type-box">
-        <h2>4. DuoSynth</h2>
+        <h2>8. DuoSynth</h2>
         <p><strong>Method</strong>: Layers two independent synthesizer voices to create a thick, rich texture.</p>
-        <p><strong>Characteristics</strong>: Very <strong>thick, powerful, and layered</strong> sound.</p>
-        <p><strong>Best for</strong>: Grand pads, powerful synth brass, or aggressive lead sounds.</p>
-    </div>
-
-    <h1>Subtractive vs. Additive Synthesis</h1>
-    <p>These are the two most fundamental approaches to sound design, representing opposing philosophies: <strong>Sculpting</strong> vs. <strong>Stacking</strong>.</p>
-
-    <div class="type-box">
-        <h2>1. Subtractive Synthesis - Like "Sculpting"</h2>
-        <p>The most common method, used by instruments like <strong>PolySynth</strong>.</p>
-        <ul>
-            <li><strong>Core Logic</strong>: Start with more, end with less. Begin with a harmonically rich waveform (like a Sawtooth) and use a Filter to cut away unwanted frequencies.</li>
-            <li><strong>Analogy</strong>: Like chipping away at a block of marble to reveal a statue.</li>
-            <li><strong>Sound</strong>: Warm, powerful, classic. Ideal for Bass, Leads, and Pads.</li>
-        </ul>
-    </div>
-
-    <div class="type-box">
-        <h2>2. Additive Synthesis - Like "Building Blocks"</h2>
-        <p>Used by <strong>Custom Waveform Instruments (Harmonic/Free Frequency)</strong>.</p>
-        <ul>
-            <li><strong>Core Logic</strong>: Start with less, end with more. Begin with silence and stack multiple pure Sine Waves on top of each other.</li>
-            <li><strong>Analogy</strong>: Like building a shape with Lego bricks, or a pointillist painting made of many dots.</li>
-            <li><strong>Sound</strong>: Bright, metallic, glassy. Ideal for Bells, Organs, and Sci-Fi effects.</li>
-        </ul>
+        <p><strong>Sound</strong>: Very <strong>thick and powerful</strong>. Ideal for grand pads or aggressive lead sounds.</p>
     </div>
 </body>
 </html>

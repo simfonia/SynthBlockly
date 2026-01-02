@@ -1,6 +1,5 @@
-// js/core/midiEngine.js
 import { ensureAudioStarted, audioEngine } from './audioEngine.js';
-import { log, logKey } from '../ui/logger.js';
+import { log, logKey, getMsg, clearErrorLog } from '../ui/logger.js';
 
 let midiAccess = null;
 let lastReportedDeviceCount = -1;
@@ -26,9 +25,10 @@ function _updateMIDIConnectionState() {
     if (!btnMidi) return;
 
     if (!midiAccess) {
-        btnMidi.disabled = false;
-        btnMidi.title = '連接 MIDI';
-        logKey('LOG_MIDI_ACCESS_MISSING', 'error');
+        btnMidi.classList.remove('active');
+        btnMidi.style.backgroundColor = '';
+        btnMidi.style.color = '';
+        btnMidi.title = getMsg('UI_BTN_CONNECT_MIDI');
         return;
     }
 
@@ -41,6 +41,7 @@ function _updateMIDIConnectionState() {
     lastReportedDeviceCount = connectedInputs.length;
 
     if (connectedInputs.length > 0) {
+        clearErrorLog('MIDI'); // 成功連線，清除舊 MIDI 警告
         connectedInputs.forEach(input => {
             if (hasStateChanged) {
                 logKey('LOG_MIDI_ATTACHING', 'info', input.name);
@@ -50,14 +51,55 @@ function _updateMIDIConnectionState() {
         if (hasStateChanged) {
             logKey('LOG_MIDI_CONNECTED', 'info', connectedInputs.length);
         }
-        btnMidi.disabled = true;
-        btnMidi.title = `${connectedInputs.length} 個 MIDI 裝置已連接。`;
+        
+        // 變綠色 (有裝置)
+        btnMidi.classList.add('active');
+        btnMidi.style.backgroundColor = '#75FB4C';
+        btnMidi.style.color = 'black';
+        const tooltipSuffix = getMsg('LOG_MIDI_CONNECTED_TOOLTIP') || '個 MIDI 裝置已連接 (點擊重新掃描)。';
+        btnMidi.title = `${connectedInputs.length} ${tooltipSuffix}`;
     } else {
         if (hasStateChanged) {
             logKey('LOG_MIDI_NOT_FOUND', 'warning');
         }
-        btnMidi.disabled = false;
-        btnMidi.title = '連接 MIDI';
+        // 回復黑色 (無裝置)
+        btnMidi.classList.remove('active');
+        btnMidi.style.backgroundColor = '';
+        btnMidi.style.color = '';
+        btnMidi.title = getMsg('UI_BTN_CONNECT_MIDI');
+    }
+}
+
+/**
+ * Requests MIDI access and sets up listeners. Can be called automatically.
+ */
+export async function requestMidiAccess() {
+    if (midiAccess) return; 
+
+    if (!navigator.requestMIDIAccess) {
+        logKey('LOG_MIDI_NOT_SUPPORTED', 'error');
+        return;
+    }
+
+    try {
+        logKey('LOG_MIDI_REQUESTING');
+        const midi = await navigator.requestMIDIAccess();
+        logKey('LOG_MIDI_GRANTED');
+        clearErrorLog('MIDI'); // 權限獲得，清除可能存在的 MIDI 相關警告
+        midiAccess = midi;
+
+        midiAccess.onstatechange = (e) => {
+            if (e.port.state === 'disconnected') {
+                setTimeout(() => _updateMIDIConnectionState(), 100);
+            } else {
+                _updateMIDIConnectionState();
+            }
+        };
+        
+        _updateMIDIConnectionState();
+    } catch(e) {
+        logKey('LOG_MIDI_CONN_FAIL', 'error', e.message);
+        console.error(e);
     }
 }
 
@@ -98,45 +140,10 @@ export function initMidi() {
         if (!ok) return;
 
         if (midiAccess) {
-            logKey('LOG_MIDI_RECHECKING');
-            if (Array.from(midiAccess.inputs.values()).filter(input => input.state === 'connected').length === 0) {
-                logKey('LOG_MIDI_NOT_FOUND', 'warning');
-            }
             _updateMIDIConnectionState();
             return;
         }
 
-        logKey('LOG_MIDI_REQUESTING');
-        btnMidi.disabled = true;
-
-        if (!navigator.requestMIDIAccess) {
-            logKey('LOG_MIDI_NOT_SUPPORTED', 'error');
-            btnMidi.disabled = false;
-            return;
-        }
-
-        try {
-            const midi = await navigator.requestMIDIAccess();
-            logKey('LOG_MIDI_GRANTED');
-            midiAccess = midi;
-
-            midiAccess.onstatechange = (e) => {
-                logKey('LOG_MIDI_STATE_CHANGE', 'info', e.port.name, e.port.state);
-                // 針對斷線狀態，加入短暫延遲，確保瀏覽器有時間更新 midiAccess.inputs
-                if (e.port.state === 'disconnected') {
-                    setTimeout(() => _updateMIDIConnectionState(), 100);
-                }
-                else {
-                    _updateMIDIConnectionState();
-                }
-            };
-            
-            _updateMIDIConnectionState();
-
-        } catch(e) {
-            logKey('LOG_MIDI_CONN_FAIL', 'error', e.message);
-            console.error(e);
-            btnMidi.disabled = false;
-        }
+        await requestMidiAccess();
     });
 }

@@ -22,15 +22,16 @@ export function getMsg(key, ...args) {
  */
 export function logKey(key, type = 'info', ...args) {
     const msg = getMsg(key, ...args);
-    log(msg, type);
+    log(msg, type, key); // Pass the key to identify the source
 }
 
 /**
  * Logs a message to the appropriate UI log panel based on type.
  * @param {string} msg The message to log.
  * @param {string} type The type of log ('info', 'error', etc.).
+ * @param {string} key Optional translation key to identify source category.
  */
-export function log(msg, type = 'info') {
+export function log(msg, type = 'info', key = null) {
     let targetDiv;
     let effectiveType = type;
 
@@ -50,6 +51,14 @@ export function log(msg, type = 'info') {
         messageElement.textContent = msg;
         messageElement.classList.add('log-message');
         
+        // 自動偵測分類 (例如 LOG_SERIAL_... -> SERIAL)
+        if (key && typeof key === 'string') {
+            const parts = key.split('_');
+            if (parts.length > 1) {
+                messageElement.dataset.category = parts[1];
+            }
+        }
+
         // Apply striping to both logs
         const logCount = targetDiv.children.length;
         messageElement.classList.add(logCount % 2 === 0 ? 'log-even' : 'log-odd');
@@ -66,6 +75,23 @@ export function log(msg, type = 'info') {
         }
 
         targetDiv.scrollTop = targetDiv.scrollHeight;
+    }
+}
+
+/**
+ * Clears the error log, optionally filtered by category.
+ * @param {string} category Optional category to clear (e.g., 'SERIAL', 'MIDI'). If null, clears all errors.
+ */
+export function clearErrorLog(category = null) {
+    const errorLogDiv = document.getElementById('error-log');
+    if (!errorLogDiv) return;
+
+    if (!category) {
+        errorLogDiv.innerHTML = '';
+    } else {
+        // 僅清除特定分類的錯誤訊息
+        const items = errorLogDiv.querySelectorAll(`[data-category="${category}"]`);
+        items.forEach(item => item.remove());
     }
 }
 

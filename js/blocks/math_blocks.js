@@ -26,4 +26,34 @@ export function registerBlocks(Blockly) {
             });
         }
     };
+
+    // 限制範圍 (Constrain)
+    Blockly.Blocks['math_constrain'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_MATH_CONSTRAIN_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "VALUE",
+                        "check": "Number"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "LOW",
+                        "check": "Number"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "HIGH",
+                        "check": "Number"
+                    }
+                ],
+                "output": "Number",
+                "inputsInline": true,
+                "colour": "%{BKY_MATH_HUE}",
+                "tooltip": "%{BKY_MATH_CONSTRAIN_TOOLTIP}"
+            });
+        }
+    };
 }

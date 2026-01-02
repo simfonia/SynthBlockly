@@ -7,6 +7,7 @@ export const MSG_ZH_HANT = {
     'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
     'UI_BTN_NEW_PROJECT': '開新專案',
     'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
+    'UI_BTN_DISCONNECT_SERIAL': '斷開序列埠設備',
     'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
     'UI_BTN_RUN_BLOCKS': '執行積木 (Ctrl+Enter)',
     'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
@@ -89,6 +90,8 @@ export const MSG_ZH_HANT = {
     // MATH
     'MATH_MAP_MESSAGE': '將數值 %1 從範圍 [%2, %3] 映射到 [%4, %5]',
     'MATH_MAP_TOOLTIP': '將一個數值從一個範圍線性映射到另一個範圍。',
+    'MATH_CONSTRAIN_MESSAGE': '限制數值 %1 介於 %2 與 %3 之間',
+    'MATH_CONSTRAIN_TOOLTIP': '將數值限制在指定的最低與最高範圍內。',
 
     // SOUND SOURCE CONTROL
     'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': '建立合成音源 %1 型態 %2',
@@ -364,7 +367,15 @@ export const MSG_ZH_HANT = {
     'LOG_SERIAL_UNREGISTERED': '已註銷序列埠自動觸發器 (積木: %1)。',
     'LOG_MIDI_REGISTERED': '已註冊 MIDI 自動觸發器 (積木: %1)。',
     'LOG_MIDI_UNREGISTERED': '已註銷 MIDI 自動觸發器 (積木: %1)。',
+    'LOG_MIDI_REQUESTING': '正在請求 MIDI 存取權限...',
+    'LOG_MIDI_GRANTED': 'MIDI 存取權限已獲得。',
+    'LOG_MIDI_CONN_FAIL': 'MIDI 連線失敗: %1',
+    'LOG_MIDI_CONNECTED': 'MIDI 連線成功，偵測到 %1 個輸入裝置。',
+    'LOG_MIDI_ATTACHING': '正在監聽 MIDI 裝置: %1',
+    'LOG_MIDI_NOT_FOUND': '找不到 MIDI 輸入裝置。',
+    'LOG_MIDI_STATE_CHANGE': 'MIDI 裝置狀態變更: %1 (%2)',
     'LOG_MIDI_VAR_ERR': '自動觸發器建立失敗: 缺少必要的動態變數。',
+    'LOG_MIDI_CONNECTED_TOOLTIP': '個 MIDI 裝置已連接。',
 
     // --- App Initialization Logs ---
     'LOG_DOM_LOADED': 'SynthBlockly 核心介面載入完成。',
@@ -377,4 +388,8 @@ export const MSG_ZH_HANT = {
     'LOG_VISUALIZER_INIT': '即時示波視覺化系統啟動。',
     'LOG_HELP_MODAL_INIT': '說明文件系統已就緒。',
     'LOG_AUDIO_STARTER_INIT': '音訊啟動監聽器已啟動。',
+    'LOG_SERIAL_MSG': '收到序列埠資料: %1',
+    'LOG_SERIAL_ERR': '序列埠錯誤: %1',
+    'LOG_SERIAL_PORT_BUSY': '序列埠已被佔用或無法開啟。',
+    'LOG_SERIAL_DISCONNECTED': '序列埠連線已中斷。',
 };

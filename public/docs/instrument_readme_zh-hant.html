@@ -8,62 +8,78 @@
         h1 { color: #5CB85C; }
         h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
         .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        .intro-box { margin: 10px 0 30px 20px; padding: 15px; border-left: 4px solid #5CB85C; background: #f0fdf0; border-radius: 4px; }
         code { background: #eee; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <h1>合成器型態說明</h1>
-    <p>在「創建樂器」積木中，你可以選擇以下四種不同的合成技術來產生聲音：</p>
+
+    <div class="intro-box">
+        <h2>減法合成 vs 加法合成</h2>
+        <p>這兩種合成方式是聲音設計中最基礎也最對立的兩大門派，猶如<strong>雕刻</strong>與<strong>堆疊</strong>的差異。</p>
+        
+        <p><strong>1. 減法合成 (Subtractive Synthesis) - 像「雕刻」</strong></p>
+        <ul>
+            <li><strong>核心邏輯</strong>：由多變少。先產生頻率豐富的波形，再用濾波器切掉不需要的頻率。</li>
+            <li><strong>聽感</strong>：溫暖、有力、經典。適合基礎波形、PolySynth 等。</li>
+        </ul>
+
+        <p><strong>2. 加法合成 (Additive Synthesis) - 像「堆積木」</strong></p>
+        <ul>
+            <li><strong>核心邏輯</strong>：由少變多。將多個純淨的正弦波疊加起來形成複雜音色。</li>
+            <li><strong>聽感</strong>：明亮、金屬感。適合自訂波形樂器。</li>
+        </ul>
+    </div>
+
+    <p>在「創建樂器」積木中，你可以選擇以下八種不同的波形與合成技術來產生聲音：</p>
 
     <div class="type-box">
-        <h2>1. PolySynth (標準合成器)</h2>
-        <p><strong>原理</strong>：最基礎的減法合成技術（Subtractive Synthesis）。</p>
-        <p><strong>特性</strong>：音色純淨、直觀，是合成器世界的「白開水」。</p>
-        <p><strong>適用</strong>：基礎電子琴、Lead 音色、簡單的 Bass。非常適合初學者理解 ADSR 的變化。</p>
+        <h2>1. 弦波 (Sine Wave)</h2>
+        <p><strong>特性</strong>：最純淨、單一頻率的聲音，沒有任何泛音。</p>
+        <p><strong>聽感</strong>：非常平滑且圓潤。適合製作深沉的 Sub-Bass 或純淨的長笛效果。</p>
     </div>
 
     <div class="type-box">
-        <h2>2. AMSynth (振幅調變合成)</h2>
+        <h2>2. 三角波 (Triangle Wave)</h2>
+        <p><strong>特性</strong>：包含少量奇數泛音，聲音介於弦波與方波之間。</p>
+        <p><strong>聽感</strong>：比弦波明亮一點，但依然溫和。常用於長笛類音色或柔和的 Lead。</p>
+    </div>
+
+    <div class="type-box">
+        <h2>3. 方波 (Square Wave)</h2>
+        <p><strong>特性</strong>：包含豐富的奇數泛音，波形呈現階梯狀。</p>
+        <p><strong>聽感</strong>：帶有獨特的鼻音與中空感。常出現於復古 8-bit 遊戲音效或厚實的 Bass。</p>
+    </div>
+
+    <div class="type-box">
+        <h2>4. 鋸齒波 (Sawtooth Wave)</h2>
+        <p><strong>特性</strong>：包含所有整數泛音，頻率內容最為豐富。</p>
+        <p><strong>聽感</strong>：明亮、銳利且具侵略性。是製作強力 Brass、弦樂感 Pads 與經典 Lead 的首選。</p>
+    </div>
+
+    <div class="type-box">
+        <h2>5. PolySynth (標準合成器)</h2>
+        <p><strong>原理</strong>：最基礎的減法合成技術（Subtractive Synthesis），預設使用混合波形。</p>
+        <p><strong>適用</strong>：基礎電子琴、Lead 音色。適合初學者理解 ADSR 的變化。</p>
+    </div>
+
+    <div class="type-box">
+        <h2>6. AMSynth (振幅調變合成)</h2>
         <p><strong>原理</strong>：使用一個振盪器去快速控制另一個振盪器的<strong>音量 (Amplitude)</strong>。</p>
-        <p><strong>特性</strong>：帶有一種獨特的「顫動感」，聽起來像是在快速震動的風琴聲。</p>
-        <p><strong>適用</strong>：復古電子音效、特殊風琴音色。</p>
+        <p><strong>特性</strong>：帶有一種獨特的「顫動感」，聽起來像是在震動的風琴聲。</p>
     </div>
 
     <div class="type-box">
-        <h2>3. FMSynth (頻率調變合成)</h2>
+        <h2>7. FMSynth (頻率調變合成)</h2>
         <p><strong>原理</strong>：使用一個振盪器去快速控制另一個振盪器的<strong>音高 (Frequency)</strong>。</p>
-        <p><strong>特性</strong>：音色複雜、明亮，帶有強烈的<strong>數位感與金屬感</strong>。</p>
-        <p><strong>適用</strong>：鈴聲 (Bells)、金屬打擊音色、銳利的數位 Bass。這是 80 年代流行音樂的經典聲音。</p>
+        <p><strong>特性</strong>：音色複雜，帶有強烈的<strong>數位感與金屬感</strong>。適合鈴聲 (Bells) 或銳利的數位 Bass。</p>
     </div>
 
     <div class="type-box">
-        <h2>4. DuoSynth (雙重合成器)</h2>
+        <h2>8. DuoSynth (雙重合成器)</h2>
         <p><strong>原理</strong>：疊加兩個獨立的合成器聲音，形成厚實的音層。</p>
-        <p><strong>特性</strong>：音色非常<strong>渾厚、強大且富有層次</strong>。</p>
-        <p><strong>適用</strong>：宏偉的合成器墊音 (Pads)、強力的銅管 (Brass) 或極具侵略性的 Lead 音色。</p>
-    </div>
-
-    <h1>減法合成 vs 加法合成</h1>
-    <p>這兩種合成方式是聲音設計中最基礎也最對立的兩大門派，猶如<strong>雕刻</strong>與<strong>堆疊</strong>的差異。</p>
-
-    <div class="type-box">
-        <h2>1. 減法合成 (Subtractive Synthesis) - 像「雕刻」</h2>
-        <p>這是最常見的合成方式，例如 <strong>PolySynth</strong>。</p>
-        <ul>
-            <li><strong>核心邏輯</strong>：由多變少。先產生豐富的波形（如鋸齒波），再用濾波器切掉不需要的頻率。</li>
-            <li><strong>現實比喻</strong>：在一塊大理石上，鑿掉不要的部分，雕出雕像。</li>
-            <li><strong>聽感</strong>：溫暖、有力、經典。適合 Bass、Lead 和 Pad。</li>
-        </ul>
-    </div>
-
-    <div class="type-box">
-        <h2>2. 加法合成 (Additive Synthesis) - 像「堆積木」</h2>
-        <p>例如 <strong>自訂波形樂器 (諧波/自由頻率)</strong>。</p>
-        <ul>
-            <li><strong>核心邏輯</strong>：由少變多。從「無」開始，將多個純淨的正弦波 (Sine Wave) 疊加起來。</li>
-            <li><strong>現實比喻</strong>：像用樂高積木一塊塊堆出形狀，或點描畫派的畫作。</li>
-            <li><strong>聽感</strong>：明亮、金屬感、玻璃感。適合鐘聲 (Bell)、風琴 (Organ) 或科幻音效。</li>
-        </ul>
+        <p><strong>特性</strong>：音色非常<strong>渾厚、強大且富有層次</strong>。適合宏偉的 Pads 或強力的銅管音色。</p>
     </div>
 </body>
 </html>
