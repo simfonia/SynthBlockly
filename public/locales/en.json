@@ -422,5 +422,7 @@
     "LISTS_GET_SUBLIST_HELPURL":  "https://github.com/google/blockly/wiki/Lists#getting-a-sublist",
     "HELP":  "Help",
     "LOGIC_NULL":  "null",
-    "LOGIC_OPERATION_OR":  "or"
+    "LOGIC_OPERATION_OR":  "or",
+    "UI_BTN_EXAMPLES": "Example Projects",
+    "UI_EXAMPLES_TITLE": "Example Projects"
 }

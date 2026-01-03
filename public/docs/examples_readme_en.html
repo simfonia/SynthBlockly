@@ -1,0 +1,45 @@
+<div class="help-content">
+    <h2>Example Projects Guide</h2>
+    <p>Example projects help you quickly learn how to create various music effects and interactive devices using SynthBlockly.</p>
+
+    <h3>1. How to Load an Example</h3>
+    <ul>
+        <li>Click the <strong>"Example Projects"</strong> icon on the toolbar (looks like a folder or 🎹).</li>
+        <li>Select a project from the popup list.</li>
+        <li>Confirm loading. Note that your current workspace will be cleared and replaced by the example.</li>
+    </ul>
+
+    <h3>2. Types of Examples</h3>
+    <div class="example-types">
+        <p><strong>🎹 Blockly Only (Software):</strong> These examples don't require external hardware. Just click "Run Blocks" to hear the sound.</p>
+        <p><strong>🤖 Hardware Integration:</strong> These examples require an Arduino or other physical electronic components. A hardware guide will appear automatically after loading.</p>
+    </div>
+
+    <h3>3. Workflow for Hardware Examples</h3>
+    <ol>
+        <li>After loading, read the <strong>"Hardware Setup Guide"</strong> window carefully.</li>
+        <li>Click <strong>"Download Arduino Code (.ino)"</strong> to get the corresponding C++ program.</li>
+        <li>Open the downloaded file in the Arduino IDE and upload it to your board.</li>
+        <li>Complete the circuit wiring according to the instructions (e.g., buttons, potentiometers, or sensors).</li>
+        <li>Return to SynthBlockly and click <strong>"Connect Serial"</strong> to link with your Arduino.</li>
+    </ol>
+
+    <div class="note">
+        <p><strong>Tip:</strong> Feel free to modify the block parameters to experiment with different sound effects!</p>
+    </div>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+    <h3>4. How to Add Custom Examples (For Developers)</h3>
+    <p>If you want to add your own examples, follow these conventions in the <code>src/examples/</code> directory. The system scans files automatically based on extensions:</p>
+    <ul>
+        <li><strong>Software Example:</strong> Simply add an <code>.xml</code> file directly to the folder (e.g., <code>src/examples/MySong.xml</code>).</li>
+        <li><strong>Hardware Example (Folder-based):</strong> Create a folder (e.g., <code>src/examples/MyProject/</code>). The system will match files as follows:
+            <ul>
+                <li><strong>Blockly Entry:</strong> The filename must be <code>main.xml</code> or match the folder name (e.g., <code>MyProject.xml</code>).</li>
+                <li><strong>Arduino Code:</strong> Any <code>.ino</code> file will be detected. The filename is flexible and can be placed anywhere within the folder.</li>
+                <li><strong>Documentation:</strong> Any <code>.md</code> file (e.g., <code>README.md</code>) will be detected. The filename is flexible, and its content will be displayed in the hardware guidance window.</li>
+            </ul>
+        </li>
+    </ul>
+</div>

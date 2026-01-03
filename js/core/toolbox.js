@@ -136,6 +136,21 @@ export const TOOLBOX_XML_STRING = `
     </category>
 
 
+    <category name="%{BKY_MSG_INSTRUMENT_CONTROL_CATEGORY}" colour="%{BKY_INSTRUMENT_CONTROL_HUE}">
+        <block type="sb_select_current_instrument"></block>
+        <block type="sb_set_adsr"></block>
+        <block type="sb_set_instrument_vibrato">
+            <value name="DETUNE_VALUE">
+                <shadow type="math_number"><field name="NUM">0</field></shadow>
+            </value>
+        </block>
+        <block type="sb_set_instrument_volume">
+            <value name="VOLUME_VALUE">
+                <shadow type="math_number"><field name="NUM">0.8</field></shadow>
+            </value>
+        </block>
+    </category>
+
     <category name="%{BKY_MSG_PERFORMANCE_CATEGORY}" colour="%{BKY_PERFORMANCE_HUE}">
         <block type="sb_play_note">
             <value name="NOTE">
@@ -165,21 +180,6 @@ export const TOOLBOX_XML_STRING = `
         </block>
         <block type="sb_play_melody">
             <field name="MELODY_STRING">C4Q, D4Q, E4Q, F4Q, G4H</field>
-        </block>
-    </category>
-
-    <category name="%{BKY_MSG_INSTRUMENT_CONTROL_CATEGORY}" colour="%{BKY_INSTRUMENT_CONTROL_HUE}">
-        <block type="sb_select_current_instrument"></block>
-        <block type="sb_set_adsr"></block>
-        <block type="sb_set_instrument_vibrato">
-            <value name="DETUNE_VALUE">
-                <shadow type="math_number"><field name="NUM">0</field></shadow>
-            </value>
-        </block>
-        <block type="sb_set_instrument_volume">
-            <value name="VOLUME_VALUE">
-                <shadow type="math_number"><field name="NUM">0.8</field></shadow>
-            </value>
         </block>
         <block type="sb_define_chord"></block>
     </category>

@@ -1,0 +1,45 @@
+<div class="help-content">
+    <h2>範例專案使用說明</h2>
+    <p>透過範例專案，您可以快速了解如何使用 SynthBlockly 建立各種音樂效果與互動裝置。</p>
+
+    <h3>1. 如何載入範例</h3>
+    <ul>
+        <li>點擊工具列上的<strong>「範例專案」</strong>圖示（圖示呈現資料夾或🎹形狀）。</li>
+        <li>在彈出的清單中選擇您感興趣的專案。</li>
+        <li>確認載入後，現有的工作區內容將會被範例取代。</li>
+    </ul>
+
+    <h3>2. 範例類型</h3>
+    <div class="example-types">
+        <p><strong>🎹 僅限 Blockly (Software)：</strong> 這些範例不需要外部硬體，直接點擊「執行積木」即可聽到聲音。</p>
+        <p><strong>🤖 硬體整合 (Hardware)：</strong> 這些範例需要配合 Arduino 或其他實體電子元件。載入後會自動彈出硬體指引。 </p>
+    </div>
+
+    <h3>3. 硬體範例的操作流程</h3>
+    <ol>
+        <li>載入範例後，請詳閱彈出的<strong>「硬體設定指引」</strong>。</li>
+        <li>點擊<strong>「下載 Arduino 程式碼 (.ino)」</strong>按鈕，取得對應的 C++ 程式。</li>
+        <li>使用 Arduino IDE 開啟下載的檔案，並燒錄至您的開發板。</li>
+        <li>根據說明完成電路接線（例如按鈕、可變電阻或感測器）。</li>
+        <li>回到 SynthBlockly，點擊工具列的<strong>「連接序列埠」</strong>與您的 Arduino 連線。</li>
+    </ol>
+
+    <div class="note">
+        <p><strong>提示：</strong> 您可以修改範例的積木參數來實驗不同的聲音效果！</p>
+    </div>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+    <h3>4. 如何擴充範例 (給開發者)</h3>
+    <p>如果您想新增自己的範例到清單中，請依循以下規範將檔案放置於專案的 <code>src/examples/</code> 目錄，系統會自動根據副檔名進行掃描：</p>
+    <ul>
+        <li><strong>純軟體範例：</strong> 直接在根目錄放入 <code>.xml</code> 檔案 (例如：<code>src/examples/MySong.xml</code>)。</li>
+        <li><strong>硬體範例 (資料夾型)：</strong> 建立一個資料夾 (例如：<code>src/examples/MyProject/</code>)，系統會自動匹配其中的檔案：
+            <ul>
+                <li><strong>Blockly 程式 (入口)：</strong> 檔名必須是 <code>main.xml</code> 或是與資料夾同名 (如 <code>MyProject.xml</code>)。</li>
+                <li><strong>Arduino 程式：</strong> 只要是 <code>.ino</code> 檔案即可，檔名不限，且可以放在該資料夾下的任何位置。</li>
+                <li><strong>說明文件：</strong> 只要是 <code>.md</code> 檔案即可，檔名不限 (如 <code>README.md</code>)，系統會將其內容顯示在硬體指引視窗中。</li>
+            </ul>
+        </li>
+    </ul>
+</div>

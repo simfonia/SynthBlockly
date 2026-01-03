@@ -422,5 +422,7 @@
     "LISTS_GET_SUBLIST_HELPURL":  "https://github.com/google/blockly/wiki/Lists#getting-a-sublist",
     "HELP":  "說明",
     "LOGIC_NULL":  "空",
-    "LOGIC_OPERATION_OR":  "或"
+    "LOGIC_OPERATION_OR":  "或",
+    "UI_BTN_EXAMPLES": "範例專案",
+    "UI_EXAMPLES_TITLE": "範例專案"
 }

@@ -1,6 +1,48 @@
 // js/blocks/sfx_blocks.js
 import * as Blockly from 'blockly';
 
+// Dynamically import all audio files from the public/samples/sound directory
+// We use eager: true to get the list immediately, and as: 'url' to get the paths
+const sfxModules = import.meta.glob('../../public/samples/sound/*.{wav,mp3,ogg,m4a}', { eager: true, query: '?url' });
+
+/**
+ * Generate dropdown options from the imported modules
+ */
+function getSfxOptions() {
+    const options = [];
+    
+    // Process each matched file
+    Object.keys(sfxModules).forEach(filePath => {
+        // Extract filename from path (e.g., "../../public/samples/sound/Explosion-1.wav" -> "Explosion-1.wav")
+        const fileName = filePath.split('/').pop();
+        const ext = fileName.split('.').pop();
+        const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+        
+        // Format display name: "Explosion-1" -> "Explosion 1"
+        let displayName = baseName
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+            
+        // Add extension hint if not wav
+        if (ext.toLowerCase() !== 'wav') {
+            displayName += ` (${ext.toUpperCase()})`;
+        }
+        
+        // Value used by the engine (relative to public root)
+        const value = `samples/sound/${fileName}`;
+        
+        options.push([displayName, value]);
+    });
+    
+    // Sort alphabetically by display name
+    options.sort((a, b) => a[0].localeCompare(b[0]));
+    
+    // Always add the Custom option at the end
+    options.push(["%{BKY_SB_SF_CUSTOM_OPTION}", "CUSTOM"]);
+    
+    return options.length > 1 ? options : [["(No sounds found)", "NONE"], ["%{BKY_SB_SF_CUSTOM_OPTION}", "CUSTOM"]];
+}
+
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
         console.error('Blockly not available');
@@ -9,25 +51,15 @@ export function registerBlocks() {
 
     Blockly.Blocks['sb_play_sfx'] = {
         init: function () {
+            const sfxOptions = getSfxOptions();
+            
             this.jsonInit({
                 "message0": "%{BKY_SB_PLAY_SFX_MESSAGE}",
                 "args0": [
                     {
                         "type": "field_dropdown",
                         "name": "FILENAME",
-                        "options": [
-                            ["Explosion 1", "samples/sound/Explosion-1.wav"],
-                            ["Explosion 2", "samples/sound/Explosion-2.wav"],
-                            ["Explosion 3", "samples/sound/Explosion-3.wav"],
-                            ["Explosion 4 (MP3)", "samples/sound/explosion-4.mp3"],
-                            ["Suck 1", "samples/sound/suck-1.wav"],
-                            ["Suck 2", "samples/sound/suck-2.wav"],
-                            ["Suck 3", "samples/sound/suck-3.wav"],
-                            ["Suck 4", "samples/sound/suck-4.wav"],
-                            ["Windchimes 1", "samples/sound/windchimes-1.wav"],
-                            ["Windchimes 2", "samples/sound/windchimes-2.wav"],
-                            ["%{BKY_SB_SF_CUSTOM_OPTION}", "CUSTOM"]
-                        ]
+                        "options": sfxOptions
                     }
                 ],
                 "message1": "%{BKY_SB_SFX_CUSTOM_URL_LABEL} %1",

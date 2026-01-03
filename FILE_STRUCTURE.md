@@ -9,14 +9,20 @@
   - `vite.config.js`: 構建配置。
   - `public/`: 靜態資源（音訊樣本、說明文件、i18n 檔案）。
     - `docs/`: 積木說明文件 (HTML 格式，支援中英雙語)。
+      - `examples_readme_*.html`: 範例專案使用說明與開發規範。
       - `performance_readme_*.html`: 演奏音符積木說明。
     - `locales/`: Blockly 核心語言包 (JSON)。
     - `samples/`: 音訊樣本庫（包含爵士鼓、小提琴與特殊音效 SFX）。
+  - `src/`: 原始碼目錄 (支援 Vite Glob Import)。
+    - `examples/`: 範例專案庫。
+      - `*.xml`: 純軟體範例。
+      - `FolderName/`: 硬體整合範例資料夾 (含 .xml, .ino, .md)。
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
       - `audioEngine.js`: Tone.js 封裝，管理「音源」、效果鏈與旋律解析。
       - `blocklyManager.js`: Blockly 工作區管理、動態積木註冊與程式碼產生邏輯。
+      - `exampleManager.js`: 範例專案掃描器 (處理 XML/INO 關聯)。
       - `midiEngine.js`: 處理外部 MIDI 設備通訊。
       - `serialEngine.js`: 處理序列埠設備通訊。
       - `toolbox.js`: 定義三位一體專業工具箱 (Sources, Performance, Control)。
@@ -24,6 +30,7 @@
       - `adsrVisualizer.js`: Canvas 實作的 ADSR 包絡線預覽與動態光點。
       - `visualizer.js`: p5.js 實作的即時示波器。
       - `buttons.js`: 工具列按鈕邏輯。
+      - `exampleModal.js`: 範例選單與硬體指引視窗 UI。
       - `logger.js`: 多語系日誌系統。
       - `keyboardController.js`: PC 鍵盤演奏邏輯。
       - `resizer.js`: 介面佈局調整。
@@ -41,11 +48,10 @@
       - `keyboard_blocks.js` / `_generators.js`: PC 鍵盤對應。
       - `transport_blocks.js` / `_generators.js`: 播放控制 (BPM, Loop)。
       - `noise_blocks.js` / `_generators.js`: 噪音產生器。
-      - `sfx_blocks.js` / `_generators.js`: 環境音效播放。
+      - `sfx_blocks.js` / `_generators.js`: 環境音效播放 (支援動態 Glob Import)。
       - `math_blocks.js` / `_generators.js`: 數學運算擴充。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。
     - `plugins/`: Blockly 欄位插件（如多行文字輸入框）。
     - `log/`: 開發紀錄。
       - `todo.md`: 任務清單與待辦事項。
       - `work/`: 每日開發工作日誌 (例如 `yyyy-mm-dd.md`)。
-  

@@ -2,6 +2,7 @@ import { log, logKey, clearLogs } from './logger.js';
 import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js';
 import { getBlocksCode, resetWorkspaceAndAudio } from '../core/blocklyManager.js'; // Import resetWorkspaceAndAudio
 import * as Blockly from 'blockly'; // Import Blockly
+import { showExampleModal } from './exampleModal.js'; // Import Example Modal
 
 // New function to encapsulate run logic
 async function runBlocksAction() {
@@ -40,7 +41,9 @@ export function initButtons() {
     // Test Note Button
     document.getElementById('btnTestNote').addEventListener('click', async () => {
         const ok = await ensureAudioStarted();
-        if (ok) audioEngine.synth.triggerAttackRelease('A4', '8n'); // Using audioEngine.synth
+        if (ok) {
+            audioEngine.playCurrentInstrumentNote('A4', '8n', audioEngine.Tone.now(), 0.8);
+        }
     });
 
     // Run Blocks Button - now calls runBlocksAction()
@@ -164,6 +167,15 @@ export function initButtons() {
             }
         });
     }
+
+    // Example Button
+    const btnExample = document.getElementById('btnExample');
+    if (btnExample) {
+        btnExample.addEventListener('click', () => {
+            showExampleModal();
+        });
+    }
+
     // New: Oscilloscope Amplitude Slider
     const amplitudeSlider = document.getElementById('amplitudeSlider');
     if (amplitudeSlider) {

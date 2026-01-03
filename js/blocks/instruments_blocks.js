@@ -346,28 +346,28 @@ export function registerBlocks() {
                         }
 
 
-                    ],
+                                        ],
 
 
-                    "previousStatement": null,
+                                        "previousStatement": null,
 
 
-                    "nextStatement": null,
+                                        "nextStatement": null,
 
 
-                    "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+                                        "colour": "%{BKY_PERFORMANCE_HUE}",
 
 
-                    "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
+                                        "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
 
 
-                });
+                                    });
 
 
-            }
+                                }
 
 
-        };
+                            };
 
 
     

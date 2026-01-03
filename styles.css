@@ -20,6 +20,8 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
     box-sizing:border-box;
     display: flex;
     flex-direction: column;
+    min-width: 0; /* Critical for nested flex containers to shrink */
+    overflow: hidden; /* Ensures content doesn't force width */
 }
 #blocklyDiv{
     flex-grow: 1; /* Fill available vertical space */
@@ -101,7 +103,14 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
     display: block;
 }
 
-#waveformContainer{width:100%;height:15vh;background:#111;border:1px solid #222;flex-shrink: 0;}
+#waveformContainer{
+    width:100%;
+    height:15vh;
+    background:#111;
+    border:1px solid #222;
+    flex-shrink: 0;
+    min-width: 0;
+}
 #adsrContainer {
     width: 100%;
     height: 70px; /* Further reduced height to maximize log space */
@@ -111,6 +120,7 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
     border-radius: 4px;
     overflow: hidden;
     flex-shrink: 0; /* Prevent shrinking when log grows */
+    min-width: 0;
 }
 #adsrCanvas {
     width: 100%;
