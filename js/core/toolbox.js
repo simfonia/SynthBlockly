@@ -124,6 +124,9 @@ export const TOOLBOX_XML_STRING = `
     <sep></sep>
     <category name="%{BKY_MSG_VARIABLES_CATEGORY}" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
     <category name="%{BKY_MSG_FUNCTIONS_CATEGORY}" colour="%{BKY_FUNCTIONS_HUE}" custom="PROCEDURE"></category>
+    <category name="%{BKY_MSG_TOOLS_CATEGORY}" colour="%{BKY_TOOLS_HUE}">
+        <block type="sb_comment"></block>
+    </category>
     <sep></sep>
     
     <!-- SynthBlockly Core Categories -->
@@ -230,6 +233,10 @@ export const TOOLBOX_XML_STRING = `
 
     <category name="%{BKY_MSG_SERIAL_CATEGORY}" colour="%{BKY_SERIAL_HUE}">
         <block type="sb_serial_data_received"></block>
+        <block type="sb_serial_check_key_mask"></block>
+        <block type="sb_play_chord_by_name">
+            <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        </block>
     </category>
 </xml>
 `;

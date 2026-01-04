@@ -113,7 +113,9 @@ async function onMIDIMessage(msg) {
     const channel = (status & 0x0f) + 1;
 
     if (cmd === 0x90 && data2 > 0) { // Note ON with velocity > 0
-        audioEngine.midiAttack(midiNoteNumber, data2 / 127, channel);
+        // REMOVED: audioEngine.midiAttack(midiNoteNumber, data2 / 127, channel); 
+        // We now rely entirely on the Blockly "sb_midi_note_received" block to trigger sounds via "sb_midi_play".
+        
         midiNoteListeners.forEach(listener => {
             try {
                 // Pass raw velocity (0-127) to listeners

@@ -9,11 +9,11 @@ export const MSG_ZH_HANT = {
     'UI_BTN_CONNECT_SERIAL': '連接序列埠設備',
     'UI_BTN_DISCONNECT_SERIAL': '斷開序列埠設備',
     'UI_BTN_CONNECT_MIDI': '連接 MIDI 設備',
-    'UI_BTN_RUN_BLOCKS': '執行積木 (Ctrl+Enter)',
+    'UI_BTN_RUN_BLOCKS': '執行程式 (Ctrl+Enter)',
     'UI_BTN_EXPORT_CODE': '匯出程式碼並複製',
-    'UI_BTN_CLEAR_LOG': '清除日誌',
-    'UI_LOG_TITLE_ERROR': '錯誤/警告日誌',
-    'UI_LOG_TITLE_GENERAL': '一般日誌',
+    'UI_BTN_CLEAR_LOG': '清除訊息',
+    'UI_LOG_TITLE_ERROR': '錯誤/警告訊息',
+    'UI_LOG_TITLE_GENERAL': '一般訊息',
     'UI_SLIDER_AMPLITUDE': '振幅:',
     'UI_SLIDER_TIMEBASE': '時基:',
 
@@ -47,22 +47,25 @@ export const MSG_ZH_HANT = {
     'SYNTHBLOCKLY_HUE': '#5CA6A6',
     'MSG_SOUND_SOURCES_CATEGORY': '音源 (Sources)',
     'SOUND_SOURCES_HUE': '#5CB85C',
-    'MSG_PERFORMANCE_CATEGORY': '演奏 (Performance)',
-    'PERFORMANCE_HUE': '#E74C3C',
     'MSG_INSTRUMENT_CONTROL_CATEGORY': '音源控制 (Control)',
     'INSTRUMENT_CONTROL_HUE': '#5BC0DE',
+    'MSG_PERFORMANCE_CATEGORY': '演奏 (Performance)',
+    'PERFORMANCE_HUE': '#E74C3C',
     'MSG_TRANSPORT_CATEGORY': '放送控制 (Transport)',
     'TRANSPORT_HUE': '#16A085',
     'MSG_EFFECTS_CATEGORY': '效果器 (Effects)',
     'EFFECTS_HUE': '#9B59B6',
+    'MSG_SFX_CATEGORY': '特殊音效 (SFX)',
+    'SFX_HUE': '#5A8D8B',
     'MSG_MIDI_CATEGORY': 'MIDI',
     'MIDI_HUE': '#5B67E7',
     'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
     'PC_KEYBOARD_HUE': '#F0B429',
     'MSG_SERIAL_CATEGORY': 'Serial',
-    'SERIAL_HUE': '#D9534F',
+    'SERIAL_HUE': '#607D8B', // Blue Grey
+    'MSG_TOOLS_CATEGORY': '工具',
+    'TOOLS_HUE': '#777777',
     'MSG_SFX_CATEGORY': '特殊音效 (SFX)',
-    'SFX_HUE': '#5A8D8B',
 
     // --- Legacy Compatibility Hue Keys ---
     'INSTRUMENTS_HUE': '#5CB85C',
@@ -79,7 +82,7 @@ export const MSG_ZH_HANT = {
     'SB_NOISE_TYPE_PINK': '粉紅噪音',
     'SB_NOISE_TYPE_BROWN': '棕色噪音',
 
-    'MSG_HARMONIC_ADDER_CATEGORY': '諧波合成音源', 
+    'MSG_HARMONIC_ADDER_CATEGORY': '諧波合成音源',
     'MSG_HARMONIC_SYNTH_TOOLTIP': '建立一個基於諧波加法合成的音源。可點擊齒輪增減泛音層級。按右鍵選擇「說明」查看加法合成原理。',
     'MSG_FUNDAMENTAL_FIELD': '基頻 (1x) 振幅 (0-1)',
     'MSG_HARMONIC_FIELD': '{0}倍頻 振幅 (0-1)',
@@ -121,37 +124,22 @@ export const MSG_ZH_HANT = {
     'SB_PLAY_MELODY_MESSAGE': '演奏旋律清單: %1',
     'SB_PLAY_MELODY_TOOLTIP': '輸入旋律字串（如 C4Q, D4H, RE）。支援空白或逗號分隔，建議每小節換行。使用 R 代表休止符。時值：W=全, H=二分, Q=四分, E=八分, S=16, T=32。支援附點(.)與三連音(_T)。按右鍵選擇「說明」查看編寫指南。',
 
-        // SAMPLERS
+    // SAMPLERS
+    'JAZZKIT_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '播放爵士鼓聲 (Roland TR-909 取樣音源) %1 力度 %2',
+    'JAZZKIT_PLAY_DRUM_TOOLTIP': '播放來自實機錄音樣本的爵士鼓音效。',
+    'JAZZKIT_DRUM_KICK': '大鼓 (Kick)',
+    'JAZZKIT_DRUM_RIMSHOT': '邊擊 (Rimshot)',
+    'JAZZKIT_DRUM_SNARE': '小鼓 (Snare)',
+    'JAZZKIT_DRUM_HANDCLAP': '拍手 (Handclap)',
+    'JAZZKIT_DRUM_CLOSED_HIHAT': '閉合腳踏鈸 (Closed Hi-hat)',
+    'JAZZKIT_DRUM_OPEN_HIHAT': '開式腳踏鈸 (Open Hi-hat)',
+    'JAZZKIT_DRUM_HIGH_TOM': '高音桶鼓 (High Tom)',
+    'JAZZKIT_DRUM_MID_TOM': '中音桶鼓 (Mid Tom)',
+    'JAZZKIT_DRUM_LOW_TOM': '低音桶鼓 (Low Tom)',
+    'JAZZKIT_DRUM_CRASH_CYMBAL': '碎音鈸 (Crash Cymbal)',
+    'JAZZKIT_DRUM_RIDE_CYMBAL': 'Ride Cymbal',
 
-        'JAZZKIT_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '播放爵士鼓聲 (Roland TR-909 取樣音源) %1 力度 %2',
-
-        'JAZZKIT_PLAY_DRUM_TOOLTIP': '播放來自實機錄音樣本的爵士鼓音效。',
-
-        'JAZZKIT_DRUM_KICK': '大鼓 (Kick)',
-
-        'JAZZKIT_DRUM_RIMSHOT': '邊擊 (Rimshot)',
-
-        'JAZZKIT_DRUM_SNARE': '小鼓 (Snare)',
-
-        'JAZZKIT_DRUM_HANDCLAP': '拍手 (Handclap)',
-
-        'JAZZKIT_DRUM_LOW_TOM': '低音桶鼓 (Low Tom)',
-
-        'JAZZKIT_DRUM_CLOSED_HIHAT': '閉合腳踏鈸 (Closed Hi-hat)',
-
-        'JAZZKIT_DRUM_MID_TOM': '中音桶鼓 (Mid Tom)',
-
-        'JAZZKIT_DRUM_HIGH_TOM': '高音桶鼓 (High Tom)',
-
-        'JAZZKIT_DRUM_CRASH_CYMBAL': '碎音鈸 (Crash Cymbal)',
-
-        'JAZZKIT_DRUM_OPEN_HIHAT': '開式腳踏鈸 (Open Hi-hat)',
-
-        'JAZZKIT_DRUM_RIDE_CYMBAL': '駕馭鈸 (Ride Cymbal)',
-
-    
-
-        'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': '建立取樣音源 %1 型態 %2',
+    'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': '建立取樣音源 %1 型態 %2',
     'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': '建立一個基於錄音樣本的取樣器音源。可選擇預設鋼琴、小提琴或自訂 URL 樣本。按右鍵選擇「說明」查看如何建立自己的取樣器。',
     'SB_CREATE_LAYERED_INSTRUMENT_MESSAGE': '建立疊加音源 名稱 %1 包含樂器清單 %2',
     'SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP': '將多個已定義的樂器組合成一個疊加音源。請使用逗號分隔名稱。',
@@ -216,10 +204,10 @@ export const MSG_ZH_HANT = {
     'SB_EFFECT_ROLLOFF_FIELD': '滾降斜率',
 
     // SFX
-    'SB_PLAY_SFX_MESSAGE': '播放環境音效 %1',
-    'SB_PLAY_SFX_REVERSE_FIELD': '%1 倒放',
+    'SB_PLAY_SFX_MESSAGE': '播放音效 %1',
+    'SB_PLAY_SFX_REVERSE_FIELD': '%1 倒帶',
     'SB_PLAY_SFX_SPEED_FIELD': '播放速度 %1',
-    'SB_PLAY_SFX_VOLUME_FIELD': '音效音量 %1',
+    'SB_PLAY_SFX_VOLUME_FIELD': '音量 %1',
     'SB_PLAY_SFX_TOOLTIP': '播放單次音效。按右鍵選擇「說明」查看參數詳解。',
     'SB_SF_CUSTOM_OPTION': '自訂音效 URL...',
     'SB_SFX_CUSTOM_URL_LABEL': 'URL',
@@ -241,6 +229,8 @@ export const MSG_ZH_HANT = {
     // SERIAL
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': '當收到序列埠資料 %1 時',
     'SB_SERIAL_DATA_RECEIVED_TOOLTIP': '監聽來自 Arduino 等設備的序列埠文字訊息。',
+    'SB_SERIAL_CHECK_KEY_MASK_MESSAGE': '檢查資料 %1 中按鍵 %2 是否按下？',
+    'SB_SERIAL_CHECK_KEY_MASK_TOOLTIP': '解析位元遮罩資料 (例如 KEYS:5)，檢查特定按鍵是否包含在內。',
 
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 小節 (1m)',
@@ -398,4 +388,8 @@ export const MSG_ZH_HANT = {
     'LOG_SERIAL_ERR': '序列埠錯誤: %1',
     'LOG_SERIAL_PORT_BUSY': '序列埠已被佔用或無法開啟。',
     'LOG_SERIAL_DISCONNECTED': '序列埠連線已中斷。',
+    'SB_PLAY_CHORD_BY_NAME_MESSAGE': '播放和弦 %1 時值 %2 力度 %3',
+    'SB_PLAY_CHORD_BY_NAME_TOOLTIP': '播放指定名稱的已定義和弦。',
+    'SB_COMMENT_MESSAGE': '註解: %1',
+    'SB_COMMENT_TOOLTIP': '在工作區留下說明文字，不會影響程式執行。',
 };

@@ -33,5 +33,24 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     try { if (JSConstructorProto) JSConstructorProto['sb_serial_data_received'] = G['sb_serial_data_received']; } catch (e) { }
     try { G.forBlock['sb_serial_data_received'] = G['sb_serial_data_received']; } catch (e) { }
 
+    G['sb_serial_check_key_mask'] = function (block) {
+        const dataVar = G.valueToCode(block, 'DATA', G.ORDER_ATOMIC) || "''";
+        const keyNum = block.getFieldValue('KEY');
+        
+        // Generate an IIFE to keep logic clean and expression-ready
+        const code = `(function(d) { 
+            if (!d || typeof d !== 'string' || !d.startsWith('KEYS:')) return false; 
+            var val = parseInt(d.split(':')[1]); 
+            if (isNaN(val)) return false; 
+            return (val & (1 << (${keyNum} - 1))) !== 0; 
+        })(${dataVar})`;
+        
+        return [code, G.ORDER_FUNCTION_CALL];
+    };
+    try { if (Gproto) Gproto['sb_serial_check_key_mask'] = G['sb_serial_check_key_mask']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_serial_check_key_mask'] = G['sb_serial_check_key_mask']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_serial_check_key_mask'] = G['sb_serial_check_key_mask']; } catch (e) { }
+    try { G.forBlock['sb_serial_check_key_mask'] = G['sb_serial_check_key_mask']; } catch (e) { }
+
     return true;
 }

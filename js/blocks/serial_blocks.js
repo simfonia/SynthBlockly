@@ -37,4 +37,30 @@ export function registerBlocks() {
             });
         }
     };
+
+    // 檢查位元遮罩 (Polyphony)
+    Blockly.Blocks['sb_serial_check_key_mask'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_SERIAL_CHECK_KEY_MASK_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DATA",
+                        "check": "String"
+                    },
+                    {
+                        "type": "field_number",
+                        "name": "KEY",
+                        "value": 1,
+                        "min": 1,
+                        "max": 16
+                    }
+                ],
+                "output": "Boolean",
+                "colour": "%{BKY_SERIAL_HUE}",
+                "tooltip": "%{BKY_SB_SERIAL_CHECK_KEY_MASK_TOOLTIP}"
+            });
+        }
+    };
 }

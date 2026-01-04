@@ -38,7 +38,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             const num = parseFloat(value);
             return isNaN(num) ? defaultValue : num;
         };
-        
+
         // Helper to get string value from input (for time values like '8n')
         const getStringValue = (inputName, defaultValue) => {
             let value = G.valueToCode(block, inputName, G.ORDER_ATOMIC) || defaultValue;
@@ -111,7 +111,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             liveUpdateCode = `window.audioEngine.updateFilter(${freq}, ${qValue});`;
         } else {
             // 其他效果暫不實作即時更新，避免頻繁 rebuild 造成卡頓
-            liveUpdateCode = ""; 
+            liveUpdateCode = "";
         }
 
         return configComment + liveUpdateCode + '\n';

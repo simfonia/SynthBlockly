@@ -21,6 +21,7 @@ import { registerBlocks as registerCustomWaveBlocks } from './instruments_custom
 import { registerBlocks as registerSamplerBlocks } from './sampler_blocks.js'; // NEW
 import { registerBlocks as registerSfxBlocks } from './sfx_blocks.js'; // NEW
 import { registerBlocks as registerMelodyBlocks } from './melody_blocks.js'; // NEW
+import { registerBlocks as registerToolsBlocks } from './tools_blocks.js'; // NEW
 
 import { registerGenerators as registerInstrumentGenerators } from './instruments_generators.js';
 import { registerGenerators as registerMidiGenerators } from './midi_generators.js';
@@ -34,6 +35,7 @@ import { registerGenerators as registerCustomWaveGenerators } from './instrument
 import { registerGenerators as registerSamplerGenerators } from './sampler_generators.js'; // NEW
 import { registerGenerators as registerSfxGenerators } from './sfx_generators.js'; // NEW
 import { registerGenerators as registerMelodyGenerators } from './melody_generators.js'; // NEW
+import { registerGenerators as registerToolsGenerators } from './tools_generators.js'; // NEW
 
 // --- End of Imports ---
 
@@ -78,7 +80,7 @@ async function loadBlocklyLocale(currentLang) {
         // Merge base Blockly and custom SynthBlockly locales
         const finalLocale = { ...baseLocaleData, ...customLocaleData };
         Blockly.setLocale(finalLocale);
-        
+
         console.log(`Successfully fetched, merged, and set locale: ${blocklyLocaleCode} (custom: ${blocklyLocaleCode})`);
 
     } catch (error) {
@@ -101,41 +103,43 @@ async function loadBlocklyLocale(currentLang) {
  * Registers all blocks, generators, and languages.
  */
 export async function registerAll() {
-  try {
-    // 1. Load language first
-    await loadBlocklyLocale(window.currentLanguage || 'en'); 
+    try {
+        // 1. Load language first
+        await loadBlocklyLocale(window.currentLanguage || 'en');
 
-    // 2. Register Custom Blocks
-    registerInstrumentBlocks(Blockly);
-    registerMidiBlocks(Blockly);
-    registerSerialBlocks(Blockly);
-    registerKeyboardBlocks(Blockly);
-    registerTransportBlocks(Blockly);
-    registerEffectsBlocks(Blockly);
-    registerMathBlocks(Blockly);
-    registerNoiseBlocks(Blockly);
-    registerCustomWaveBlocks(Blockly); // NEW
-    registerSamplerBlocks(Blockly); // NEW
-    registerSfxBlocks(Blockly); // NEW
-    registerMelodyBlocks(Blockly); // NEW
-    console.log('Blocks registered.');
+        // 2. Register Custom Blocks
+        registerInstrumentBlocks(Blockly);
+        registerMidiBlocks(Blockly);
+        registerSerialBlocks(Blockly);
+        registerKeyboardBlocks(Blockly);
+        registerTransportBlocks(Blockly);
+        registerEffectsBlocks(Blockly);
+        registerMathBlocks(Blockly);
+        registerNoiseBlocks(Blockly);
+        registerCustomWaveBlocks(Blockly); // NEW
+        registerSamplerBlocks(Blockly); // NEW
+        registerSfxBlocks(Blockly); // NEW
+        registerMelodyBlocks(Blockly); // NEW
+        registerToolsBlocks(Blockly); // NEW
+        console.log('Blocks registered.');
 
-    // 4. Register Custom Generators
-    registerInstrumentGenerators(Blockly, javascriptGenerator);
-    registerMidiGenerators(Blockly, javascriptGenerator);
-    registerSerialGenerators(Blockly, javascriptGenerator);
-    registerKeyboardGenerators(Blockly, javascriptGenerator);
-    registerTransportGenerators(Blockly, javascriptGenerator);
-    registerEffectsGenerators(Blockly, javascriptGenerator);
-    registerMathGenerators(Blockly, javascriptGenerator);
-    registerNoiseGenerators(Blockly, javascriptGenerator);
-    registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW
-    registerSamplerGenerators(Blockly, javascriptGenerator); // NEW
-    registerSfxGenerators(Blockly, javascriptGenerator); // NEW
-    registerMelodyGenerators(Blockly, javascriptGenerator); // NEW
-    console.log('Generators registered.');
+        // 4. Register Custom Generators
+        registerInstrumentGenerators(Blockly, javascriptGenerator);
+        registerMidiGenerators(Blockly, javascriptGenerator);
+        registerSerialGenerators(Blockly, javascriptGenerator);
+        registerKeyboardGenerators(Blockly, javascriptGenerator);
+        registerTransportGenerators(Blockly, javascriptGenerator);
+        registerEffectsGenerators(Blockly, javascriptGenerator);
+        registerMathGenerators(Blockly, javascriptGenerator);
+        registerNoiseGenerators(Blockly, javascriptGenerator);
+        registerCustomWaveGenerators(Blockly, javascriptGenerator); // NEW
+        registerSamplerGenerators(Blockly, javascriptGenerator); // NEW
+        registerSfxGenerators(Blockly, javascriptGenerator); // NEW
+        registerMelodyGenerators(Blockly, javascriptGenerator); // NEW
+        registerToolsGenerators(Blockly, javascriptGenerator); // NEW
+        console.log('Generators registered.');
 
-  } catch (e) {
-    console.error('Error during block registration process:', e);
-  }
+    } catch (e) {
+        console.error('Error during block registration process:', e);
+    }
 }

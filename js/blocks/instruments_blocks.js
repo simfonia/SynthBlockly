@@ -167,16 +167,16 @@ export function registerBlocks() {
                         "name": "DRUM_TYPE",
                         "options": [
                             ['%{BKY_JAZZKIT_DRUM_KICK}', 'C1'],
-                            ['%{BKY_JAZZKIT_DRUM_RIMSHOT}', 'C#1'],
                             ['%{BKY_JAZZKIT_DRUM_SNARE}', 'D1'],
-                            ['%{BKY_JAZZKIT_DRUM_HANDCLAP}', 'D#1'],
-                            ['%{BKY_JAZZKIT_DRUM_LOW_TOM}', 'E1'],
+                            ['%{BKY_JAZZKIT_DRUM_RIMSHOT}', 'C#1'],
                             ['%{BKY_JAZZKIT_DRUM_CLOSED_HIHAT}', 'F1'],
-                            ['%{BKY_JAZZKIT_DRUM_MID_TOM}', 'F#1'],
-                            ['%{BKY_JAZZKIT_DRUM_HIGH_TOM}', 'G1'],
-                            ['%{BKY_JAZZKIT_DRUM_CRASH_CYMBAL}', 'G#1'],
                             ['%{BKY_JAZZKIT_DRUM_OPEN_HIHAT}', 'A1'],
-                            ['%{BKY_JAZZKIT_DRUM_RIDE_CYMBAL}', 'A#1'] // Correctly added this back
+                            ['%{BKY_JAZZKIT_DRUM_HIGH_TOM}', 'G1'],
+                            ['%{BKY_JAZZKIT_DRUM_MID_TOM}', 'F#1'],
+                            ['%{BKY_JAZZKIT_DRUM_LOW_TOM}', 'E1'],
+                            ['%{BKY_JAZZKIT_DRUM_CRASH_CYMBAL}', 'G#1'],
+                            ['%{BKY_JAZZKIT_DRUM_RIDE_CYMBAL}', 'A#1'],
+                            ['%{BKY_JAZZKIT_DRUM_HANDCLAP}', 'D#1']
                         ]
                     }, // <-- Comma for args0 separator
                     { // Velocity input - Correctly placed as a new item in args0
@@ -300,152 +300,120 @@ export function registerBlocks() {
         }
     };
 
+    Blockly.Blocks['sb_define_chord'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_DEFINE_CHORD_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NAME",
+                        "text": "C Major"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "NOTES_STRING",
+                        "text": "C4,E4,G4"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
+            });
+        }
+    };
 
-        Blockly.Blocks['sb_define_chord'] = {
+    // 建立疊加樂器
+    Blockly.Blocks['sb_create_layered_instrument'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NAME",
+                        "text": "MyLayeredSynth"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "LAYER_LIST",
+                        "text": "BassLayer,LeadLayer"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SOUND_SOURCES_HUE}",
+                "tooltip": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP}"
+            });
+        }
+    };
 
-
-            init: function () {
-
-
-                this.jsonInit({
-
-
-                    "message0": "%{BKY_SB_DEFINE_CHORD_MESSAGE}",
-
-
-                    "args0": [
-
-
-                        {
-
-
-                            "type": "field_input",
-
-
-                            "name": "NAME",
-
-
-                            "text": "C Major"
-
-
-                        },
-
-
-                        {
-
-
-                            "type": "field_input",
-
-
-                            "name": "NOTES_STRING",
-
-
-                            "text": "C4,E4,G4"
-
-
+    // 播放指定名稱的和弦
+    Blockly.Blocks['sb_play_chord_by_name'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_PLAY_CHORD_BY_NAME_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "CHORD_NAME",
+                        "text": "C"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "DUR",
+                        "text": "8n"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "VELOCITY",
+                        "check": "Number",
+                        "shadow": {
+                            "type": "math_number",
+                            "fields": { "NUM": 1 }
                         }
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_PERFORMANCE_HUE}", // Moved to Performance
+                "tooltip": "%{BKY_SB_PLAY_CHORD_BY_NAME_TOOLTIP}"
+            });
+        }
+    };
 
-
-                                        ],
-
-
-                                        "previousStatement": null,
-
-
-                                        "nextStatement": null,
-
-
-                                        "colour": "%{BKY_PERFORMANCE_HUE}",
-
-
-                                        "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
-
-
-                                    });
-
-
-                                }
-
-
-                            };
-
-
-    
-
-
-        // 建立疊加樂器
-
-
-        Blockly.Blocks['sb_create_layered_instrument'] = {
-
-
-            init: function () {
-
-
-                this.jsonInit({
-
-
-                    "message0": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_MESSAGE}",
-
-
-                    "args0": [
-
-
-                        {
-
-
-                            "type": "field_input",
-
-
-                            "name": "NAME",
-
-
-                            "text": "MyLayeredSynth"
-
-
-                        },
-
-
-                        {
-
-
-                            "type": "field_input",
-
-
-                            "name": "LAYER_LIST",
-
-
-                            "text": "BassLayer,LeadLayer"
-
-
+    // 直接播放音符列表的和弦 (無需定義)
+    Blockly.Blocks['sb_play_chord_notes'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_PLAY_CHORD_NOTES_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "NOTES_STRING",
+                        "text": "C4,E4,G4"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "DUR",
+                        "text": "8n"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "VELOCITY",
+                        "check": "Number",
+                        "shadow": {
+                            "type": "math_number",
+                            "fields": { "NUM": 1 }
                         }
-
-
-                    ],
-
-
-                    "previousStatement": null,
-
-
-                    "nextStatement": null,
-
-
-                    "colour": "%{BKY_SOUND_SOURCES_HUE}",
-
-
-                    "tooltip": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP}"
-
-
-                });
-
-
-            }
-
-
-        };
-
-
-    }
-
-
-    
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "tooltip": "%{BKY_SB_PLAY_CHORD_NOTES_TOOLTIP}"
+            });
+        }
+    };
+}

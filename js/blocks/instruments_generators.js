@@ -251,10 +251,50 @@ if (!window.audioEngine.isExecutionActive) return;
 
         try { G.forBlock['sb_create_layered_instrument'] = G['sb_create_layered_instrument']; } catch (e) { }
 
-    
+    G['sb_play_chord_by_name'] = function (block) {
+        var chordName = G.quote_(block.getFieldValue('CHORD_NAME'));
+        var duration = G.quote_(block.getFieldValue('DUR'));
+        var velocity = G.valueToCode(block, 'VELOCITY', G.ORDER_ATOMIC) || '1';
 
-        return true;
+        // Ensure velocity is always a number
+        velocity = `Number(${velocity})`;
 
-    }
+        // Call audioEngine.playChordByName(name, duration, velocity)
+        var code = `window.audioEngine.playChordByName(${chordName}, ${duration}, ${velocity});\n`;
+        return code;
+    };
+    try { if (Gproto) Gproto['sb_play_chord_by_name'] = G['sb_play_chord_by_name']; } catch (e) { } 
+    try { if (GeneratorProto) GeneratorProto['sb_play_chord_by_name'] = G['sb_play_chord_by_name']; } catch (e) { } 
+    try { if (JSConstructorProto) JSConstructorProto['sb_play_chord_by_name'] = G['sb_play_chord_by_name']; } catch (e) { } 
+    try { G.forBlock['sb_play_chord_by_name'] = G['sb_play_chord_by_name']; } catch (e) { }
+
+    G['sb_play_chord_notes'] = function (block) {
+        var notesStr = block.getFieldValue('NOTES_STRING') || "";
+        var duration = G.quote_(block.getFieldValue('DUR'));
+        var velocity = G.valueToCode(block, 'VELOCITY', G.ORDER_ATOMIC) || '1';
+
+        // Parse CSV string to array of strings
+        var notesArray = notesStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        var notesJson = JSON.stringify(notesArray);
+
+        // Ensure velocity is always a number
+        velocity = `Number(${velocity})`;
+
+        // Directly call triggerAttackRelease with array (Tone.js supports this)
+        // We use playCurrentInstrumentNote logic but need to handle array input if playCurrentInstrumentNote doesn't.
+        // Wait, playCurrentInstrumentNote calls instr.triggerAttackRelease. 
+        // Tone.js PolySynth.triggerAttackRelease supports array of notes.
+        // So we can just reuse playCurrentInstrumentNote!
+        
+        var code = `window.audioEngine.playCurrentInstrumentNote(${notesJson}, ${duration}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${velocity});\n`;
+        return code;
+    };
+    try { if (Gproto) Gproto['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { } 
+    try { if (GeneratorProto) GeneratorProto['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { } 
+    try { if (JSConstructorProto) JSConstructorProto['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { } 
+    try { G.forBlock['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { }
+
+    return true;
+}
 
     

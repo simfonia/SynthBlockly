@@ -17,41 +17,29 @@
     - `examples/`: 範例專案庫。
       - `*.xml`: 純軟體範例。
       - `FolderName/`: 硬體整合範例資料夾 (含 .xml, .ino, .md)。
+      - `10_Chord_Pad/`: TTP229 和弦觸發板範例。
+      - `11_Drum_Pad/`: TTP229 觸控打擊墊範例 (Bitmask 模式)。
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
-      - `audioEngine.js`: Tone.js 封裝，管理「音源」、效果鏈與旋律解析。
-      - `blocklyManager.js`: Blockly 工作區管理、動態積木註冊與程式碼產生邏輯。
-      - `exampleManager.js`: 範例專案掃描器 (處理 XML/INO 關聯)。
-      - `midiEngine.js`: 處理外部 MIDI 設備通訊。
-      - `serialEngine.js`: 處理序列埠設備通訊。
-      - `toolbox.js`: 定義三位一體專業工具箱 (Sources, Performance, Control)。
+      - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈。
+      - `blocklyManager.js`: Blockly 工作區管理與即時程式碼執行。
+      - `exampleManager.js`: 範例專案掃描器。
+      - `midiEngine.js`: MIDI 訊號接收與轉發。
+      - `serialEngine.js`: 序列埠通訊。
+      - `toolbox.js`: 工具箱 XML 定義。
     - `ui/`: 介面組件。
-      - `adsrVisualizer.js`: Canvas 實作的 ADSR 包絡線預覽與動態光點。
-      - `visualizer.js`: p5.js 實作的即時示波器。
+      - `adsrVisualizer.js`: ADSR 包絡線視覺化。
+      - `visualizer.js`: 即時示波器 (p5.js)。
       - `buttons.js`: 工具列按鈕邏輯。
-      - `exampleModal.js`: 範例選單與硬體指引視窗 UI。
+      - `exampleModal.js`: 範例選單 UI。
       - `logger.js`: 多語系日誌系統。
-      - `keyboardController.js`: PC 鍵盤演奏邏輯。
-      - `resizer.js`: 介面佈局調整。
-      - `uiManager.js`: UI 翻譯與效果管理。
-      - `helpModal.js`: 說明視窗與文件顯示邏輯。
+      - `keyboardController.js`: PC 鍵盤演奏與快捷鍵控制。
+      - `uiManager.js`: UI 翻譯。
     - `blocks/`: 積木與產生器定義。
       - `index.js`: 積木註冊入口點。
-      - `instruments_blocks.js` / `_generators.js`: 標準音源與參數控制。
-      - `instruments_custom_wave_blocks.js` / `_generators.js`: 自訂波形 (加法合成) 音源。
-      - `sampler_blocks.js` / `_generators.js`: 取樣器音源 (內建/自訂)。
-      - `effects_blocks.js` / `_generators.js`: 音訊效果器。
-      - `melody_blocks.js` / `_generators.js`: 旋律清單演奏。
-      - `midi_blocks.js` / `_generators.js`: MIDI 事件處理。
-      - `serial_blocks.js` / `_generators.js`: 序列埠事件處理。
-      - `keyboard_blocks.js` / `_generators.js`: PC 鍵盤對應。
-      - `transport_blocks.js` / `_generators.js`: 播放控制 (BPM, Loop)。
-      - `noise_blocks.js` / `_generators.js`: 噪音產生器。
-      - `sfx_blocks.js` / `_generators.js`: 環境音效播放 (支援動態 Glob Import)。
-      - `math_blocks.js` / `_generators.js`: 數學運算擴充。
+      - `instruments_blocks.js` / `_generators.js`: 音源與演奏積木。
+      - `serial_blocks.js` / `_generators.js`: 序列埠相關積木。
+      - `tools_blocks.js` / `_generators.js`: 註解與輔助工具積木 (NEW)。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。
-    - `plugins/`: Blockly 欄位插件（如多行文字輸入框）。
     - `log/`: 開發紀錄。
-      - `todo.md`: 任務清單與待辦事項。
-      - `work/`: 每日開發工作日誌 (例如 `yyyy-mm-dd.md`)。

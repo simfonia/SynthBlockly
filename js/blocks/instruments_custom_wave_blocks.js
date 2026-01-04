@@ -6,18 +6,18 @@ export function registerBlocks(BlocklyInstance) {
   const HARMONIC_PARTIALS_MUTATOR = {
     itemCount_: 1,
 
-    mutationToDom: function() {
+    mutationToDom: function () {
       const container = BlocklyInstance.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
       return container;
     },
 
-    domToMutation: function(xmlElement) {
+    domToMutation: function (xmlElement) {
       this.itemCount_ = parseInt(xmlElement.getAttribute('items'), 10) || 0;
       this.updateShape_();
     },
 
-    decompose: function(workspace) {
+    decompose: function (workspace) {
       const containerBlock = workspace.newBlock('sb_harmonic_partial_container');
       containerBlock.initSvg();
       let connection = containerBlock.getInput('STACK').connection;
@@ -30,7 +30,7 @@ export function registerBlocks(BlocklyInstance) {
       return containerBlock;
     },
 
-    compose: function(containerBlock) {
+    compose: function (containerBlock) {
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       const connections = [];
       while (itemBlock) {
@@ -50,28 +50,28 @@ export function registerBlocks(BlocklyInstance) {
 
       for (let i = 0; i < this.itemCount_; i++) {
         if (connections[i]) {
-            connections[i].reconnect(this, 'PARTIAL' + i);
+          connections[i].reconnect(this, 'PARTIAL' + i);
         }
       }
     },
 
-    saveConnections: function(containerBlock) {
-        let itemBlock = containerBlock.getInputTargetBlock('STACK');
-        let i = 0;
-        while (itemBlock) {
-            const input = this.getInput('PARTIAL' + i);
-            itemBlock.valueConnection_ = input && input.connection.targetConnection;
-            i++;
-            itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
-        }
+    saveConnections: function (containerBlock) {
+      let itemBlock = containerBlock.getInputTargetBlock('STACK');
+      let i = 0;
+      while (itemBlock) {
+        const input = this.getInput('PARTIAL' + i);
+        itemBlock.valueConnection_ = input && input.connection.targetConnection;
+        i++;
+        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+      }
     },
 
-    updateShape_: function() {
+    updateShape_: function () {
       // Add new inputs.
       for (let i = 0; i < this.itemCount_; i++) {
         if (!this.getInput('PARTIAL' + i)) {
           const input = this.appendValueInput('PARTIAL' + i)
-              .setCheck('Number');
+            .setCheck('Number');
           if (i === 0) {
             input.appendField(BlocklyInstance.Msg['MSG_FUNDAMENTAL_FIELD']);
           } else {
@@ -80,7 +80,7 @@ export function registerBlocks(BlocklyInstance) {
 
           // Add shadow for Partial (Amplitude)
           const shadowDom = BlocklyInstance.utils.xml.textToDom(
-              '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
+            '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
           );
           input.connection.setShadowDom(shadowDom);
         }
@@ -96,7 +96,7 @@ export function registerBlocks(BlocklyInstance) {
 
   // Define the new "all-in-one" synth block
   BlocklyInstance.Blocks['sb_create_harmonic_synth'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "message0": "%{BKY_MSG_HARMONIC_ADDER_CATEGORY} 名稱 %1",
         "args0": [
@@ -115,14 +115,14 @@ export function registerBlocks(BlocklyInstance) {
       this.setHelpUrl(() => {
         const currentLang = window.currentLanguage || 'en';
         if (currentLang === 'zh-hant') {
-            return 'docs/instrument_readme_zh-hant.html';
+          return 'docs/instrument_readme_zh-hant.html';
         }
         return 'docs/instrument_readme_en.html';
       });
 
       // Manually add the mutator icon
       this.setMutator(new BlocklyInstance.icons.MutatorIcon(['sb_harmonic_partial_item'], this));
-      
+
       // Initialize with one partial input
       this.itemCount_ = 1;
       this.updateShape_();
@@ -162,16 +162,16 @@ export function registerBlocks(BlocklyInstance) {
 
   const ADDITIVE_SYNTH_MUTATOR = {
     itemCount_: 1,
-    mutationToDom: function() {
+    mutationToDom: function () {
       const container = BlocklyInstance.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
       return container;
     },
-    domToMutation: function(xmlElement) {
+    domToMutation: function (xmlElement) {
       this.itemCount_ = parseInt(xmlElement.getAttribute('items'), 10) || 0;
       this.updateShape_();
     },
-    decompose: function(workspace) {
+    decompose: function (workspace) {
       const containerBlock = workspace.newBlock('sb_additive_synth_container');
       containerBlock.initSvg();
       let connection = containerBlock.getInput('STACK').connection;
@@ -183,9 +183,9 @@ export function registerBlocks(BlocklyInstance) {
       }
       return containerBlock;
     },
-    compose: function(containerBlock) {
+    compose: function (containerBlock) {
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
-      const connections = {amp: [], freq: [], wave: []};
+      const connections = { amp: [], freq: [], wave: [] };
       while (itemBlock) {
         connections.amp.push(itemBlock.ampConnection_);
         connections.freq.push(itemBlock.freqConnection_);
@@ -194,26 +194,26 @@ export function registerBlocks(BlocklyInstance) {
       }
       for (let i = 0; i < this.itemCount_; i++) {
         if (!connections.amp[i] || !connections.freq[i]) {
-            this.removeInput('OSC_LABEL' + i, true);
-            this.removeInput('AMP' + i, true);
-            this.removeInput('FREQ_RATIO' + i, true);
+          this.removeInput('OSC_LABEL' + i, true);
+          this.removeInput('AMP' + i, true);
+          this.removeInput('FREQ_RATIO' + i, true);
         }
       }
       this.itemCount_ = connections.amp.length;
       this.updateShape_();
       for (let i = 0; i < this.itemCount_; i++) {
         if (connections.amp[i]) {
-            connections.amp[i].reconnect(this, 'AMP' + i);
+          connections.amp[i].reconnect(this, 'AMP' + i);
         }
         if (connections.freq[i]) {
-            connections.freq[i].reconnect(this, 'FREQ_RATIO' + i);
+          connections.freq[i].reconnect(this, 'FREQ_RATIO' + i);
         }
         if (connections.wave[i]) {
-            this.setFieldValue(connections.wave[i], 'WAVE' + i);
+          this.setFieldValue(connections.wave[i], 'WAVE' + i);
         }
       }
     },
-    saveConnections: function(containerBlock) {
+    saveConnections: function (containerBlock) {
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       let i = 0;
       while (itemBlock) {
@@ -226,7 +226,7 @@ export function registerBlocks(BlocklyInstance) {
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
     },
-    updateShape_: function() {
+    updateShape_: function () {
       const waveOptions = [
         [BlocklyInstance.Msg['SB_WAVE_SINE'] || "弦波 (Sine)", "sine"],
         [BlocklyInstance.Msg['SB_WAVE_SQUARE'] || "方波 (Square)", "square"],
@@ -238,34 +238,34 @@ export function registerBlocks(BlocklyInstance) {
         if (!this.getInput('AMP' + i)) {
           // Add Oscillator Label and Waveform Dropdown
           const oscLabel = this.appendDummyInput('OSC_LABEL' + i);
-          const labelText = (i === 0) ? 
-            BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD'] : 
+          const labelText = (i === 0) ?
+            BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD'] :
             BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1);
-          
+
           oscLabel.appendField(labelText)
-                  .appendField(new BlocklyInstance.FieldDropdown(waveOptions), 'WAVE' + i);
+            .appendField(new BlocklyInstance.FieldDropdown(waveOptions), 'WAVE' + i);
 
           // Add Amplitude Input
           const ampInput = this.appendValueInput('AMP' + i)
-              .setCheck('Number')
-              .setAlign(BlocklyInstance.ALIGN_RIGHT)
-              .appendField(BlocklyInstance.Msg['MSG_AMPLITUDE_INPUT_FIELD']);
-          
+            .setCheck('Number')
+            .setAlign(BlocklyInstance.ALIGN_RIGHT)
+            .appendField(BlocklyInstance.Msg['MSG_AMPLITUDE_INPUT_FIELD']);
+
           // Add shadow for Amplitude
           const ampShadowDom = BlocklyInstance.utils.xml.textToDom(
-              '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
+            '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
           );
           ampInput.connection.setShadowDom(ampShadowDom);
-          
+
           // Add Frequency Ratio Input
           const freqInput = this.appendValueInput('FREQ_RATIO' + i)
-              .setCheck('Number')
-              .setAlign(BlocklyInstance.ALIGN_RIGHT)
-              .appendField(BlocklyInstance.Msg['MSG_FREQ_RATIO_INPUT_FIELD']);
-          
+            .setCheck('Number')
+            .setAlign(BlocklyInstance.ALIGN_RIGHT)
+            .appendField(BlocklyInstance.Msg['MSG_FREQ_RATIO_INPUT_FIELD']);
+
           // Add a shadow block with default value '1' for all frequency ratios
           const freqShadowDom = BlocklyInstance.utils.xml.textToDom(
-              '<shadow type="math_number"><field name="NUM">1</field></shadow>'
+            '<shadow type="math_number"><field name="NUM">1</field></shadow>'
           );
           freqInput.connection.setShadowDom(freqShadowDom);
         }
@@ -280,9 +280,9 @@ export function registerBlocks(BlocklyInstance) {
       }
     }
   };
-  
+
   BlocklyInstance.Blocks['sb_create_additive_synth'] = {
-    init: function() {
+    init: function () {
       this.jsonInit({
         "message0": "%{BKY_MSG_CREATE_ADDITIVE_SYNTH_MESSAGE}",
         "args0": [
@@ -301,7 +301,7 @@ export function registerBlocks(BlocklyInstance) {
       this.setHelpUrl(() => {
         const currentLang = window.currentLanguage || 'en';
         if (currentLang === 'zh-hant') {
-            return 'docs/instrument_readme_zh-hant.html';
+          return 'docs/instrument_readme_zh-hant.html';
         }
         return 'docs/instrument_readme_en.html';
       });

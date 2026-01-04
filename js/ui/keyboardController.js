@@ -12,34 +12,29 @@ const KEY_TO_NOTE_MAP = {
 };
 
 let isPcKeyboardMidiEnabled = false;
-let currentOctave = 4;
-const MIN_OCTAVE = 0;
-const MAX_OCTAVE = 8;
 
-const updateLogOctave = () => {
-    logKey('LOG_KEYBOARD_OCTAVE', 'important', currentOctave);
+const updateLogTransposition = () => {
+    logKey('LOG_SEMITONE_ADJUSTED', 'important', audioEngine.currentSemitoneOffset, audioEngine.currentSemitoneOffset * 100);
 };
 
-const shiftOctave = (direction) => {
-    currentOctave += direction;
-    if (currentOctave < MIN_OCTAVE) currentOctave = MIN_OCTAVE;
-    if (currentOctave > MAX_OCTAVE) currentOctave = MAX_OCTAVE;
-    updateLogOctave();
+const shiftTransposition = (semitones) => {
+    audioEngine.currentSemitoneOffset += semitones;
+    updateLogTransposition();
 };
 
-const getNoteForKeyCode = (keyCode) => {
+const getBaseNoteForKeyCode = (keyCode) => {
     const baseNote = KEY_TO_NOTE_MAP[keyCode];
     if (!baseNote) return null;
 
-    let noteOctave = currentOctave;
-    const baseOctaveKeys = ['KeyQ', 'Digit2', 'KeyW', 'Digit3', 'KeyE', 'KeyR', 'Digit5', 'KeyT', 'Digit6', 'KeyY', 'Digit7', 'KeyU'];
+    // Fixed base octave 4. The actual pitch will be handled by global transposition.
+    let octave = 4;
     const nextOctaveKeys = ['KeyI', 'Digit9', 'KeyO', 'Digit0', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash'];
 
     if (nextOctaveKeys.includes(keyCode)) {
-        noteOctave = currentOctave + 1;
+        octave = 5;
     }
 
-    return `${baseNote}${noteOctave}`;
+    return `${baseNote}${octave}`;
 };
 
 /**
@@ -66,7 +61,7 @@ const handleKeyDown = async (e) => {
     if (e.isComposing || !isPcKeyboardMidiEnabled || e.repeat) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-    // --- Octave and Instrument Switching ---
+    // --- Instrument Switching ---
     if (e.code === 'ArrowLeft') {
         switchInstrument(-1);
         e.preventDefault();
@@ -77,43 +72,37 @@ const handleKeyDown = async (e) => {
         e.preventDefault();
         return;
     }
-    if (e.code === 'ArrowDown' && currentOctave > MIN_OCTAVE) {
-        shiftOctave(-1);
+
+    // --- Octave Switching (mapped to global offset) ---
+    if (e.code === 'ArrowDown') {
+        shiftTransposition(-12);
         e.preventDefault();
         return;
     }
-    if (e.code === 'ArrowUp' && currentOctave < MAX_OCTAVE) {
-        shiftOctave(1);
+    if (e.code === 'ArrowUp') {
+        shiftTransposition(12);
         e.preventDefault();
         return;
     }
 
     // --- Semitone Adjustment ---
-    const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
-    if (currentInstrument && currentInstrument.set) {
-        let detuneChange = 0;
-        if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
-            detuneChange = -100; // -1 semitone = -100 cents
-        } else if (e.code === 'Equal' || e.code === 'NumpadAdd') {
-            detuneChange = 100; // +1 semitone = +100 cents
-        }
+    if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+        shiftTransposition(-1);
+        e.preventDefault();
+        return;
+    } 
+    if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+        shiftTransposition(1);
+        e.preventDefault();
+        return;
+    }
 
-        if (detuneChange !== 0) {
-            audioEngine.currentSemitoneOffset += (detuneChange / 100);
-            currentInstrument.set({ detune: audioEngine.currentSemitoneOffset * 100 });
-            audioEngine.logKey('LOG_SEMITONE_ADJUSTED', 'important', audioEngine.currentSemitoneOffset, audioEngine.currentSemitoneOffset * 100);
-            e.preventDefault();
-            return;
-        }
-
-        // --- Reset Semitone Adjustment ---
-        if (e.code === 'Backspace') {
-            audioEngine.currentSemitoneOffset = 0;
-            currentInstrument.set({ detune: 0 });
-            audioEngine.logKey('LOG_SEMITONE_RESET', 'important');
-            e.preventDefault();
-            return;
-        }
+    // --- Reset Transposition ---
+    if (e.code === 'Backspace') {
+        audioEngine.currentSemitoneOffset = 0;
+        audioEngine.logKey('LOG_SEMITONE_RESET', 'important');
+        e.preventDefault();
+        return;
     }
 
     let notesToPlay = null;
@@ -121,14 +110,19 @@ const handleKeyDown = async (e) => {
 
     const chordName = audioEngine.keyboardChordMap[e.code];
     if (chordName) {
-        notesToPlay = audioEngine.chords[chordName];
-        notePlayedType = 'Chord';
-        if (!notesToPlay) {
+        if (audioEngine.chords[chordName]) {
+            if (!audioEngine.pressedKeys.has(e.code)) {
+                await ensureAudioStarted();
+                audioEngine.playChordByNameAttack(chordName, 0.7);
+                audioEngine.pressedKeys.set(e.code, { type: 'chord', name: chordName });
+            }
+        } else {
             audioEngine.logKey('LOG_CHORD_UNDEFINED', 'error', chordName);
-            return;
         }
+        e.preventDefault();
+        return;
     } else {
-        notesToPlay = getNoteForKeyCode(e.code);
+        notesToPlay = getBaseNoteForKeyCode(e.code);
         if (!notesToPlay) return;
     }
 
@@ -136,26 +130,8 @@ const handleKeyDown = async (e) => {
         const ok = await ensureAudioStarted();
         if (!ok) return;
 
-        const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
-        if (!currentInstrument || !currentInstrument.triggerAttack) {
-            audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName);
-            return;
-        }
-        if (currentInstrument instanceof audioEngine.Tone.Sampler && !currentInstrument.loaded) {
-            audioEngine.logKey('LOG_SAMPLER_NOT_LOADED', 'warning', audioEngine.currentInstrumentName);
-            return;
-        }
-
-        const velocity = 0.7;
-        try {
-            triggerAdsrOn(); // Trigger ADSR visualizer
-            currentInstrument.triggerAttack(notesToPlay, audioEngine.Tone.now(), velocity);
-        } catch (e) {
-            audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName + ": " + e.message);
-            console.error(e);
-        }
-        audioEngine.pressedKeys.set(e.code, notesToPlay);
-        audioEngine.log(`Keyboard ON (${notePlayedType}): ${Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay}`);
+        audioEngine.playCurrentInstrumentNoteAttack(notesToPlay, 0.7);
+        audioEngine.pressedKeys.set(e.code, { type: 'note', name: notesToPlay });
         e.preventDefault();
     }
 };
@@ -164,32 +140,24 @@ const handleKeyUp = async (e) => {
     // Ignore events when IME is active.
     if (e.isComposing || !isPcKeyboardMidiEnabled) return;
 
-    if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Minus' || e.code === 'Equal' || e.code === 'NumpadSubtract' || e.code === 'NumpadAdd') return;
+    // Ignore special control keys
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Minus', 'Equal', 'NumpadSubtract', 'NumpadAdd', 'Backspace'].includes(e.code)) return;
 
-    const note = audioEngine.pressedKeys.get(e.code);
-    if (note) {
+    const playedInfo = audioEngine.pressedKeys.get(e.code);
+    if (playedInfo) {
         const ok = await ensureAudioStarted();
         if (!ok) {
             audioEngine.pressedKeys.delete(e.code);
             return;
         }
 
-        const currentInstrument = audioEngine.instruments[audioEngine.currentInstrumentName];
-        if (!currentInstrument || !currentInstrument.triggerRelease) {
-            audioEngine.logKey('LOG_PLAY_NOTE_FAIL', 'error', audioEngine.currentInstrumentName);
-            audioEngine.pressedKeys.delete(e.code);
-            return;
-        }
-        if (currentInstrument instanceof audioEngine.Tone.Sampler && !currentInstrument.loaded) {
-            audioEngine.logKey('LOG_SAMPLER_NOT_LOADED', 'warning', audioEngine.currentInstrumentName);
-            audioEngine.pressedKeys.delete(e.code);
-            return;
+        if (playedInfo.type === 'chord') {
+            audioEngine.playChordByNameRelease(playedInfo.name);
+        } else {
+            audioEngine.playCurrentInstrumentNoteRelease(playedInfo.name);
         }
 
-        triggerAdsrOff(); // Trigger ADSR visualizer release
-        currentInstrument.triggerRelease(note, audioEngine.Tone.now());
         audioEngine.pressedKeys.delete(e.code);
-        audioEngine.log(`Keyboard OFF: ${e.code} -> ${note}`);
         e.preventDefault();
     }
 };
@@ -204,7 +172,7 @@ export function initKeyboardController() {
             window.addEventListener('keyup', handleKeyUp);
             isPcKeyboardMidiEnabled = true;
             logKey('LOG_KEYBOARD_MIDI_ON');
-            updateLogOctave();
+            updateLogTransposition();
         }
     };
 

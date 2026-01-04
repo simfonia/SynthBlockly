@@ -3,26 +3,19 @@ import { log, logKey, getMsg, clearErrorLog } from '../ui/logger.js';
 import { updateAdsrGraph, triggerAdsrOn, triggerAdsrOff } from '../ui/adsrVisualizer.js';
 import { requestMidiAccess } from './midiEngine.js';
 
-export let blocklyLoops = {}; // Initialize as an exported module variable
+export let blocklyLoops = {}; 
 
 let audioStarted = false;
 
-/**
- * Ensures the AudioContext is running. Must be called after a user interaction.
- * @returns {Promise<boolean>} True if the audio context is started, false otherwise.
- */
 export async function ensureAudioStarted() {
     if (audioStarted) return true;
     try {
         await Tone.start();
-        // Resume context if it was suspended
-        try { 
-            if (Tone.context && Tone.context.state === 'suspended') {
-                await Tone.context.resume();
-            }
-        } catch (e) { /* ignore */ }
+        if (Tone.context && Tone.context.state === 'suspended') {
+            await Tone.context.resume();
+        }
         audioStarted = true;
-        clearErrorLog('AUDIO'); // 啟動成功，清除舊的「音訊未啟用」警告
+        clearErrorLog('AUDIO');
         logKey('LOG_AUDIO_STARTED');
         return true;
     } catch (e) {
@@ -31,15 +24,9 @@ export async function ensureAudioStarted() {
     }
 }
 
-// --- Initialize Audio Nodes ---
-
 export const analyser = new Tone.Analyser('waveform', 1024);
-analyser.toDestination(); // Connect analyser to the master output
+analyser.toDestination();
 
-// --- Effects ---
-// Effects are now dynamically managed by the audioEngine.
-
-// --- Instruments ---
 let synth = new Tone.PolySynth(Tone.Synth);
 const drum = new Tone.MembraneSynth();
 const hh = new Tone.NoiseSynth({ volume: -12 });
@@ -56,39 +43,54 @@ const jazzKit = new Tone.Sampler({
     },
     baseUrl: import.meta.env.BASE_URL + 'samples/jazzkit/Roland_TR-909/',
     onload: () => {
-        // Ensure localization is ready before logging, or fallback
-        if (typeof Tone !== 'undefined') { // Simple check context
-             setTimeout(() => {
-                 logKey('LOG_JAZZKIT_LOADED');
-             }, 500); // Slight delay to give registerAll a chance if samples load instantly
+        if (typeof Tone !== 'undefined') {
+             setTimeout(() => { logKey('LOG_JAZZKIT_LOADED'); }, 500);
         }
     }
 });
 
-// --- Signal Chain ---
-// Instruments are now chained to the analyser. The effect chain is built dynamically.
 synth.chain(analyser);
 drum.chain(analyser);
 hh.chain(analyser);
 snare.chain(analyser);
 jazzKit.chain(analyser);
 
-
-// --- Audio Engine Object ---
-
 export const audioEngine = {
-    isExecutionActive: false, // Flag to track if Blockly code execution is active
+    isExecutionActive: false,
     currentADSR: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 1.0 },
     Tone: Tone,
-    analyser: analyser, // Make analyser accessible on the global engine object
+    analyser: analyser,
     synth: synth,
     drum: drum,
     hh: hh,
     snare: snare,
     jazzKit: jazzKit,
     effects: {},
-    _activeEffects: [], // Internal array to track the current effect chain
-    activeSFXPlayers: [], // Track active SFX players for stopping
+    _activeEffects: [],
+    activeSFXPlayers: [],
+    instruments: {},
+    layeredInstruments: {},
+    currentInstrumentName: 'DefaultSynth',
+    currentSemitoneOffset: 0,
+    pressedKeys: new Map(),
+    chords: {},
+    keyboardChordMap: {},
+    midiChordMap: {},
+    midiPressedNotes: new Map(),
+    midiPlayingNotes: new Map(),
+    backgroundNoise: null,
+    log: log,
+    logKey: logKey,
+    getMsg: getMsg,
+
+    getTransposedNote: function(note) {
+        try {
+            const freq = (typeof note === 'number') ? Tone.Midi(note) : Tone.Frequency(note);
+            return freq.transpose(this.currentSemitoneOffset).toNote();
+        } catch (e) {
+            return typeof note === 'number' ? Tone.Midi(note).toNote() : note;
+        }
+    },
 
     updateADSR: function(a, d, s, r) {
         this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
@@ -97,97 +99,51 @@ export const audioEngine = {
     },
 
     rebuildEffectChain: function(effectsConfig = []) {
-        // 1. Dispose of all previously active effects
-        this._activeEffects.forEach(effect => {
-            if (effect && typeof effect.dispose === 'function') {
-                effect.dispose();
-            }
-        });
+        this._activeEffects.forEach(effect => { if (effect && effect.dispose) effect.dispose(); });
         this._activeEffects = [];
         logKey('LOG_EFFECT_CLEARED');
 
-        // 2. Disconnect all instruments from their current output to prepare for re-chaining
-        // Use a Set to ensure we don't process the same instrument twice (e.g., DefaultSynth)
         const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);
         const allInstruments = Array.from(instrumentSet).filter(Boolean);
         
-        allInstruments.forEach(instr => {
-            // For standard Tone.js instruments and our custom wrappers
-            if (instr && typeof instr.disconnect === 'function') {
-                instr.disconnect();
-            }
-        });
+        allInstruments.forEach(instr => { if (instr && typeof instr.disconnect === 'function') instr.disconnect(); });
         
-        // 3. Create new effect instances from the config
         try {
             effectsConfig.forEach(config => {
                 if (!config || !config.type) return;
-
                 let effectInstance;
-                // Use a temporary object for params to avoid modifying the original config
                 const params = { ...(config.params || {}) };
 
                 switch (config.type) {
-                    case 'distortion':
-                        effectInstance = new Tone.Distortion(params);
-                        break;
+                    case 'distortion': effectInstance = new Tone.Distortion(params); break;
                     case 'reverb':
-                        // Reverb constructor takes decay time, not an object
                         effectInstance = new Tone.Reverb(params.decay);
                         if (params.preDelay) effectInstance.preDelay = params.preDelay;
                         break;
                     case 'feedbackDelay': {
-                        // --- Final Fallback: Manual Time Parsing (Expanded for Triplets) ---
                         let delayInSeconds;
                         const rawTime = params.delayTime || '8n'; 
-
                         if (!isNaN(parseFloat(rawTime)) && isFinite(rawTime)) {
                             delayInSeconds = parseFloat(rawTime);
                         } else if (typeof rawTime === 'string') {
                             try {
                                 const bpm = (Tone.Transport && Tone.Transport.bpm && Tone.Transport.bpm.value) ? Tone.Transport.bpm.value : 120;
                                 const quarterNoteTime = 60 / bpm;
-
                                 let baseDuration;
                                 const noteValue = parseInt(rawTime);
-
-                                if (rawTime.includes('t')) { // Triplet
-                                    baseDuration = (quarterNoteTime * (4 / noteValue)) * (2 / 3);
-                                } else if (rawTime.includes('n')) { // Normal note
-                                    baseDuration = quarterNoteTime * (4 / noteValue);
-                                } else {
-                                    // If no 'n' or 't', assume it's just a number in a string, but this case is mostly handled above.
-                                    // However, as a fallback, we can treat it as seconds.
-                                    delayInSeconds = parseFloat(rawTime);
-                                }
-                                
+                                if (rawTime.includes('t')) { baseDuration = (quarterNoteTime * (4 / noteValue)) * (2 / 3); }
+                                else if (rawTime.includes('n')) { baseDuration = quarterNoteTime * (4 / noteValue); }
+                                else { delayInSeconds = parseFloat(rawTime); }
                                 if(baseDuration) {
                                     delayInSeconds = baseDuration;
-                                    // Handle dots
-                                    if (rawTime.includes('.')) {
-                                        delayInSeconds *= 1.5;
-                                    }
+                                    if (rawTime.includes('.')) delayInSeconds *= 1.5;
                                 }
-
-                            } catch (e) {
-                                logKey('LOG_TIME_PARSE_ERR', 'error', rawTime, e.message);
-                                delayInSeconds = 0.25;
-                            }
-                        } else {
-                            logKey('LOG_TIME_INVALID', 'error', rawTime);
-                            delayInSeconds = 0.25;
-                        }
-
-                        if (isNaN(delayInSeconds) || delayInSeconds === undefined) {
-                            logKey('LOG_TIME_INVALID', 'error', rawTime);
-                            delayInSeconds = 0.25;
-                        }
-                        
+                            } catch (e) { delayInSeconds = 0.25; }
+                        } else { delayInSeconds = 0.25; }
                         effectInstance = new Tone.FeedbackDelay(delayInSeconds, params.feedback);
                         break;
                     }
                     case 'filter':
-                        // Instantiate Filter with parameters from the config
                         effectInstance = new Tone.Filter({
                             type: params.type || 'lowpass',
                             frequency: params.frequency !== undefined ? params.frequency : 20000,
@@ -195,629 +151,177 @@ export const audioEngine = {
                             rolloff: params.rolloff !== undefined ? params.rolloff : -12
                         });
                         break;
-                    case 'compressor':
-                        effectInstance = new Tone.Compressor(params);
-                        break;
-                    case 'limiter':
-                        // Limiter constructor takes threshold in dB or an options object
-                        effectInstance = new Tone.Limiter({
-                            threshold: params.threshold !== undefined ? params.threshold : -6
-                        });
-                        break;
-                    case 'bitCrusher':
-                        effectInstance = new Tone.BitCrusher(params);
-                        break;
-                    case 'chorus':
-                        effectInstance = new Tone.Chorus(params.frequency, params.delayTime, params.depth).start();
-                        break;
-                    case 'phaser':
-                        effectInstance = new Tone.Phaser(params.frequency, params.octaves, params.baseFrequency);
-                        break;
-                    case 'autoPanner':
-                        effectInstance = new Tone.AutoPanner(params.frequency, params.depth).start();
-                        break;
-                    default:
-                        logKey('LOG_UNKNOWN_EFFECT', 'warning', config.type);
-                        return;
+                    case 'compressor': effectInstance = new Tone.Compressor(params); break;
+                    case 'limiter': effectInstance = new Tone.Limiter({ threshold: params.threshold !== undefined ? params.threshold : -6 }); break;
+                    case 'bitCrusher': effectInstance = new Tone.BitCrusher(params); break;
+                    case 'chorus': effectInstance = new Tone.Chorus(params.frequency, params.delayTime, params.depth).start(); break;
+                    case 'phaser': effectInstance = new Tone.Phaser(params.frequency, params.octaves, params.baseFrequency); break;
+                    case 'autoPanner': effectInstance = new Tone.AutoPanner(params.frequency, params.depth).start(); break;
+                    default: logKey('LOG_UNKNOWN_EFFECT', 'warning', config.type); return;
                 }
-                
-                // Set wet level for all applicable effects
-                if (params.wet !== undefined && effectInstance.wet) {
-                    effectInstance.wet.value = params.wet;
-                }
-
+                if (params.wet !== undefined && effectInstance.wet) effectInstance.wet.value = params.wet;
                 this._activeEffects.push(effectInstance);
             });
-        } catch (e) {
-            logKey('LOG_EFFECT_CHAIN_ERR', 'error', e.message);
-            console.error(e);
-            // Fallback to a clean chain if creation fails
-            this._activeEffects = [];
-        }
+        } catch (e) { logKey('LOG_EFFECT_CHAIN_ERR', 'error', e.message); }
 
-        // 4. Connect instruments to the new effect chain, ending at the analyser
         const chain = [...this._activeEffects, analyser];
         allInstruments.forEach(instr => {
-            if (instr) {
-                 // For standard Tone.js instruments and our custom additive synth
-                if (typeof instr.chain === 'function') {
-                    instr.chain(...chain);
-                }
-            }
+            if (instr && typeof instr.chain === 'function') instr.chain(...chain);
         });
         logKey('LOG_EFFECT_CHAIN_REBUILT', 'info', this._activeEffects.length);
     },
 
-    instruments: {},
-    layeredInstruments: {}, // Maps name -> string[] (child instrument names)
-    currentInstrumentName: 'DefaultSynth',
-    currentSemitoneOffset: 0, // Tracks the current semitone adjustment
-    pressedKeys: new Map(),
-    chords: {},
-    keyboardChordMap: {},
-    midiChordMap: {},
-    midiPressedNotes: new Map(),
-    midiPlayingNotes: new Map(),
-    backgroundNoise: null,
-
-    log: log, // Original raw log function
-    logKey: logKey,
-    getMsg: getMsg,
-
-    playBackgroundNoise: async function(type = 'white', volume = 0.1) {
-        await ensureAudioStarted();
-        this.stopBackgroundNoise(); // Stop any existing noise first
-        try {
-            this.backgroundNoise = new Tone.Noise(type).toDestination();
-            this.backgroundNoise.volume.value = Tone.gainToDb(volume); // Convert linear gain to dB
-            this.backgroundNoise.start();
-            logKey('LOG_NOISE_STARTED', 'info', type, volume.toFixed(2));
-        } catch (e) {
-            logKey('LOG_NOISE_ERR', 'error', e.message);
-            console.error(e);
-        }
-    },
-
-    stopBackgroundNoise: function() {
-        if (this.backgroundNoise) {
-            try {
-                this.backgroundNoise.stop();
-                this.backgroundNoise.dispose();
-                this.backgroundNoise = null;
-                logKey('LOG_NOISE_STOPPED');
-            } catch (e) {
-                logKey('LOG_NOISE_STOP_ERR', 'error', e.message);
-                console.error(e);
-                this.backgroundNoise = null; // Ensure it's cleared even on error
-            }
-        }
-    },
-
-    createInstrument: function(name, type) {
-        if (!name) {
-            logKey('LOG_INSTR_NAME_EMPTY', 'error');
-            return;
-        }
-        if (this.instruments[name]) {
-            logKey('LOG_INSTR_EXISTS', 'warning', name);
-            if (typeof this.instruments[name].dispose === 'function') {
-                this.instruments[name].dispose();
-            }
-        }
-        let newInstrument;
-        try {
-            switch(type) {
-                case 'PolySynth':
-                    newInstrument = new Tone.PolySynth(Tone.Synth);
-                    break;
-                case 'AMSynth':
-                    newInstrument = new Tone.PolySynth(Tone.AMSynth);
-                    break;
-                case 'FMSynth':
-                    newInstrument = new Tone.PolySynth(Tone.FMSynth);
-                    break;
-                case 'DuoSynth':
-                    newInstrument = new Tone.PolySynth(Tone.DuoSynth);
-                    break;
-                case 'SineWave':
-                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' } });
-                    break;
-                case 'SquareWave':
-                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } });
-                    break;
-                case 'TriangleWave':
-                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } });
-                    break;
-                case 'SawtoothWave':
-                    newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } });
-                    break;
-                case 'Sampler':
-                    newInstrument = new Tone.Sampler({
-                        urls: { "C4": "C4.mp3" },
-                        release: 1,
-                        baseUrl: "https://tonejs.github.io/audio/salamander/"
-                    });
-                    newInstrument.onload = () => logKey('LOG_SAMPLER_LOADED', 'info', name);
-                    break;
-                default:
-                    logKey('LOG_UNKNOWN_INSTR_TYPE', 'error', type);
-                    return;
-            }
-            // All new instruments are chained through the active effect chain.
-            newInstrument.chain(...this._activeEffects, analyser);
-            this.instruments[name] = newInstrument;
-            logKey('LOG_INSTR_CREATED', 'info', name, type);
-        } catch (e) {
-            logKey('LOG_INSTR_CREATE_FAIL', 'error', name, type, e.message);
-            console.error(e);
-        }
-    },
-
-    /**
-     * Creates a custom wave instrument using partials for additive synthesis.
-     * @param {string} name The name of the instrument.
-     * @param {number[]} partialsArray An array of numbers representing harmonic amplitudes.
-     */
-    createCustomWaveInstrument: function(name, partialsArray) {
-        if (!name) {
-            logKey('LOG_CUSTOM_WAVE_NAME_EMPTY', 'error');
-            return;
-        }
-        if (!Array.isArray(partialsArray) || partialsArray.length === 0) {
-            logKey('LOG_PARTIALS_INVALID', 'error');
-            return;
-        }
-        // Validate partialsArray elements are numbers
-        if (partialsArray.some(isNaN)) {
-            logKey('LOG_PARTIALS_NAN', 'error');
-            return;
-        }
-
-        if (this.instruments[name]) {
-            logKey('LOG_INSTR_EXISTS', 'warning', name);
-            if (typeof this.instruments[name].dispose === 'function') {
-                this.instruments[name].dispose();
-            }
-                        }
-                
-                        let newInstrument; // Declared here for proper scoping
-                        try {
-                            // Instantiate newInstrument as a Tone.PolySynth with OmniOscillator for custom partials
-                            newInstrument = new Tone.PolySynth(Tone.Synth, {
-                                oscillator: {
-                                    type: 'custom',
-                                    partials: partialsArray
-                                }
-                            });
-            // New instruments are chained through the active effect chain.
-            newInstrument.chain(...this._activeEffects, analyser);
-            this.instruments[name] = newInstrument;
-            logKey('LOG_CUSTOM_WAVE_CREATED', 'info', name, partialsArray.join(', '));
-        } catch (e) {
-            logKey('LOG_INSTR_CREATE_FAIL', 'error', name, 'CustomWave', e.message);
-            console.error(e);
-        }
-    },
-
-    createAdditiveInstrument: function(name, components) {
-        if (!name) {
-            logKey('LOG_ADDITIVE_NAME_EMPTY', 'error');
-            return;
-        }
-        if (this.instruments[name]) {
-            logKey('LOG_INSTR_EXISTS', 'warning', name);
-            if (typeof this.instruments[name].dispose === 'function') {
-                this.instruments[name].dispose();
-            }
-        }
-
-        try {
-            const polyphony = 8; // Max number of simultaneous voices
-            const voices = [];
-
-            // Pre-create the pool of voices
-            for (let i = 0; i < polyphony; i++) {
-                const envelope = new Tone.AmplitudeEnvelope({ attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.5 });
-                const oscillators = [];
-                components.forEach(comp => {
-                    const osc = new Tone.Oscillator(0, comp.waveform || "sine");
-                    const gain = new Tone.Gain(comp.amp).connect(envelope);
-                    osc.connect(gain);
-                    oscillators.push({ osc: osc, freqRatio: comp.freqRatio });
-                });
-                voices.push({
-                    note: null,
-                    oscillators: oscillators,
-                    envelope: envelope,
-                    busy: false,
-                    attackTime: 0
-                });
-            }
-
-            const newInstrument = {
-                type: 'AdditiveSynth',
-                voices: voices,
-                detune: new Tone.Signal(0), // Add a detune signal
-                
-                _findVoice: function(note) {
-                    return this.voices.find(v => v.note === note && v.busy);
-                },
-
-                triggerAttack: function(note, time, velocity) {
-                    time = time || Tone.now();
-                    
-                    let voiceToUse = this.voices.find(v => !v.busy);
-                    if (!voiceToUse) {
-                        voiceToUse = this.voices.sort((a, b) => a.attackTime - b.attackTime)[0];
-                    }
-
-                    voiceToUse.busy = true;
-                    voiceToUse.note = note;
-                    voiceToUse.attackTime = time;
-                    
-                    // Calculate frequency and apply detune
-                    const baseFreq = new Tone.Frequency(note).toFrequency();
-                    // detune is in cents (100 cents = 1 semitone)
-                    const detuneMultiplier = Math.pow(2, this.detune.value / 1200);
-                    const freq = baseFreq * detuneMultiplier;
-
-                    voiceToUse.oscillators.forEach(item => {
-                        item.osc.frequency.setValueAtTime(freq * item.freqRatio, time);
-                        if (item.osc.state === 'stopped') {
-                            item.osc.start(time);
-                        }
-                    });
-                    voiceToUse.envelope.triggerAttack(time, velocity);
-                },
-
-                // --- Support ADSR and Detune via set method ---
-                set: function(options) {
-                    if (options.detune !== undefined) {
-                        this.detune.value = options.detune;
-                    }
-                    // If options.envelope is passed, update all voice envelopes
-                    if (options.envelope) {
-                        this.voices.forEach(v => v.envelope.set(options.envelope));
-                    }
-                },
-
-                triggerRelease: function(note, time) {
-                    time = time || Tone.now();
-                    const voiceToRelease = this._findVoice(note);
-                    if (voiceToRelease) {
-                        voiceToRelease.busy = false;
-                        voiceToRelease.envelope.triggerRelease(time);
-                        // Oscillators are stopped automatically by the envelope's release in this design
-                    }
-                },
-                
-                triggerAttackRelease: function(notes, duration, time, velocity) {
-                    time = time || Tone.now();
-                    this.triggerAttack(notes, time, velocity);
-                    // Handle single note or array of notes for release
-                    const notesArray = Array.isArray(notes) ? notes : [notes];
-                    notesArray.forEach(note => {
-                        this.triggerRelease(note, time + Tone.Time(duration).toSeconds());
-                    });
-                },
-
-                chain: function(...args) {
-                    this.voices.forEach(v => v.envelope.chain(...args));
-                },
-
-                disconnect: function() {
-                    this.voices.forEach(v => v.envelope.disconnect());
-                },
-
-                dispose: function() {
-                    this.voices.forEach(v => {
-                        v.envelope.dispose();
-                        v.oscillators.forEach(item => item.osc.dispose());
-                    });
-                }
-            };
-            
-            // New instruments are chained through the active effect chain.
-            newInstrument.chain(...this._activeEffects, analyser);
-            this.instruments[name] = newInstrument;
-            logKey('LOG_ADDITIVE_CREATED', 'info', name);
-
-        } catch(e) {
-            logKey('LOG_ADDITIVE_CREATE_FAIL', 'error', name, e.message);
-            console.error(e);
-        }
-    },
-
-    createCustomSampler: function(name, urls, baseUrl, envelopeSettings = null) {
-        // ... (existing code)
-    },
-
-    createLayeredInstrument: function(name, childNames) {
-        if (!name) {
-            logKey('LOG_INSTR_NAME_EMPTY', 'error');
-            return;
-        }
-        this.layeredInstruments[name] = childNames;
-        // 我們將其註冊在 instruments 中，但不賦予實例，僅作為一個標記標籤
-        this.instruments[name] = { type: 'Layered', children: childNames };
-        logKey('LOG_INSTR_CREATED', 'info', name, 'Layered (' + childNames.length + ')');
-    },
-
-    transitionToInstrument: function(newInstrumentName) {
-        if (!this.instruments[newInstrumentName]) {
-            logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'error', newInstrumentName);
-            return;
-        }
-
-        const oldInstrumentName = this.currentInstrumentName;
-        if (oldInstrumentName === newInstrumentName) return; // No change
-
-        const oldInstrument = this.instruments[oldInstrumentName];
-        const newInstrument = this.instruments[newInstrumentName];
-
-        // 1. SILENCE OLD INSTRUMENT: Release all notes currently being tracked
-        if (oldInstrument) {
-            // For MIDI notes
-            this.midiPlayingNotes.forEach((notes, midiNoteNumber) => {
-                if (typeof oldInstrument.triggerRelease === 'function') {
-                    oldInstrument.triggerRelease(notes, Tone.now());
-                }
-            });
-
-            // For PC keyboard notes
-            this.pressedKeys.forEach((notes, keyCode) => {
-                if (typeof oldInstrument.triggerRelease === 'function') {
-                    oldInstrument.triggerRelease(notes, Tone.now());
-                }
-            });
-            
-            // If it's a PolySynth, use releaseAll for a clean sweep
-            if (typeof oldInstrument.releaseAll === 'function') {
-                oldInstrument.releaseAll();
-            }
-        }
-
-        // 2. SWITCH IDENTITY
-        this.currentInstrumentName = newInstrumentName;
-
-        // 3. TRIGGER NEW INSTRUMENT: Resume notes if needed, or just clear state
-        // To prevent 'ghost' notes from lingering, we clear the internal pressed maps
-        // so the user must re-press keys to hear the new instrument. 
-        // This is more robust than trying to transfer active voices.
-        this.clearPressedKeys(); 
-
-        if (!oldInstrument) {
-            logKey('LOG_SWITCHED_TO', 'important', newInstrumentName);
-            this.syncAdsrToUI();
-            return;
-        }
-
-        // Apply current semitone offset to the new instrument
-        if (newInstrument && newInstrument.set) {
-            const targetDetune = this.currentSemitoneOffset * 100;
-            newInstrument.set({ detune: targetDetune });
-            logKey('LOG_DETUNE_APPLIED', 'important', targetDetune, newInstrumentName);
-        } else {
-            logKey('LOG_DETUNE_NOT_SUPPORTED', 'warning', newInstrumentName);
-        }
-
-        logKey('LOG_SWITCHED_TO', 'important', newInstrumentName);
-
-        // --- SYNC ADSR VISUALIZER ---
-        this.syncAdsrToUI();
-    },
-
-    /**
-     * Reads current ADSR values from the active instrument and updates the visualizer.
-     */
-    syncAdsrToUI: function() {
-        let instr = this.instruments[this.currentInstrumentName];
-        if (!instr) return;
-
-        // 如果是疊加樂器，顯示第一個子樂器的 ADSR 作為代表
-        if (instr.type === 'Layered' && instr.children && instr.children.length > 0) {
-            instr = this.instruments[instr.children[0]];
-            if (!instr) return;
-        }
-
-        let a = 0.01, d = 0.1, s = 1.0, r = 0.5;
-
-        try {
-            if (this.currentInstrumentName.toLowerCase().includes('sampler') || instr.type === 'CustomSampler' || instr.name === 'Sampler') {
-                // For Samplers, read native attack/release
-                const sampler = instr.sampler || instr;
-                a = sampler.attack !== undefined ? sampler.attack : 0;
-                r = sampler.release !== undefined ? sampler.release : 0.5;
-                d = 0; s = 1.0; // Fixed for samplers
-            } else {
-                // For Synths, try to get envelope settings
-                // Handle different nesting levels of Tone.js instruments
-                const env = instr.envelope || (instr.get?.().envelope) || (instr.get?.().voice0?.envelope);
-                if (env) {
-                    a = env.attack;
-                    d = env.decay;
-                    s = env.sustain;
-                    r = env.release;
-                }
-            }
-            // Update the internal state and the graph
-            this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
-            const isSampler = this.currentInstrumentName.toLowerCase().includes('sampler');
-            updateAdsrGraph(a, d, s, r, isSampler);
-        } catch (e) {
-            console.warn('Failed to sync ADSR to UI:', e);
-        }
-    },
-
-    playKick: async function(velocity = 1, time = Tone.now()) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return;
-        this.drum.triggerAttackRelease('C2', '8n', time, velocity);
-    },
-
-    playSnare: async function(velocity = 1, time = Tone.now()) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return;
-        this.snare.triggerAttackRelease('8n', time, velocity);
-    },
-
-    playJazzKitNote: async function(drumNote, velocityOverride, time, contextNote, contextVelocity) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return;
-        const finalVelocity = velocityOverride !== null ? velocityOverride : (contextVelocity !== null ? contextVelocity : 1);
-        logKey('LOG_JAZZKIT_PLAY', 'info', drumNote, finalVelocity.toFixed(2));
-        this.jazzKit.triggerAttackRelease(drumNote, '8n', time, finalVelocity);
-    },
-
-    /**
-     * Plays a sound effect (SFX) from a URL.
-     * @param {string} url The URL of the sound file.
-     * @param {object} options Options: { reverse: boolean, playbackRate: number, volume: number }
-     */
-    playSFX: async function(url, options = {}) {
-        const ok = await ensureAudioStarted();
-        if (!ok || !this.isExecutionActive) return;
-
-        // Default options
-        const reverse = options.reverse || false;
-        const playbackRate = options.playbackRate || 1;
-        const volume = options.volume !== undefined ? options.volume : 1; // 0-1 linear gain
-
-        try {
-            this.logKey('LOG_SFX_LOADING', 'info', url);
-            
-            // Create a new Player for this one-shot
-            const player = new Tone.Player({
-                url: url,
-                loop: false,
-                autostart: false,
-                onload: () => {
-                    this.logKey('LOG_SFX_PLAYING', 'info', url);
-                    // Check if execution is still active before starting
-                    if (!this.isExecutionActive) {
-                        player.dispose();
-                        return;
-                    }
-                    player.start();
-                },
-                onerror: (e) => {
-                    this.logKey('LOG_SFX_LOAD_ERR', 'error', url, e);
-                    const idx = this.activeSFXPlayers.indexOf(player);
-                    if (idx > -1) this.activeSFXPlayers.splice(idx, 1);
-                    player.dispose();
-                },
-                onstop: () => {
-                    // Cleanup after playback
-                    const idx = this.activeSFXPlayers.indexOf(player);
-                    if (idx > -1) this.activeSFXPlayers.splice(idx, 1);
-                    player.dispose();
-                }
-            });
-
-            // Track this player
-            this.activeSFXPlayers.push(player);
-
-            // Apply settings
-            player.reverse = reverse;
-            player.playbackRate = playbackRate;
-            player.volume.value = Tone.gainToDb(volume);
-
-            // Connect to effects chain
-            player.chain(...this._activeEffects, analyser);
-
-        } catch (e) {
-            this.logKey('LOG_SFX_ERR', 'error', e.message);
-            console.error(e);
-        }
-    },
-
     updateFilter: function(freq, q) {
-        const filterEffect = this._activeEffects.find(e => e instanceof this.Tone.Filter);
+        const filterEffect = this._activeEffects.find(e => e instanceof Tone.Filter);
         if (filterEffect) {
             if (freq !== undefined) filterEffect.frequency.value = freq;
             if (q !== undefined) filterEffect.Q.value = q;
         }
     },
 
-    clearPressedKeys: function() {
+    createInstrument: function(name, type) {
+        if (!name) return;
+        let newInstrument;
+        switch(type) {
+            case 'PolySynth': newInstrument = new Tone.PolySynth(Tone.Synth); break;
+            case 'AMSynth': newInstrument = new Tone.PolySynth(Tone.AMSynth); break;
+            case 'FMSynth': newInstrument = new Tone.PolySynth(Tone.FMSynth); break;
+            case 'DuoSynth': newInstrument = new Tone.PolySynth(Tone.DuoSynth); break;
+            case 'SineWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' } }); break;
+            case 'SquareWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } }); break;
+            case 'TriangleWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } }); break;
+            case 'SawtoothWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } }); break;
+            case 'Sampler': newInstrument = new Tone.Sampler({ urls: { "C4": "C4.mp3" }, baseUrl: "https://tonejs.github.io/audio/salamander/" }); break;
+        }
+        if (newInstrument) {
+            newInstrument.chain(...this._activeEffects, analyser);
+            this.instruments[name] = newInstrument;
+        }
+    },
 
-        this.pressedKeys.clear();
-        this.midiPressedNotes.clear();
-        this.midiPlayingNotes.clear();
-        logKey('LOG_STATE_CLEARED');
+    transitionToInstrument: function(newInstrumentName) {
+        if (!this.instruments[newInstrumentName]) return;
+        if (this.instruments[this.currentInstrumentName] && this.instruments[this.currentInstrumentName].releaseAll) {
+            this.instruments[this.currentInstrumentName].releaseAll();
+        }
+        this.currentInstrumentName = newInstrumentName;
+        this.syncAdsrToUI();
+    },
+
+    syncAdsrToUI: function() {
+        let instr = this.instruments[this.currentInstrumentName];
+        if (!instr) return;
+        let a = 0.01, d = 0.1, s = 1.0, r = 0.5;
+        try {
+            const env = instr.envelope || (instr.get?.().envelope) || (instr.get?.().voice0?.envelope);
+            if (env) { a = env.attack; d = env.decay; s = env.sustain; r = env.release; }
+            updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
+        } catch (e) {}
     },
 
     playCurrentInstrumentNote: async function(note, dur, time, velocity) {
         const ok = await ensureAudioStarted();
         if (!ok) return; 
-        
-        const trigger = (name) => {
-            const instr = this.instruments[name];
-            if (instr) {
-                if (instr.type === 'Layered') {
-                    instr.children.forEach(child => trigger(child));
-                } else if (instr.triggerAttackRelease) {
-                    if (instr instanceof Tone.Sampler && !instr.loaded) return;
-                    instr.triggerAttackRelease(note, dur, time, velocity);
-                }
-            }
-        };
-
-        const currentName = this.currentInstrumentName;
-        // Trigger visual
-        triggerAdsrOn();
-        const durSeconds = Tone.Time(dur).toSeconds();
-        setTimeout(() => triggerAdsrOff(), durSeconds * 1000);
-
-        trigger(currentName);
+        const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
+        const instr = this.instruments[this.currentInstrumentName];
+        if (instr && instr.triggerAttackRelease) {
+            triggerAdsrOn();
+            instr.triggerAttackRelease(finalNote, dur, time, velocity);
+            setTimeout(() => triggerAdsrOff(), Tone.Time(dur).toSeconds() * 1000);
+        }
     },
 
-    /**
-     * Parses and plays a melody string sequentially.
-     * Format: "C4Q, D4H, RE" (Note+Octave+Duration, or R+Duration for rest)
-     * Durations: W=1m, H=2n, Q=4n, E=8n, S=16n, T=32n. 
-     * Supports '.' for dotted and '_T' for triplet.
-     * @param {string} melodyStr The melody string to play.
-     */
-    playMelodyString: async function(melodyStr) {
+    playCurrentInstrumentNoteAttack: async function(note, velocity) {
+        const ok = await ensureAudioStarted();
+        if (!ok) return; 
+        const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
+        const instr = this.instruments[this.currentInstrumentName];
+        if (instr && instr.triggerAttack) {
+            triggerAdsrOn();
+            instr.triggerAttack(finalNote, Tone.now(), velocity);
+        }
+    },
+
+    playCurrentInstrumentNoteRelease: function(note) {
+        const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
+        const instr = this.instruments[this.currentInstrumentName];
+        if (instr && instr.triggerRelease) {
+            triggerAdsrOff();
+            instr.triggerRelease(finalNote, Tone.now());
+        }
+    },
+
+    playKick: async function(velocity = 1, time = Tone.now()) {
+        const ok = await ensureAudioStarted();
+        if (ok) this.drum.triggerAttackRelease('C2', '8n', time, velocity);
+    },
+
+    playSnare: async function(velocity = 1, time = Tone.now()) {
+        const ok = await ensureAudioStarted();
+        if (ok) this.snare.triggerAttackRelease('8n', time, velocity);
+    },
+
+    playJazzKitNote: async function(drumNote, velocityOverride, time, contextNote, contextVelocity) {
+        const ok = await ensureAudioStarted();
+        if (!ok) return;
+        const finalVelocity = velocityOverride !== null ? velocityOverride : (contextVelocity !== null ? contextVelocity : 1);
+        this.jazzKit.triggerAttackRelease(drumNote, '8n', time, finalVelocity);
+    },
+
+    playSFX: async function(url, options = {}) {
         const ok = await ensureAudioStarted();
         if (!ok || !this.isExecutionActive) return;
-
-        const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
-        
-        // Robust splitting: Replace commas, newlines, and carriage returns with spaces first
-        const cleanStr = melodyStr.replace(/[,\r\n]/g, ' ');
-        const notes = cleanStr.split(/\s+/).map(s => s.trim()).filter(s => s.length > 0);
-
-        for (const noteStr of notes) {
-            if (!this.isExecutionActive) break;
-
-            // Regex: (Rest R)? (Pitch+Accidental)? (Octave)? (Duration) (Dotted .)? (Triplet _T)?
-            const match = noteStr.match(/^(R)?([A-G][#b]?)?([0-8])?([WHQEST])(\.?|_T)?$/i);
-            
-            if (match) {
-                const isRest = !!match[1];
-                let pitch = match[2] ? match[2].toUpperCase() : null;
-                let octave = match[3] ? match[3] : "4";
-                let durChar = match[4].toUpperCase();
-                let suffix = match[5] ? match[5].toUpperCase() : "";
-
-                let toneDur = durMap[durChar] || '4n';
-                if (suffix === '.') toneDur += '.';
-                if (suffix === '_T') toneDur = toneDur.replace('n', 't');
-
-                if (isRest) {
-                    // Wait for the duration of the rest
-                    await new Promise(resolve => setTimeout(resolve, Tone.Time(toneDur).toMilliseconds()));
-                } else {
-                    const fullNote = pitch ? (pitch + octave) : ("C" + octave);
-                    // Play note
-                    this.playCurrentInstrumentNote(fullNote, toneDur, Tone.now(), 0.8);
-                    // Wait for duration
-                    await new Promise(resolve => setTimeout(resolve, Tone.Time(toneDur).toMilliseconds()));
+        try {
+            const player = new Tone.Player({
+                url: url,
+                onload: () => { if (this.isExecutionActive) player.start(); },
+                onstop: () => {
+                    const idx = this.activeSFXPlayers.indexOf(player);
+                    if (idx > -1) this.activeSFXPlayers.splice(idx, 1);
+                    player.dispose();
                 }
-            } else {
-                logKey('LOG_MELODY_PARSE_ERR', 'warning', noteStr);
+            });
+            this.activeSFXPlayers.push(player);
+            player.reverse = options.reverse || false;
+            player.playbackRate = options.playbackRate || 1;
+            player.volume.value = Tone.gainToDb(options.volume || 1);
+            player.chain(...this._activeEffects, analyser);
+        } catch (e) { console.error(e); }
+    },
+
+    playChordByName: async function(chordName, duration, velocity) {
+        const notes = this.chords[chordName];
+        if (notes) {
+            const transposed = notes.map(n => this.getTransposedNote(n));
+            const instr = this.instruments[this.currentInstrumentName];
+            if (instr && instr.triggerAttackRelease) {
+                triggerAdsrOn();
+                instr.triggerAttackRelease(transposed, duration, Tone.now(), velocity);
+                setTimeout(() => triggerAdsrOff(), Tone.Time(duration).toSeconds() * 1000);
+            }
+        }
+    },
+
+    playChordByNameAttack: async function(chordName, velocity) {
+        const notes = this.chords[chordName];
+        if (notes) {
+            const transposed = notes.map(n => this.getTransposedNote(n));
+            const instr = this.instruments[this.currentInstrumentName];
+            if (instr && instr.triggerAttack) {
+                triggerAdsrOn();
+                instr.triggerAttack(transposed, Tone.now(), velocity);
+            }
+        }
+    },
+
+    playChordByNameRelease: function(chordName) {
+        const notes = this.chords[chordName];
+        if (notes) {
+            const transposed = notes.map(n => this.getTransposedNote(n));
+            const instr = this.instruments[this.currentInstrumentName];
+            if (instr && instr.triggerRelease) {
+                triggerAdsrOff();
+                instr.triggerRelease(transposed, Tone.now());
             }
         }
     },
@@ -825,94 +329,48 @@ export const audioEngine = {
     midiAttack: async function(midiNoteNumber, velocityNormalized = 1, channel) {
         const ok = await ensureAudioStarted();
         if (!ok) return;
-
         const chordName = this.midiChordMap[midiNoteNumber];
-        let notesToPlay = null;
-        let notePlayedType = 'Single';
-
-        if (chordName) {
-            notesToPlay = this.chords[chordName];
-            notePlayedType = 'Chord';
-            if (!notesToPlay) {
-                logKey('LOG_CHORD_UNDEFINED', 'error', chordName);
-                return;
-            }
-        } else {
-            notesToPlay = Tone.Midi(midiNoteNumber).toNote();
-        }
-
-        if (notesToPlay) {
+        let notesToPlay = chordName ? (this.chords[chordName] || []).map(n => this.getTransposedNote(n)) : this.getTransposedNote(midiNoteNumber);
+        const instr = this.instruments[this.currentInstrumentName];
+        if (instr && instr.triggerAttack) {
             triggerAdsrOn();
-            const trigger = (name) => {
-                const instr = this.instruments[name];
-                if (instr) {
-                    if (instr.type === 'Layered') {
-                        instr.children.forEach(child => trigger(child));
-                    } else if (instr.triggerAttack) {
-                        if (instr instanceof Tone.Sampler && !instr.loaded) return;
-                        instr.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
-                    }
-                }
-            };
-            trigger(this.currentInstrumentName);
+            instr.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
             this.midiPlayingNotes.set(midiNoteNumber, notesToPlay);
-            logKey('LOG_MIDI_ON', 'info', notePlayedType, midiNoteNumber, (velocityNormalized*127).toFixed(0), channel, Array.isArray(notesToPlay) ? notesToPlay.join(', ') : notesToPlay);
         }
     },
 
     midiRelease: async function(midiNoteNumber) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return;
-
         const notesToRelease = this.midiPlayingNotes.get(midiNoteNumber);
-        if (notesToRelease) {
+        const instr = this.instruments[this.currentInstrumentName];
+        if (notesToRelease && instr && instr.triggerRelease) {
             triggerAdsrOff();
-            const release = (name) => {
-                const instr = this.instruments[name];
-                if (instr) {
-                    if (instr.type === 'Layered') {
-                        instr.children.forEach(child => release(child));
-                    } else if (instr.triggerRelease) {
-                        instr.triggerRelease(notesToRelease, Tone.now());
-                    }
-                }
-            };
-            release(this.currentInstrumentName);
+            instr.triggerRelease(notesToRelease, Tone.now());
             this.midiPlayingNotes.delete(midiNoteNumber);
         }
     },
 
-    /**
-     * Resets the entire audio engine state, stopping all sounds, disposing of instruments and effects,
-     * and clearing all mappings and loops. This should be called before loading a new project or running new code.
-     */
-    resetAudioEngineState: function() {
-        this.isExecutionActive = false; // Mark execution as INACTIVE to stop async loops
-        logKey('LOG_RESETTING_ENGINE');
-        this.stopBackgroundNoise(); // Stop any background noise
-        
-        // Stop the transport and immediately cancel all scheduled events on the timeline
-        this.Tone.Transport.stop();
-        this.Tone.Transport.cancel(0); // Explicitly cancel from the beginning
-        this.Tone.Transport.seconds = 0; // Reset position to 0
-        logKey('LOG_TRANSPORT_STOPPED');
+    clearPressedKeys: function() { this.pressedKeys.clear(); this.midiPlayingNotes.clear(); },
 
-        // Reset Visualizer
-        this.updateADSR(0.01, 0.1, 0.5, 1.0);
-        triggerAdsrOff(); // Ensure playhead is idle
+    resetAudioEngineState: function() {
+        this.isExecutionActive = false;
+        logKey('LOG_RESETTING_ENGINE');
+
+        // Stop the transport and cancel all events
+        Tone.Transport.stop(); 
+        Tone.Transport.cancel(0);
+        Tone.Transport.seconds = 0;
+
+        // Reset Visuals
+        this.updateADSR(0.01, 0.1, 0.5, 1.0); 
+        triggerAdsrOff();
 
         // Stop all active SFX players
-        this.activeSFXPlayers.forEach(player => {
-            try {
-                player.stop();
-                player.dispose();
-            } catch (e) { /* ignore */ }
-        });
+        this.activeSFXPlayers.forEach(p => { try { p.stop(); p.dispose(); } catch(e){} });
         this.activeSFXPlayers = [];
 
-        // Disconnect and release all instruments
+        // Stop and release all instruments
         const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);
-        instrumentSet.forEach(instr => {
+        instrumentSet.forEach(instr => { 
             if (instr) {
                 if (typeof instr.releaseAll === 'function') {
                     try { instr.releaseAll(); } catch(e) {}
@@ -923,82 +381,65 @@ export const audioEngine = {
             }
         });
 
-        // Dispose of all custom instruments (except DefaultSynth which we handle specially)
-        for (const instrName in this.instruments) {
-            if (this.instruments.hasOwnProperty(instrName) && instrName !== 'DefaultSynth') {
-                const instrument = this.instruments[instrName];
+        // Dispose of custom instruments (except DefaultSynth handled below)
+        for (const name in this.instruments) {
+            if (name !== 'DefaultSynth') {
+                const instrument = this.instruments[name];
                 if (instrument && typeof instrument.dispose === 'function') {
                     try { instrument.dispose(); } catch(e) {}
                 }
-                delete this.instruments[instrName];
+                delete this.instruments[name];
             }
         }
-            // Re-initialize DefaultSynth if it was disposed or needs resetting
-            if (this.instruments['DefaultSynth'] && typeof this.instruments['DefaultSynth'].dispose === 'function') {
-                try { this.instruments['DefaultSynth'].dispose(); } catch(e) {}
-            }
-            // Create a BRAND NEW DefaultSynth instance
-            synth = new Tone.PolySynth(Tone.Synth);
-            synth.chain(analyser); // Chain to analyser so 'Test Note' works immediately
-            this.synth = synth;
-            this.instruments['DefaultSynth'] = synth;
-            this.currentInstrumentName = 'DefaultSynth';
-            logKey('LOG_INSTR_RESET');
 
+        // Re-initialize default synth
+        if (this.instruments['DefaultSynth'] && typeof this.instruments['DefaultSynth'].dispose === 'function') {
+            try { this.instruments['DefaultSynth'].dispose(); } catch(e) {}
+        }
+        synth = new Tone.PolySynth(Tone.Synth).chain(analyser);
+        this.synth = synth; 
+        this.instruments['DefaultSynth'] = synth; 
+        this.currentInstrumentName = 'DefaultSynth';
+
+        // CRITICAL FIX: Dispose of all Blockly Loops
         if (blocklyLoops) {
             for (const loopId in blocklyLoops) {
-                if (blocklyLoops.hasOwnProperty(loopId) && blocklyLoops[loopId] instanceof this.Tone.Loop) {
-                    window.blocklyLoops[loopId].dispose();
+                if (blocklyLoops.hasOwnProperty(loopId) && blocklyLoops[loopId] instanceof Tone.Loop) {
+                    try {
+                        blocklyLoops[loopId].stop();
+                        blocklyLoops[loopId].dispose();
+                    } catch(e) {}
                 }
             }
-            blocklyLoops = {}; // Clear the loops object
+            // Clear the object
+            for (const key in blocklyLoops) delete blocklyLoops[key];
             logKey('LOG_LOOPS_CLEARED');
         }
 
-        // Clear all mappings and chord definitions
-            this.chords = {};
-            this.keyboardChordMap = {};
-            this.midiChordMap = {};
-            this.clearPressedKeys(); // Also clears midiPressedNotes and midiPlayingNotes
-            logKey('LOG_MAPPINGS_CLEARED');
+        this.chords = {}; 
+        this.keyboardChordMap = {}; 
+        this.midiChordMap = {}; 
+        this.clearPressedKeys();
         
-            // Clear active effects but don't rebuild the chain (don't re-connect instruments)
-            this._activeEffects.forEach(effect => {
-                if (effect && typeof effect.dispose === 'function') {
-                    try { effect.dispose(); } catch(e) {}
-                }
-            });
-            this._activeEffects = [];
-            
-            this.currentSemitoneOffset = 0; // Reset semitone offset
-            logKey('LOG_ENGINE_RESET_DONE');
-            },
-    panicStopAllSounds: function() {
-        logKey('LOG_PANIC_STOP');
-        this.resetAudioEngineState();
-        logKey('LOG_PANIC_DONE');
+        this._activeEffects.forEach(e => { if (e && typeof e.dispose === 'function') e.dispose(); });
+        this._activeEffects = []; 
+        
+        this.currentSemitoneOffset = 0;
+        logKey('LOG_ENGINE_RESET_DONE');
     },
+
+    panicStopAllSounds: function() { this.resetAudioEngineState(); },
 };
 
-/**
- * Attaches a pointerdown listener to the document body to start the AudioContext on first user interaction.
- */
 export function startAudioOnFirstInteraction() {
     const oneStart = async function () {
         const ok = await ensureAudioStarted();
-        if (ok) {
-            requestMidiAccess(); // 自動嘗試連線 MIDI
-        }
+        if (ok) requestMidiAccess();
         document.body.removeEventListener('pointerdown', oneStart);
     };
     document.body.addEventListener('pointerdown', oneStart, { passive: true });
 }
 
-// Initialize default instrument and add it to the instruments map
 audioEngine.instruments['DefaultSynth'] = synth;
-audioEngine.currentInstrumentName = 'DefaultSynth';
-
-// Expose to window so that Blockly-generated code can use it.
-// This is a necessary evil for the current code generation strategy.
 window.audioEngine = audioEngine;
 window.blocklyLoops = blocklyLoops;

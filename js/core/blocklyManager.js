@@ -321,6 +321,7 @@ export async function initBlocklyManager() {
             grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
             zoom: { controls: true, wheel: true, startScale: 1.0 },
             move: { scrollbars: true, drag: true, wheel: true },
+            comments: true, // 啟用積木註解
             media: import.meta.env.BASE_URL + 'blockly/media/'
         });
         logKey('LOG_WORKSPACE_INJECTED');

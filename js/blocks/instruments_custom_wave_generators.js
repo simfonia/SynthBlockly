@@ -5,7 +5,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 export function registerGenerators(BlocklyInstance, javascriptGeneratorInstance) {
 
   // Generator for the new all-in-one sb_create_harmonic_synth block
-  javascriptGeneratorInstance.forBlock['sb_create_harmonic_synth'] = function(block, generator) {
+  javascriptGeneratorInstance.forBlock['sb_create_harmonic_synth'] = function (block, generator) {
     const instrumentName = generator.quote_(block.getFieldValue('NAME'));
 
     // Logic moved from the old 'sb_harmonic_partials' generator
@@ -24,9 +24,9 @@ export function registerGenerators(BlocklyInstance, javascriptGeneratorInstance)
   };
 
   // Generator for sb_create_additive_synth block
-  javascriptGeneratorInstance.forBlock['sb_create_additive_synth'] = function(block, generator) {
+  javascriptGeneratorInstance.forBlock['sb_create_additive_synth'] = function (block, generator) {
     const instrumentName = generator.quote_(block.getFieldValue('NAME'));
-    
+
     const components = [];
     for (let i = 0; i < block.itemCount_; i++) {
       const amp = generator.valueToCode(block, 'AMP' + i, generator.ORDER_ATOMIC) || '0';

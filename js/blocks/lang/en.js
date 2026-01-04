@@ -60,7 +60,9 @@ export const MSG_EN = {
     'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
     'PC_KEYBOARD_HUE': '#F0B429',
     'MSG_SERIAL_CATEGORY': 'Serial',
-    'SERIAL_HUE': '#D9534F',
+    'SERIAL_HUE': '#607D8B', // Blue Grey
+    'MSG_TOOLS_CATEGORY': 'Tools',
+    'TOOLS_HUE': '#777777',
     'MSG_SFX_CATEGORY': 'Sound Effects',
     'SFX_HUE': '#5A8D8B',
 
@@ -228,6 +230,8 @@ export const MSG_EN = {
 
     // SERIAL
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': 'When serial data %1 received',
+    'SB_SERIAL_CHECK_KEY_MASK_MESSAGE': 'Is Key %2 Pressed in Data %1?',
+    'SB_SERIAL_CHECK_KEY_MASK_TOOLTIP': 'Parses bitmask data (e.g., KEYS:5) to check if a specific key is pressed.',
 
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 Measure (1m)',
@@ -380,4 +384,8 @@ export const MSG_EN = {
     'LOG_SERIAL_ERR': 'Serial error: %1',
     'LOG_SERIAL_PORT_BUSY': 'Serial port is busy or could not be opened.',
     'LOG_SERIAL_DISCONNECTED': 'Serial connection disconnected.',
+    'SB_PLAY_CHORD_BY_NAME_MESSAGE': 'Play Chord %1 Duration %2 Velocity %3',
+    'SB_PLAY_CHORD_BY_NAME_TOOLTIP': 'Plays a defined chord by its name.',
+    'SB_COMMENT_MESSAGE': 'Comment: %1',
+    'SB_COMMENT_TOOLTIP': 'Leave a note in the workspace. It will not affect the code.',
 };
