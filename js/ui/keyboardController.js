@@ -54,6 +54,7 @@ const switchInstrument = (direction) => {
     
     // Call the existing transition function
     audioEngine.transitionToInstrument(newInstrumentName);
+    logKey('LOG_SWITCH_INSTR_SUCCESS', 'important', newInstrumentName); // Use 'important' for red/bold log
 };
 
 const handleKeyDown = async (e) => {
@@ -113,6 +114,8 @@ const handleKeyDown = async (e) => {
         if (audioEngine.chords[chordName]) {
             if (!audioEngine.pressedKeys.has(e.code)) {
                 await ensureAudioStarted();
+                // Store ID if chord attack returns one (currently chords logic might not return ID properly, handled separately or TODO)
+                // For now, assume chords don't interfere with single note visualizer logic as heavily or are handled globally
                 audioEngine.playChordByNameAttack(chordName, 0.7);
                 audioEngine.pressedKeys.set(e.code, { type: 'chord', name: chordName });
             }
@@ -130,8 +133,8 @@ const handleKeyDown = async (e) => {
         const ok = await ensureAudioStarted();
         if (!ok) return;
 
-        audioEngine.playCurrentInstrumentNoteAttack(notesToPlay, 0.7);
-        audioEngine.pressedKeys.set(e.code, { type: 'note', name: notesToPlay });
+        const noteId = audioEngine.playCurrentInstrumentNoteAttack(notesToPlay, 0.7);
+        audioEngine.pressedKeys.set(e.code, { type: 'note', name: notesToPlay, noteId: noteId });
         e.preventDefault();
     }
 };
@@ -154,7 +157,7 @@ const handleKeyUp = async (e) => {
         if (playedInfo.type === 'chord') {
             audioEngine.playChordByNameRelease(playedInfo.name);
         } else {
-            audioEngine.playCurrentInstrumentNoteRelease(playedInfo.name);
+            audioEngine.playCurrentInstrumentNoteRelease(playedInfo.name, playedInfo.noteId); // Pass noteId
         }
 
         audioEngine.pressedKeys.delete(e.code);

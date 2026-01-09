@@ -43,27 +43,40 @@ function resizeCanvas() {
  * Updates the graph with new ADSR values.
  */
 export function updateAdsrGraph(a, d, s, r, samplerFlag = false) {
-    currentADSR = { attack: a, decay: d, sustain: s, release: r };
+    currentADSR = { 
+        attack: Number(a) || 0.001, 
+        decay: Number(d) || 0.001, 
+        sustain: Number(s) || 0, 
+        release: Number(r) || 0.001 
+    };
     isSampler = samplerFlag;
     drawGraph();
 }
 
 /**
  * Triggers the playhead start (Note On).
+ * @returns {number} The unique ID for this note event.
  */
 export function triggerAdsrOn() {
     playhead.startTime = performance.now() / 1000;
     playhead.state = 'attack';
     playhead.active = true;
+    playhead.releaseTime = 0; // Reset release time
+    playhead.noteId = (playhead.noteId || 0) + 1; // Generate new ID
+    return playhead.noteId;
 }
 
 /**
  * Triggers the playhead release (Note Off).
+ * @param {number} [noteId] - Optional ID to match against the current note.
  */
-export function triggerAdsrOff() {
+export function triggerAdsrOff(noteId) {
     // If we are already idle or release, don't do anything
     if (playhead.state === 'idle') return;
     
+    // If a specific noteId is provided, only release if it matches the current one
+    if (noteId !== undefined && noteId !== playhead.noteId) return;
+
     playhead.releaseTime = performance.now() / 1000;
     playhead.state = 'release';
 }

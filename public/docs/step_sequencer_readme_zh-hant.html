@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>步進音序器使用指南</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #16A085; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #16A085; font-weight: bold; }
+        .example { background: #e6fffb; padding: 10px; border-left: 4px solid #16A085; margin: 10px 0; font-family: monospace; white-space: pre; }
+        .note { color: #666; font-style: italic; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>步進音序器 (Step Sequencer) 指南</h1>
+    <p>步進音序器是電子音樂編曲的核心工具。它將一小節的時間切分為 16 個等分（十六分音符），讓你透過簡單的字串就能快速編寫節奏與琶音。</p>
+
+    <div class="type-box">
+        <h2>1. 參數說明</h2>
+        <ul>
+            <li><strong>聲音來源</strong>：指定發聲的樂器名稱 (如 <code>Piano</code>, <code>Bass</code>) 或鼓組關鍵字 (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>)。</li>
+            <li><strong>第 N 小節</strong>：在長度超過 1 小節的循環中，指定此積木負責哪一小節。</li>
+            <li><strong>序列字串</strong>：定義節奏的內容。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>2. 語法符號</h2>
+        <table>
+            <tr><th>符號</th><th>說明</th></tr>
+            <tr><td><code>x</code></td><td>觸發發聲（適用於鼓組或單音）。</td></tr>
+            <tr><td><code>C4</code>, <code>G3</code>...</td><td>直接指定音符名稱（適用於鋼琴、貝斯等）。</td></tr>
+            <tr><td><code>.</code> 或 <code>-</code></td><td>休止符（不發聲）。</td></tr>
+            <tr><td><code>|</code> 或 <code>空白</code></td><td>視覺分隔符，會被系統忽略，方便人類閱讀。</td></tr>
+        </table>
+    </div>
+
+    <div class="type-box">
+        <h2>3. 16 格規則</h2>
+        <p>系統固定將一小節解析為 <strong>16 格</strong>。建議使用 <code>|</code> 將每 4 格分開，以便觀察拍點：</p>
+        <div class="example">
+// 四分音符大鼓節奏 (4 拍)
+x . . . | x . . . | x . . . | x . . .
+
+// 八分音符節奏
+x . x . | x . x . | x . x . | x . x .</div>
+    </div>
+
+    <div class="type-box">
+        <h2>4. 實戰範例：琶音與多聲部</h2>
+        <p>利用「自訂」模式，您可以讓不同的音序器積木並行運作：</p>
+        <div class="example">
+// 軌道 1 (來源: KICK)
+x . . . | . . . . | x . . . | . . . .
+
+// 軌道 2 (來源: Piano)
+C4 . E4 . | G4 . E4 . | C4 . E4 . | G4 . E4 .</div>
+    </div>
+
+    <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">
+        <h2>5. 專家提示</h2>
+        <ul>
+            <li><strong>必須放在循環內</strong>：此積木必須放在「每隔 N 循環執行」內部才能運作。</li>
+            <li><strong>預備拍的重要性</strong>：如果您的樂曲包含 Piano 等大型取樣器，強烈建議在樂曲開始前放置一個<strong>「預備拍」</strong>積木，這能確保所有資源在第一小節開始前就緒。</li>
+        </ul>
+    </div>
+</body>
+</html>

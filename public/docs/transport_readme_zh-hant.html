@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>小節偏移排程指南</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #16A085; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #16A085; font-weight: bold; }
+        .example { background: #e6fffb; padding: 10px; border-left: 4px solid #16A085; margin: 10px 0; font-family: monospace; white-space: pre; }
+        .note { color: #666; font-style: italic; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>小節偏移排程指南</h1>
+    <p>「於小節偏移...處執行」積木是實現精確節奏控制的關鍵。它允許你在一個音樂循環 (Tone Loop) 中，精確安排多個音符在不同時間點發聲。</p>
+
+    <div class="type-box">
+        <h2>1. 基本概念</h2>
+        <p>當你在「每隔 1 小節 循環執行」中放入多個積木時，預設它們會<strong>同時觸發</strong>。若要讓音符錯開（例如：第一拍打大鼓，第三拍打小鼓），你就必須使用偏移積木。</p>
+        <ul>
+            <li><strong>基礎時間 (time)</strong>：由外部循環積木提供，代表該小節的起始點。</li>
+            <li><strong>偏移值 (Offset)</strong>：相對於起始點的延後時間。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>2. 偏移值格式 (Offset Formats)</h2>
+        <p>你可以使用以下幾種方式來描述偏移時間：</p>
+        <ul>
+            <li><code>0</code>：小節的最開端（第一拍）。</li>
+            <li><code>4n</code>：偏移 1 拍（四分音符長度）。</li>
+            <li><code>2n</code>：偏移 2 拍（二分音符長度）。</li>
+            <li><code>8n</code>：偏移半拍（八分音符長度）。</li>
+            <li><code>0:2:0</code>：標準音樂計時格式 (小節:拍:十六分音符)。</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>3. 實作範例</h2>
+        <p>要在一個 1 小節的循環中建立「動、次、大、次」的鼓點：</p>
+        <div class="example">
+每隔 1 小節 循環執行:
+  於小節偏移 0 處執行:
+    播放電子鼓聲 (KICK)
+  於小節偏移 4n 處執行:
+    播放電子鼓聲 (HH)
+  於小節偏移 2n 處執行:
+    播放電子鼓聲 (SNARE)
+  於小節偏移 0:3:0 處執行:
+    播放電子鼓聲 (HH)</div>
+        <p class="note">* 提示：你可以使用音樂計時符號（如 0:3:0 代表第 4 拍起始點）來精確排程。</p>
+    </div>
+
+    <div class="type-box">
+        <h2>4. 注意事項</h2>
+        <ul>
+            <li>此積木必須放在<strong>循環積木 (Tone Loop)</strong> 內部才會生效。</li>
+            <li>偏移值<strong>不可超過</strong>循環的總長度，否則該動作可能永遠不會被觸發或導致節奏混亂。</li>
+        </ul>
+    </div>
+
+    <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">
+        <h2>5. 進階：為什麼積木的順序不重要？</h2>
+        <p>您可能會發現，即使將「偏移 2n」的積木放在「偏移 0」的積木上面，音樂仍然會先播放偏移 0 的聲音。這是因為 SynthBlockly 採用了<strong>非阻塞式預先排程 (Look-ahead Scheduling)</strong> 機制：</p>
+        <ul>
+            <li><strong>填寫時間表</strong>：當循環開始時，所有的偏移積木會在一瞬間執行完畢。它們並不是「立刻發聲」，而是向系統「預約」未來的發聲時間。</li>
+            <li><strong>絕對精準</strong>：音訊引擎會根據您設定的時間戳記自動排序。這確保了節奏的絕對精準，不會因為電腦運算速度而產生抖動。</li>
+        </ul>
+        <p class="note">這意味著您可以專注於節奏的數值設定，而不必擔心積木堆疊的物理順序。</p>
+    </div>
+</body>
+</html>

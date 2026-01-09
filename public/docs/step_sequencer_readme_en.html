@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Step Sequencer Guide</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #16A085; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #16A085; font-weight: bold; }
+        .example { background: #e6fffb; padding: 10px; border-left: 4px solid #16A085; margin: 10px 0; font-family: monospace; white-space: pre; }
+        .note { color: #666; font-style: italic; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Step Sequencer Guide</h1>
+    <p>The Step Sequencer is a fundamental tool for electronic music. It divides one measure into 16 equal slices (16th notes), allowing you to create complex rhythms and arpeggios with simple strings.</p>
+
+    <div class="type-box">
+        <h2>1. Parameters</h2>
+        <ul>
+            <li><strong>Sound Source</strong>: Specify the instrument (e.g., <code>Piano</code>, <code>Bass</code>) or drum keyword (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>).</li>
+            <li><strong>Measure N</strong>: In loops longer than 1 measure, specifies which bar this block controls.</li>
+            <li><strong>Sequence String</strong>: Defines the rhythmic content.</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>2. Syntax Symbols</h2>
+        <table>
+            <tr><th>Symbol</th><th>Description</th></tr>
+            <tr><td><code>x</code></td><td>Trigger sound (useful for drums or single notes).</td></tr>
+            <tr><td><code>C4</code>, <code>G3</code>...</td><td>Specific note name (useful for melodic instruments).</td></tr>
+            <tr><td><code>.</code> or <code>-</code></td><td>Rest (silence).</td></tr>
+            <tr><td><code>|</code> or <code>Space</code></td><td>Visual separators. Ignored by the system, used for readability.</td></tr>
+        </table>
+    </div>
+
+    <div class="type-box">
+        <h2>3. The 16-Step Rule</h2>
+        <p>The system always parses one measure as <strong>16 steps</strong>. We recommend using <code>|</code> to separate every 4 steps for clarity:</p>
+        <div class="example">
+// 4-on-the-floor Kick rhythm
+x . . . | x . . . | x . . . | x . . .
+
+// Eighth note hi-hats
+x . x . | x . x . | x . x . | x . x .</div>
+    </div>
+
+    <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">
+        <h2>4. Pro Tips</h2>
+        <ul>
+            <li><strong>Loops Only</strong>: This block must be placed inside an "Every N measure loop" to function.</li>
+            <li><strong>Metronome Benefit</strong>: If your track uses heavy samplers like Piano, add a <strong>"Count In"</strong> block at the start. This gives the browser time to load assets before the first bar begins.</li>
+        </ul>
+    </div>
+</body>
+</html>

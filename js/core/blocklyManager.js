@@ -104,14 +104,28 @@ const blockListeners = {};
 function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
-    if (event.type === BlocklyModule.Events.BLOCK_CHANGE && event.name && ['A', 'D', 'S', 'R'].includes(event.name)) {
-        const block = workspace.getBlockById(event.blockId);
-        if (block && block.type === 'sb_set_adsr') {
-            const a = Number(block.getFieldValue('A')) || 0.01;
-            const d = Number(block.getFieldValue('D')) || 0.1;
-            const s = Number(block.getFieldValue('S')) || 0.5;
-            const r = Number(block.getFieldValue('R')) || 1.0;
+    // --- ADSR UI Synchronization ---
+    // Handle field changes, block creations, and deletions
+    if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
+        event.type === BlocklyModule.Events.BLOCK_CREATE || 
+        event.type === BlocklyModule.Events.BLOCK_DELETE) {
+        
+        const adsrBlocks = workspace.getBlocksByType('sb_set_adsr', false);
+        if (adsrBlocks.length > 0) {
+            const block = adsrBlocks[0]; // Sync with the first one found
+            const getNum = (name, def) => {
+                const val = block.getFieldValue(name);
+                return (val === null || val === "" || isNaN(val)) ? def : Number(val);
+            };
+            const a = getNum('A', 0.01);
+            const d = getNum('D', 0.1);
+            const s = getNum('S', 0.5);
+            const r = getNum('R', 1.0);
             audioEngine.updateADSR(a, d, s, r);
+        } else if (event.type === BlocklyModule.Events.BLOCK_DELETE || event.type === BlocklyModule.Events.BLOCK_CREATE) {
+            // If no ADSR block exists (especially after a deletion), reset UI to default
+            // Use 0.01, 0.1, 0.5, 1.0 as the fall-back default
+            audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
         }
     }
 

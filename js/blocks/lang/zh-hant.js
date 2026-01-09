@@ -153,7 +153,7 @@ export const MSG_ZH_HANT = {
     // TRANSPORT
     'SB_TRANSPORT_SET_BPM_MESSAGE': '設定主速度為 %1 BPM',
     'SB_TRANSPORT_SET_BPM_TOOLTIP': '設定整個作品的演奏速度 (每分鐘拍數)。',
-    'SB_TRANSPORT_START_STOP_MESSAGE': '%1 音樂指揮',
+    'SB_TRANSPORT_START_STOP_MESSAGE': '%1 音樂播放',
     'SB_TRANSPORT_START_STOP_TOOLTIP': '啟動或停止主時間軸。',
     'SB_TRANSPORT_ACTION_START': '開始',
     'SB_TRANSPORT_ACTION_STOP': '停止',
@@ -234,6 +234,9 @@ export const MSG_ZH_HANT = {
 
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 小節 (1m)',
+    'SB_DUR_2M': '2 小節 (2m)',
+    'SB_DUR_4M': '4 小節 (4m)',
+    'SB_DUR_8M': '8 小節 (8m)',
     'SB_DUR_2N': '二分音符 (2n)',
     'SB_DUR_4N': '四分音符 (4n)',
     'SB_DUR_8N': '八分音符 (8n)',
@@ -354,6 +357,7 @@ export const MSG_ZH_HANT = {
     'LOG_SAMPLER_JSON_ERR': '錯誤: 取樣映射格式非法。%1',
     'LOG_MIDI_MAPPED': 'MIDI 按鍵 %1 已綁定至和弦 %2。',
     'LOG_MIDI_MAP_ERR': '錯誤: 找不到和弦 %1，無法進行 MIDI 映射。',
+    'LOG_SWITCH_INSTR_SUCCESS': '已切換至樂器: %1',
     'LOG_CHORD_DEFINED': '成功定義和弦 %1: %2',
     'LOG_CHORD_ERR': '錯誤: 和弦 %1 定義無效，請檢查音符列表。',
     'LOG_MELODY_PARSE_ERR': '警告: 旋律清單中包含無效格式: "%1"，該項已被跳過。',
@@ -392,4 +396,8 @@ export const MSG_ZH_HANT = {
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': '播放指定名稱的已定義和弦。',
     'SB_COMMENT_MESSAGE': '註解: %1',
     'SB_COMMENT_TOOLTIP': '在工作區留下說明文字，不會影響程式執行。',
+    'SB_TRANSPORT_COUNT_IN_MESSAGE': '預備拍 %1 小節 (拍號 %2 / %3) 音量 %4',
+    'SB_TRANSPORT_COUNT_IN_TOOLTIP': '在開始演奏前播放指定小節數的節拍器預備拍。音量範圍 0 到 10 (1 為標準，10 為大聲)。',
+    'SB_RHYTHM_SEQUENCE_MESSAGE': '步進音序器 來源 %1 第 %2 小節 序列 %3',
+    'SB_RHYTHM_SEQUENCE_TOOLTIP': '將一小節分為 16 格。來源可填 KICK, SNARE, HH 或樂器名稱 (如 Piano)。格內填 x 觸發或填音符 (如 C4)。',
 };

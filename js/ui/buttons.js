@@ -17,8 +17,14 @@ async function runBlocksAction() {
     logKey('LOG_CODE_END');
     try {
         const runner = new Function(`(async () => { ${code} })();`);
-        audioEngine.isExecutionActive = true; // Set flag to true before execution
+        audioEngine.isExecutionActive = true; 
+        
+        // 1. Run the blocks code (this creates instruments like Piano)
         runner();
+        
+        // 2. Wait for the newly created instruments to load their samples
+        await audioEngine.waitForSamples();
+        
         logKey('LOG_EXEC_DONE');
     } catch (e) {
         console.error('RunBlocks execution error', e);

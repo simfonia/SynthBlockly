@@ -1,3 +1,292 @@
-/*! For license information please see index.js.LICENSE.txt */
-!function(t,e){if("object"==typeof exports&&"object"==typeof module)module.exports=e(require("blockly/core"),require("blockly/javascript"),require("blockly/dart"),require("blockly/lua"),require("blockly/php"),require("blockly/python"));else if("function"==typeof define&&define.amd)define(["blockly/core","blockly/javascript","blockly/dart","blockly/lua","blockly/php","blockly/python"],e);else{var i="object"==typeof exports?e(require("blockly/core"),require("blockly/javascript"),require("blockly/dart"),require("blockly/lua"),require("blockly/php"),require("blockly/python")):e(window.Blockly,window["Blockly.JavaScript"],window["Blockly.Dart"],window["Blockly.Lua"],window["Blockly.PHP"],window["Blockly.Python"]);for(var l in i)("object"==typeof exports?exports:window)[l]=i[l]}}(window,(t,e,i,l,o,s)=>(()=>{"use strict";var r={127:t=>{t.exports=e},157:t=>{t.exports=l},370:e=>{e.exports=t},379:t=>{t.exports=i},537:t=>{t.exports=o},557:t=>{t.exports=s}},n={};function a(t){var e=n[t];if(void 0!==e)return e.exports;var i=n[t]={exports:{}};return r[t](i,i.exports,a),i.exports}a.d=(t,e)=>{for(var i in e)a.o(e,i)&&!a.o(t,i)&&Object.defineProperty(t,i,{enumerable:!0,get:e[i]})},a.o=(t,e)=>Object.prototype.hasOwnProperty.call(t,e),a.r=t=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})};var u={};a.r(u),a.d(u,{FieldMultilineInput:()=>f,installAllBlocks:()=>R,registerFieldMultilineInput:()=>y,textMultiline:()=>d});var d={};a.r(d),a.d(d,{BLOCK_NAME:()=>g,blockDefinition:()=>k,installBlock:()=>v,toDart:()=>I,toJavascript:()=>m,toLua:()=>x,toPhp:()=>D,toPython:()=>b});var c=a(370),h=a(127),p=a(379),_=a(157),T=a(537),E=a(557);class f extends c.FieldTextInput{constructor(t,e,i){super(c.Field.SKIP_SETUP),this.textGroup=null,this.maxLines_=1/0,this.isOverflowedY_=!1,t!==c.Field.SKIP_SETUP&&(i&&this.configure_(i),this.setValue(t),e&&this.setValidator(e))}configure_(t){super.configure_(t),t.maxLines&&this.setMaxLines(t.maxLines)}toXml(t){return t.textContent=this.getValue().replace(/\n/g,"&#10;"),t}fromXml(t){this.setValue(t.textContent.replace(/&#10;/g,"\n"))}saveState(){const t=this.saveLegacyState(f);return null!==t?t:this.getValue()}loadState(t){this.loadLegacyState(c.Field,t)||this.setValue(t)}initView(){this.createBorderRect_(),this.textGroup=c.utils.dom.createSvgElement(c.utils.Svg.G,{class:"blocklyEditableField"},this.fieldGroup_)}getDisplayText_(){const t=this.getSourceBlock();if(!t)throw new Error("The field has not yet been attached to its input. Call appendField to attach it.");let e=this.getText();if(!e)return c.Field.NBSP;const i=e.split("\n");e="";const l=this.isOverflowedY_?this.maxLines_:i.length;for(let t=0;t<l;t++){let o=i[t];o.length>this.maxDisplayLength?o=o.substring(0,this.maxDisplayLength-4)+"...":this.isOverflowedY_&&t===l-1&&(o=o.substring(0,o.length-3)+"..."),o=o.replace(/\s/g,c.Field.NBSP),e+=o,t!==l-1&&(e+="\n")}return t.RTL&&(e+="‏"),e}doValueUpdate_(t){super.doValueUpdate_(t),null!==this.value_&&(this.isOverflowedY_=this.value_.split("\n").length>this.maxLines_)}render_(){const t=this.getSourceBlock();if(!t)throw new Error("The field has not yet been attached to its input. Call appendField to attach it.");let e;const i=this.textGroup;for(;e=i.firstChild;)i.removeChild(e);const l=this.getConstants();if(!l)throw Error("Constants not found");const o=this.getDisplayText_().split("\n");let s=0;for(let t=0;t<o.length;t++){const e=l.FIELD_TEXT_HEIGHT+l.FIELD_BORDER_RECT_Y_PADDING;c.utils.dom.createSvgElement(c.utils.Svg.TEXT,{class:"blocklyText blocklyMultilineText",x:l.FIELD_BORDER_RECT_X_PADDING,y:s+l.FIELD_BORDER_RECT_Y_PADDING,dy:l.FIELD_TEXT_BASELINE},i).appendChild(document.createTextNode(o[t])),s+=e}if(this.isBeingEdited_){const t=this.htmlInput_;this.isOverflowedY_?c.utils.dom.addClass(t,"blocklyHtmlTextAreaInputOverflowedY"):c.utils.dom.removeClass(t,"blocklyHtmlTextAreaInputOverflowedY")}if(this.updateSize_(),this.isBeingEdited_){t.RTL?setTimeout(this.resizeEditor_.bind(this),0):this.resizeEditor_();const e=this.htmlInput_;this.isTextValid_?(c.utils.dom.removeClass(e,"blocklyInvalidInput"),c.utils.aria.setState(e,c.utils.aria.State.INVALID,!1)):(c.utils.dom.addClass(e,"blocklyInvalidInput"),c.utils.aria.setState(e,c.utils.aria.State.INVALID,!0))}}updateSize_(){const t=this.getConstants();if(!t)throw Error("Constants not found");const e=this.textGroup.childNodes,i=t.FIELD_TEXT_FONTSIZE,l=t.FIELD_TEXT_FONTWEIGHT,o=t.FIELD_TEXT_FONTFAMILY;let s=0,r=0;for(let n=0;n<e.length;n++){const a=e[n],u=c.utils.dom.getFastTextWidth(a,i,l,o);u>s&&(s=u),r+=t.FIELD_TEXT_HEIGHT+(n>0?t.FIELD_BORDER_RECT_Y_PADDING:0)}if(this.isBeingEdited_){const t=String(this.value_).split("\n"),e=c.utils.dom.createSvgElement(c.utils.Svg.TEXT,{class:"blocklyText blocklyMultilineText"});for(let r=0;r<t.length;r++){t[r].length>this.maxDisplayLength&&(t[r]=t[r].substring(0,this.maxDisplayLength)),e.textContent=t[r];const n=c.utils.dom.getFastTextWidth(e,i,l,o);n>s&&(s=n)}const r=this.htmlInput_;s+=r.offsetWidth-r.clientWidth}this.borderRect_&&(r+=2*t.FIELD_BORDER_RECT_Y_PADDING,s+=2*t.FIELD_BORDER_RECT_X_PADDING+1,this.borderRect_.setAttribute("width",`${s}`),this.borderRect_.setAttribute("height",`${r}`)),this.size_.width=s,this.size_.height=r,this.positionBorderRect_()}showEditor_(t,e){super.showEditor_(t,e),this.forceRerender()}widgetCreate_(){const t=c.WidgetDiv.getDiv(),e=this.workspace_.getScale(),i=this.getConstants();if(!i)throw Error("Constants not found");const l=document.createElement("textarea");l.className="blocklyHtmlInput blocklyHtmlTextAreaInput",l.setAttribute("spellcheck",String(this.spellcheck_));const o=i.FIELD_TEXT_FONTSIZE*e+"pt";t.style.fontSize=o,l.style.fontSize=o;const s=c.FieldTextInput.BORDERRADIUS*e+"px";l.style.borderRadius=s;const r=i.FIELD_BORDER_RECT_X_PADDING*e,n=i.FIELD_BORDER_RECT_Y_PADDING*e/2;l.style.padding=n+"px "+r+"px "+n+"px "+r+"px";const a=i.FIELD_TEXT_HEIGHT+i.FIELD_BORDER_RECT_Y_PADDING;return l.style.lineHeight=a*e+"px",t.appendChild(l),l.value=l.defaultValue=this.getEditorText_(this.value_),l.setAttribute("data-untyped-default-value",String(this.value_)),l.setAttribute("data-old-value",""),c.utils.userAgent.GECKO?setTimeout(this.resizeEditor_.bind(this),0):this.resizeEditor_(),this.bindInputEvents_(l),l}setMaxLines(t){"number"==typeof t&&t>0&&t!==this.maxLines_&&(this.maxLines_=t,this.forceRerender())}getMaxLines(){return this.maxLines_}onHtmlInputKeyDown_(t){"Enter"!==t.key&&super.onHtmlInputKeyDown_(t)}static fromJson(t){return new this(c.utils.parsing.replaceMessageReferences(t.text),void 0,t)}}function y(){c.fieldRegistry.register("field_multilinetext",f)}c.Css.register("\n.blocklyHtmlTextAreaInput {\n  font-family: monospace;\n  resize: none;\n  overflow: hidden;\n  height: 100%;\n  text-align: left;\n}\n\n.blocklyHtmlTextAreaInputOverflowedY {\n  overflow-y: scroll;\n}\n");const g="text_multiline",A={type:g,message0:"%1 %2",args0:[{type:"field_image",src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAARCAYAAADpPU2iAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAdhgAAHYYBXaITgQAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS42/U4J6AAAAP1JREFUOE+Vks0KQUEYhjmRIja4ABtZ2dm5A3t3Ia6AUm7CylYuQRaUhZSlLZJiQbFAyRnPN33y01HOW08z8873zpwzM4F3GWOCruvGIE4/rLaV+Nq1hVGMBqzhqlxgCys4wJA65xnogMHsQ5lujnYHTejBBCK2mE4abjCgMGhNxHgDFWjDSG07kdfVa2pZMf4ZyMAdWmpZMfYOsLiDMYMjlMB+K613QISRhTnITnsYg5yUd0DETmEoMlkFOeIT/A58iyK5E18BuTBfgYXfwNJv4P9/oEBerLylOnRhygmGdPpTTBZAPkde61lbQe4moWUvYUZYLfUNftIY4zwA5X2Z9AYnQrEAAAAASUVORK5CYII=",width:12,height:17,alt:"¶"},{type:"field_multilinetext",name:"TEXT",text:""}],output:"String",style:"text_blocks",helpUrl:"%{BKY_TEXT_TEXT_HELPURL}",tooltip:"%{BKY_TEXT_TEXT_TOOLTIP}",extensions:["parent_tooltip_when_inline"]};function m(t,e){const i=e.multiline_quote_(t.getFieldValue("TEXT")),l=-1!==i.indexOf("+")?h.Order.ADDITION:h.Order.ATOMIC;return[i,l]}function I(t,e){const i=e.multiline_quote_(t.getFieldValue("TEXT")),l=-1!==i.indexOf("+")?p.Order.ADDITIVE:p.Order.ATOMIC;return[i,l]}function x(t,e){const i=e.multiline_quote_(t.getFieldValue("TEXT")),l=-1!==i.indexOf("..")?_.Order.CONCATENATION:_.Order.ATOMIC;return[i,l]}function D(t,e){const i=e.multiline_quote_(t.getFieldValue("TEXT")),l=-1!==i.indexOf(".")?T.Order.STRING_CONCAT:T.Order.ATOMIC;return[i,l]}function b(t,e){const i=e.multiline_quote_(t.getFieldValue("TEXT")),l=-1!==i.indexOf("+")?E.Order.ADDITIVE:E.Order.ATOMIC;return[i,l]}const O=c.common.createBlockDefinitionsFromJsonArray([A]),k=O[g];function v(t={}){y(),c.common.defineBlocks(O),t.javascript&&(t.javascript.forBlock[g]=m),t.dart&&(t.dart.forBlock[g]=I),t.lua&&(t.lua.forBlock[g]=x),t.php&&(t.php.forBlock[g]=D),t.python&&(t.python.forBlock[g]=b)}const R=v;return u})());
-//# sourceMappingURL=index.js.map
+/**
+ * @license
+ * Copyright 2023 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/**
+ * @fileoverview Multiline text field plugin refactored for ESM/Browser.
+ */
+
+// Directly use the global or passed Blockly object
+const Blockly = window.Blockly;
+
+class FieldMultilineInput extends Blockly.FieldTextInput {
+    constructor(value, validator, config) {
+        super(Blockly.Field.SKIP_SETUP);
+        this.textGroup = null;
+        this.maxLines_ = Infinity;
+        this.isOverflowedY_ = false;
+        if (value !== Blockly.Field.SKIP_SETUP) {
+            if (config) this.configure_(config);
+            this.setValue(value);
+            if (validator) this.setValidator(validator);
+        }
+    }
+
+    configure_(config) {
+        super.configure_(config);
+        if (config.maxLines) this.setMaxLines(config.maxLines);
+    }
+
+    toXml(element) {
+        element.textContent = this.getValue().replace(/\n/g, '&#10;');
+        return element;
+    }
+
+    fromXml(element) {
+        this.setValue(element.textContent.replace(/&#10;/g, '\n'));
+    }
+
+    saveState() {
+        return this.getValue();
+    }
+
+    loadState(state) {
+        this.setValue(state);
+    }
+
+    initView() {
+        this.createBorderRect_();
+        this.textGroup = Blockly.utils.dom.createSvgElement(
+            Blockly.utils.Svg.G,
+            { 'class': 'blocklyEditableField' },
+            this.fieldGroup_
+        );
+    }
+
+    getDisplayText_() {
+        const block = this.getSourceBlock();
+        if (!block) throw new Error('Field not attached to block.');
+        let text = this.getText();
+        if (!text) return Blockly.Field.NBSP;
+        const lines = text.split('\n');
+        text = '';
+        const numLines = this.isOverflowedY_ ? this.maxLines_ : lines.length;
+        for (let i = 0; i < numLines; i++) {
+            let line = lines[i];
+            if (line.length > this.maxDisplayLength) {
+                line = line.substring(0, this.maxDisplayLength - 4) + '...';
+            } else if (this.isOverflowedY_ && i === numLines - 1) {
+                line = line.substring(0, line.length - 3) + '...';
+            }
+            line = line.replace(/\s/g, Blockly.Field.NBSP);
+            text += line;
+            if (i !== numLines - 1) text += '\n';
+        }
+        if (block.RTL) text += '\u200F';
+        return text;
+    }
+
+    doValueUpdate_(newValue) {
+        super.doValueUpdate_(newValue);
+        if (this.value_ !== null) {
+            this.isOverflowedY_ = this.value_.split('\n').length > this.maxLines_;
+        }
+    }
+
+    render_() {
+        const block = this.getSourceBlock();
+        if (!block) throw new Error('Field not attached to block.');
+        let child;
+        while ((child = this.textGroup.firstChild)) {
+            this.textGroup.removeChild(child);
+        }
+        const constants = this.getConstants();
+        if (!constants) throw Error('Constants not found');
+        const lines = this.getDisplayText_().split('\n');
+        let y = 0;
+        for (let i = 0; i < lines.length; i++) {
+            const lineHeight = constants.FIELD_TEXT_HEIGHT + constants.FIELD_BORDER_RECT_Y_PADDING;
+            Blockly.utils.dom.createSvgElement(
+                Blockly.utils.Svg.TEXT,
+                {
+                    'class': 'blocklyText blocklyMultilineText',
+                    'x': constants.FIELD_BORDER_RECT_X_PADDING,
+                    'y': y + constants.FIELD_BORDER_RECT_Y_PADDING,
+                    'dy': constants.FIELD_TEXT_BASELINE
+                },
+                this.textGroup
+            ).appendChild(document.createTextNode(lines[i]));
+            y += lineHeight;
+        }
+        if (this.isBeingEdited_) {
+            const htmlInput = this.htmlInput_;
+            if (this.isOverflowedY_) {
+                Blockly.utils.dom.addClass(htmlInput, 'blocklyHtmlTextAreaInputOverflowedY');
+            } else {
+                Blockly.utils.dom.removeClass(htmlInput, 'blocklyHtmlTextAreaInputOverflowedY');
+            }
+        }
+        this.updateSize_();
+        if (this.isBeingEdited_) {
+            if (block.RTL) {
+                setTimeout(this.resizeEditor_.bind(this), 0);
+            } else {
+                this.resizeEditor_();
+            }
+            const htmlInput = this.htmlInput_;
+            if (this.isTextValid_) {
+                Blockly.utils.dom.removeClass(htmlInput, 'blocklyInvalidInput');
+                Blockly.utils.aria.setState(htmlInput, Blockly.utils.aria.State.INVALID, false);
+            } else {
+                Blockly.utils.dom.addClass(htmlInput, 'blocklyInvalidInput');
+                Blockly.utils.aria.setState(htmlInput, Blockly.utils.aria.State.INVALID, true);
+            }
+        }
+    }
+
+    updateSize_() {
+        const constants = this.getConstants();
+        if (!constants) throw Error('Constants not found');
+        const nodes = this.textGroup.childNodes;
+        const fontSize = constants.FIELD_TEXT_FONTSIZE;
+        const fontWeight = constants.FIELD_TEXT_FONTWEIGHT;
+        const fontFamily = constants.FIELD_TEXT_FONTFAMILY;
+        let width = 0;
+        let height = 0;
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            const nodeWidth = Blockly.utils.dom.getFastTextWidth(node, fontSize, fontWeight, fontFamily);
+            if (nodeWidth > width) width = nodeWidth;
+            height += constants.FIELD_TEXT_HEIGHT + (i > 0 ? constants.FIELD_BORDER_RECT_Y_PADDING : 0);
+        }
+        if (this.isBeingEdited_) {
+            const lines = String(this.value_).split('\n');
+            const dummyText = Blockly.utils.dom.createSvgElement(Blockly.utils.Svg.TEXT, { 'class': 'blocklyText blocklyMultilineText' });
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                if (line.length > this.maxDisplayLength) line = line.substring(0, this.maxDisplayLength);
+                dummyText.textContent = line;
+                const lineWidth = Blockly.utils.dom.getFastTextWidth(dummyText, fontSize, fontWeight, fontFamily);
+                if (lineWidth > width) width = lineWidth;
+            }
+            const htmlInput = this.htmlInput_;
+            width += htmlInput.offsetWidth - htmlInput.clientWidth;
+        }
+        if (this.borderRect_) {
+            height += 2 * constants.FIELD_BORDER_RECT_Y_PADDING;
+            width += 2 * constants.FIELD_BORDER_RECT_X_PADDING + 1;
+            this.borderRect_.setAttribute('width', `${width}`);
+            this.borderRect_.setAttribute('height', `${height}`);
+        }
+        this.size_.width = width;
+        this.size_.height = height;
+        this.positionBorderRect_();
+    }
+
+    showEditor_(e, quiet) {
+        super.showEditor_(e, quiet);
+        this.forceRerender();
+    }
+
+    widgetCreate_() {
+        const div = Blockly.WidgetDiv.getDiv();
+        const scale = this.workspace_.getScale();
+        const constants = this.getConstants();
+        if (!constants) throw Error('Constants not found');
+        const htmlInput = document.createElement('textarea');
+        htmlInput.className = 'blocklyHtmlInput blocklyHtmlTextAreaInput';
+        htmlInput.setAttribute('spellcheck', String(this.spellcheck_));
+        const fontSize = constants.FIELD_TEXT_FONTSIZE * scale + 'pt';
+        div.style.fontSize = fontSize;
+        htmlInput.style.fontSize = fontSize;
+        const borderRadius = Blockly.FieldTextInput.BORDERRADIUS * scale + 'px';
+        htmlInput.style.borderRadius = borderRadius;
+        const paddingX = constants.FIELD_BORDER_RECT_X_PADDING * scale;
+        const paddingY = constants.FIELD_BORDER_RECT_Y_PADDING * scale / 2;
+        htmlInput.style.padding = `${paddingY}px ${paddingX}px ${paddingY}px ${paddingX}px`;
+        const lineHeight = constants.FIELD_TEXT_HEIGHT + constants.FIELD_BORDER_RECT_Y_PADDING;
+        htmlInput.style.lineHeight = lineHeight * scale + 'px';
+        div.appendChild(htmlInput);
+        htmlInput.value = htmlInput.defaultValue = this.getEditorText_(this.value_);
+        htmlInput.setAttribute('data-untyped-default-value', String(this.value_));
+        htmlInput.setAttribute('data-old-value', '');
+        if (Blockly.utils.userAgent.GECKO) {
+            setTimeout(this.resizeEditor_.bind(this), 0);
+        } else {
+            this.resizeEditor_();
+        }
+        this.bindInputEvents_(htmlInput);
+        return htmlInput;
+    }
+
+    setMaxLines(maxLines) {
+        if (typeof maxLines === 'number' && maxLines > 0 && maxLines !== this.maxLines_) {
+            this.maxLines_ = maxLines;
+            this.forceRerender();
+        }
+    }
+
+    getMaxLines() {
+        return this.maxLines_;
+    }
+
+    onHtmlInputKeyDown_(e) {
+        if (e.key !== 'Enter') {
+            super.onHtmlInputKeyDown_(e);
+        }
+    }
+
+    static fromJson(config) {
+        return new this(Blockly.utils.parsing.replaceMessageReferences(config.text), undefined, config);
+    }
+}
+
+// Register the field
+Blockly.fieldRegistry.register('field_multilinetext', FieldMultilineInput);
+
+// CSS styles
+Blockly.Css.register(`
+.blocklyHtmlTextAreaInput {
+  font-family: monospace;
+  resize: none;
+  overflow: hidden;
+  height: 100%;
+  text-align: left;
+}
+
+.blocklyHtmlTextAreaInputOverflowedY {
+  overflow-y: scroll;
+}
+`);
+
+// Register blocks and generators
+const BLOCK_NAME = 'text_multiline';
+Blockly.common.defineBlocksWithJsonArray([{
+    "type": BLOCK_NAME,
+    "message0": "%1 %2",
+    "args0": [
+        {
+            "type": "field_image",
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAARCAYAAADpPU2iAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAdhgAAHYYBXaITgQAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS42/U4J6AAAAP1JREFUOE+Vks0KQUEYhjmRIja4ABtZ2dm5A3t3Ia6AUm7CylYuQRaUhZSlLZJiQbFAyRnPN33y01HOW08z8873zpwzM4F3GWOCruvGIE4/rLaV+Nq1hVGMBqzhqlxgCys4wJA65xnogMHsQ5lujnYHTejBBCK2mE4abjCgMGhNxHgDFWjDSG07kdfVa2pZMf4ZyMAdWmpZMfYOsLiDMYMjlMB+K613QISRhTnITnsYg5yUd0DETmEoMlkFOeIT/A58iyK5E18BuTBfgYXfwNJv4P9/oEBerLylOnRhygmGdPpTTBZAPkde61lbQe4moWUvYUZYLfUNftIY4zwA5X2Z9AYnQrEAAAAASUVORK5CYII=",
+            "width": 12,
+            "height": 17,
+            "alt": "¶"
+        },
+        {
+            "type": "field_multilinetext",
+            "name": "TEXT",
+            "text": ""
+        }
+    ],
+    "output": "String",
+    "style": "text_blocks",
+    "helpUrl": "%{BKY_TEXT_TEXT_HELPURL}",
+    "tooltip": "%{BKY_TEXT_TEXT_TOOLTIP}",
+    "extensions": ["parent_tooltip_when_inline"]
+}]);
+
+// Generator logic
+const G = window.javascriptGenerator;
+if (G) {
+    G.forBlock[BLOCK_NAME] = function(block, generator) {
+        const value = generator.multiline_quote_(block.getFieldValue('TEXT'));
+        const order = value.indexOf('+') !== -1 ? G.Order.ADDITION : G.Order.ATOMIC;
+        return [value, order];
+    };
+}
+
+// Expose to global scope for blocklyManager.js access
+window.FieldMultilineInput = FieldMultilineInput;
+export { FieldMultilineInput };

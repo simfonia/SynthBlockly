@@ -11,6 +11,8 @@
     - `docs/`: 積木說明文件 (HTML 格式，支援中英雙語)。
       - `examples_readme_*.html`: 範例專案使用說明與開發規範。
       - `performance_readme_*.html`: 演奏音符積木說明。
+      - `step_sequencer_readme_*.html`: 步進音序器使用指南 (NEW)。
+      - `transport_readme_*.html`: 小節偏移排程指南 (NEW)。
     - `locales/`: Blockly 核心語言包 (JSON)。
     - `samples/`: 音訊樣本庫（包含爵士鼓、小提琴與特殊音效 SFX）。
   - `src/`: 原始碼目錄 (支援 Vite Glob Import)。
@@ -28,6 +30,8 @@
       - `midiEngine.js`: MIDI 訊號接收與轉發。
       - `serialEngine.js`: 序列埠通訊。
       - `toolbox.js`: 工具箱 XML 定義。
+    - `plugins/`: 第三方積木外掛。
+      - `field-multilineinput.js`: 多行輸入欄位 (已重構為 ESM 格式)。
     - `ui/`: 介面組件。
       - `adsrVisualizer.js`: ADSR 包絡線視覺化。
       - `visualizer.js`: 即時示波器 (p5.js)。

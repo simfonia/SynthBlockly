@@ -111,8 +111,10 @@ async function onMIDIMessage(msg) {
     const cmd = status & 0xf0;
     const midiNoteNumber = data1;
     const channel = (status & 0x0f) + 1;
+    const deviceName = (msg.target && msg.target.name) ? msg.target.name : 'External';
 
     if (cmd === 0x90 && data2 > 0) { // Note ON with velocity > 0
+        audioEngine.logKey('LOG_MIDI_ON', 'info', deviceName, midiNoteNumber, data2, channel, audioEngine.getTransposedNote(midiNoteNumber));
         // REMOVED: audioEngine.midiAttack(midiNoteNumber, data2 / 127, channel); 
         // We now rely entirely on the Blockly "sb_midi_note_received" block to trigger sounds via "sb_midi_play".
         

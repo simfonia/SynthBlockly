@@ -189,6 +189,14 @@ export const TOOLBOX_XML_STRING = `
 
     <category name="%{BKY_MSG_TRANSPORT_CATEGORY}" colour="%{BKY_TRANSPORT_HUE}">
         <block type="sb_transport_set_bpm"></block>
+        <block type="sb_transport_count_in">
+            <value name="VOLUME">
+                <shadow type="math_number"><field name="NUM">0.8</field></shadow>
+            </value>
+        </block>
+        <block type="sb_rhythm_sequence">
+            <field name="SEQUENCE">x---x---x---x---</field>
+        </block>
         <block type="sb_transport_start_stop"></block>
         <block type="sb_wait_musical"></block>
         <block type="sb_tone_loop"></block>

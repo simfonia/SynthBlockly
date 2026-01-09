@@ -121,7 +121,7 @@ export function registerBlocks() {
                         "name": "A",
                         "value": 0.01,
                         "min": 0,
-                        "max": 10,
+                        "max": 60,
                         "precision": 0.01
                     },
                     {
@@ -129,7 +129,7 @@ export function registerBlocks() {
                         "name": "D",
                         "value": 0.1,
                         "min": 0,
-                        "max": 10,
+                        "max": 60,
                         "precision": 0.01
                     },
                     {
@@ -145,7 +145,7 @@ export function registerBlocks() {
                         "name": "R",
                         "value": 1.0,
                         "min": 0,
-                        "max": 10,
+                        "max": 60,
                         "precision": 0.01
                     }
                 ],

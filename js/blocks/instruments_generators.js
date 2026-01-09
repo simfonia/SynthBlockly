@@ -36,7 +36,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         // Ensure velocity is always a number
         velocity = `Number(${velocity})`;
 
-        return `window.audioEngine.playCurrentInstrumentNote(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${velocity});\n`;
+        return `window.audioEngine.playCurrentInstrumentNote(${processedNote}, '${dur}', (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined), ${velocity});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_play_note'] = G['sb_play_note']; } catch (e) { } 
     try { if (GeneratorProto) GeneratorProto['sb_play_note'] = G['sb_play_note']; } catch (e) { } 
@@ -89,46 +89,52 @@ if (!window.audioEngine.isExecutionActive) return;
     try { G.forBlock['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
 
     G['sb_set_adsr'] = function (block) {
-        var a = Number(block.getFieldValue('A')) || 0.01;
-        var d = Number(block.getFieldValue('D')) || 0.1;
-        var s = Number(block.getFieldValue('S')) || 0.5;
-        var r = Number(block.getFieldValue('R')) || 1.0;
+        const getNum = (name, def) => {
+            const val = block.getFieldValue(name);
+            return (val === null || val === "" || isNaN(val)) ? def : Number(val);
+        };
+        var a = getNum('A', 0.01);
+        var d = getNum('D', 0.1);
+        var s = getNum('S', 0.5);
+        var r = getNum('R', 1.0);
         
         var code = `
             (function() {
-                const instrName = window.audioEngine.currentInstrumentName;
-                const currentInstrument = window.audioEngine.instruments[instrName];
-                if (!currentInstrument) {
-                    window.audioEngine.logKey('LOG_ERR_INSTR_NOT_FOUND', 'error', instrName);
-                    return;
-                }
+                window.audioEngine.updateADSR(${a}, ${d}, ${s}, ${r});
 
-                try {
-                    if (currentInstrument.type === 'CustomSampler' || currentInstrument instanceof window.audioEngine.Tone.Sampler || currentInstrument.name === 'Sampler') {
-                        // For samplers, we only support Release (R) control effectively
-                        currentInstrument.set({ release: ${r} });
-                        window.audioEngine.updateADSR(0, 0, 1, ${r}); // Visual feedback for sampler
-                        window.audioEngine.logKey('LOG_SAMPLER_ADS_WARN', 'warning');
-                    } else if (currentInstrument.get?.().voice0) {
-                        // Special handling for PolySynth wrapping DuoSynth
-                        currentInstrument.set({
-                            voice0: { envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } },
-                            voice1: { envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } }
-                        });
-                        window.audioEngine.updateADSR(${a}, ${d}, ${s}, ${r});
-                        window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', instrName);
-                    } else if (typeof currentInstrument.set === 'function') {
-                        // Standard Tone.js Instruments (PolySynth, etc.)
-                        currentInstrument.set({ envelope: { attack: ${a}, decay: ${d}, sustain: ${s}, release: ${r} } });
-                        window.audioEngine.updateADSR(${a}, ${d}, ${s}, ${r});
-                        window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', instrName);
-                    } else {
-                        window.audioEngine.logKey('LOG_ADSR_NOT_SUPPORTED_INSTR', 'error', instrName);
+                const envelopeParams = { 
+                    attack: ${a}, 
+                    decay: ${d}, 
+                    sustain: ${s}, 
+                    release: ${r},
+                    decayCurve: 'linear', 
+                    releaseCurve: 'linear' 
+                };
+
+                for (const name in window.audioEngine.instruments) {
+                    const instr = window.audioEngine.instruments[name];
+                    if (!instr) continue;
+
+                    try {
+                        if (instr.type === 'CustomSampler' || instr instanceof window.audioEngine.Tone.Sampler || instr.name === 'Sampler') {
+                            instr.set({ release: ${r} });
+                        } else {
+                            // Apply to PolySynth (propagates to all voices)
+                            instr.set({ envelope: envelopeParams });
+                            
+                            // Explicit handling for DuoSynth voices if present
+                            if (instr.get().voice0) {
+                                instr.set({
+                                    voice0: { envelope: envelopeParams },
+                                    voice1: { envelope: envelopeParams }
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to apply ADSR to instrument:', name, e);
                     }
-                } catch (e) {
-                    console.error('ADSR setting failed:', e);
-                    window.audioEngine.logKey('LOG_EXEC_ERR', 'error', e.message);
                 }
+                window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'important', 'Global / ' + window.audioEngine.currentInstrumentName);
             })();
         `;
         return code + '\n';

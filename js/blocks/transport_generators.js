@@ -36,6 +36,8 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     G['sb_transport_start_stop'] = function (block) {
         var action = block.getFieldValue('ACTION');
         if (action === 'START') {
+            // Start immediately. The 0.05s look-ahead built into playback functions 
+            // will handle the necessary scheduling margin.
             return 'window.audioEngine.Tone.Transport.start();\n';
         } else {
             return 'window.audioEngine.Tone.Transport.stop();\n';
@@ -60,25 +62,21 @@ if (!window.audioEngine.isExecutionActive) return;
     try { G.forBlock['sb_wait_musical'] = G['sb_wait_musical']; } catch (e) { }
 
     G['sb_tone_loop'] = function (block) {
-        var interval = block.getFieldValue('INTERVAL'); // FIX: Get interval value from block
-        var loopId = 'loop_' + block.id; // Unique ID for each loop instance
+        var interval = block.getFieldValue('INTERVAL'); 
+        var loopId = 'loop_' + block.id; 
         var doCode = G.statementToCode(block, 'DO');
 
-        // Ensure the global loops object exists in the definitions_ section
         G.definitions_['loops_global_init'] = 'window.blocklyLoops = window.blocklyLoops || {};';
 
-        // Generate code to create and start the loop
         var code = `
-// Clear existing loop for this block ID if it exists
 if (window.blocklyLoops['${loopId}']) {
     window.blocklyLoops['${loopId}'].dispose();
 }
-window.blocklyLoops['${loopId}'] = new window.audioEngine.Tone.Loop(async (time) => {
+window.blocklyLoops['${loopId}'] = new window.audioEngine.Tone.Loop((scheduledTime) => {
     if (!window.audioEngine.isExecutionActive) return;
-    // Make 'time' available to inner blocks if they need it (e.g., for scheduling children)
     ${doCode}
 }, '${interval}');
-window.blocklyLoops['${loopId}'].start(0); // Start the loop from the beginning of the Transport
+window.blocklyLoops['${loopId}'].start(0);
 `;
         return code;
     }.bind(G);
@@ -95,7 +93,7 @@ if (window.blocklyLoops) {
             window.blocklyLoops[loopId].dispose();
         }
     }
-    window.blocklyLoops = {}; // Clear the object
+    window.blocklyLoops = {}; 
 }
 `;
         return code;
@@ -111,20 +109,13 @@ if (window.blocklyLoops) {
 
         var code = `
 {
-    // 'time' (from Tone.Loop callback) is a number (seconds)
-    // 'offset' (from block field) is a string (e.g., '8n', '0:0:2')
-
-    // First, convert the string offset into seconds.
-    // This requires creating a Tone.Time object and then calling .toSeconds().
-    // We confirmed 'new Tone.Time()' creates an object, even if .add() is missing.
-    // We assume .toSeconds() will work correctly.
-    const offsetInSeconds = (new window.audioEngine.Tone.Time('${offset}')).toSeconds(); 
-    
-    // Calculate the scheduled time by adding the base time (in seconds) and the offset (in seconds).
-    const scheduledTime = time + offsetInSeconds;
-    
-    // Original code, assuming scheduledTime is a number (seconds)
-    ${doCode}
+    const _calcOffset = (new window.audioEngine.Tone.Time('${offset}')).toSeconds();
+    const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+    const _newTime = _baseTime + _calcOffset;
+    {
+        const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+        ${doCode}
+    }
 }
 `;
         return code;
@@ -133,6 +124,42 @@ if (window.blocklyLoops) {
     try { if (GeneratorProto) GeneratorProto['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
     try { if (JSConstructorProto) JSConstructorProto['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
     try { G.forBlock['sb_schedule_at_offset'] = G['sb_schedule_at_offset']; } catch (e) { }
+
+    G['sb_transport_count_in'] = function (block) {
+        var measures = Number(block.getFieldValue('MEASURES')) || 1;
+        var beats = Number(block.getFieldValue('BEATS')) || 4;
+        var beatValue = Number(block.getFieldValue('BEAT_VALUE')) || 4;
+        var volume = G.valueToCode(block, 'VOLUME', G.ORDER_ATOMIC) || '0.8';
+        return `await window.audioEngine.playCountIn(${measures}, ${beats}, ${beatValue}, ${volume});\n`;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
+    try { G.forBlock['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
+
+    G['sb_rhythm_sequence'] = function (block) {
+        var type = block.getFieldValue('TYPE');
+        var customType = block.getFieldValue('CUSTOM_TYPE');
+        var measure = Number(block.getFieldValue('MEASURE')) || 1;
+        var sequence = block.getFieldValue('SEQUENCE') || "";
+        
+        const steps = sequence.match(/([A-G][#b]?\d+|[xX]|[.\-])/g) || [];
+        const stepsJson = JSON.stringify(steps);
+
+        var soundType;
+        if (type === 'CUSTOM') {
+            soundType = `'${customType}'`;
+        } else {
+            soundType = (type === 'CURRENT') ? "'C4'" : `'${type}'`;
+        }
+
+        // Always pass 'scheduledTime' variable which is guaranteed to exist in Loop or Offset scope
+        return `window.audioEngine.playRhythmSequence(${soundType}, ${stepsJson}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${measure});\n`;
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }
+    try { G.forBlock['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }
 
     return true;
 }

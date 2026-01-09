@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Schedule at Offset Guide</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; color: #333; }
+        h1 { color: #16A085; }
+        h2 { color: #444; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #16A085; font-weight: bold; }
+        .example { background: #e6fffb; padding: 10px; border-left: 4px solid #16A085; margin: 10px 0; font-family: monospace; white-space: pre; }
+        .note { color: #666; font-style: italic; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>Schedule at Offset Guide</h1>
+    <p>The "Schedule at offset..." block is key to achieving precise rhythmic control. It allows you to arrange multiple sound triggers at specific points within a Tone Loop.</p>
+
+    <div class="type-box">
+        <h2>1. Basic Concept</h2>
+        <p>By default, multiple blocks placed inside an "Every 1 measure loop" will trigger <strong>at the same time</strong>. To stagger sounds (e.g., Kick on beat 1, Snare on beat 3), you must use the offset block.</p>
+        <ul>
+            <li><strong>Base Time (time)</strong>: Provided by the outer loop block, representing the start of the measure.</li>
+            <li><strong>Offset</strong>: The delay duration relative to the start point.</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>2. Offset Formats</h2>
+        <p>You can describe offset times in several ways:</p>
+        <ul>
+            <li><code>0</code>: The very beginning of the loop (Beat 1).</li>
+            <li><code>4n</code>: Offset by 1 beat (Quarter note duration).</li>
+            <li><code>2n</code>: Offset by 2 beats (Half note duration).</li>
+            <li><code>8n</code>: Offset by 0.5 beats (Eighth note duration).</li>
+            <li><code>0:2:0</code>: Standard music notation (Bars:Beats:Sixteenths).</li>
+        </ul>
+    </div>
+
+    <div class="type-box">
+        <h2>3. Implementation Example</h2>
+        <p>To create a "Four-on-the-floor" beat within a 1-measure loop:</p>
+        <div class="example">
+Every 1 measure loop:
+  At offset 0:
+    Play Kick Drum
+  At offset 4n:
+    Play Hi-Hat
+  At offset 2n:
+    Play Snare Drum
+  At offset 0:3:0:
+    Play Hi-Hat</div>
+        <p class="note">* Tip: Using Bars:Beats:Sixteenths notation (like 0:3:0 for the start of the 4th beat) is highly recommended for accuracy.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>4. Important Notes</h2>
+        <ul>
+            <li>This block <strong>must</strong> be placed inside a <strong>Tone Loop</strong> block to function correctly.</li>
+            <li>The offset value should <strong>not exceed</strong> the total length of the loop, otherwise the action may never trigger or rhythms will become inconsistent.</li>
+        </ul>
+    </div>
+
+    <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">
+        <h2>5. Advanced: Why Block Order Doesn't Matter</h2>
+        <p>You may notice that even if you place a "Schedule at offset 2n" block above a "Schedule at offset 0" block, the sound at offset 0 still plays first. This is due to SynthBlockly's <strong>Look-ahead Scheduling</strong> mechanism:</p>
+        <ul>
+            <li><strong>Booking Appointments</strong>: When a loop begins, all offset blocks are executed instantly. They don't "play now"; instead, they "schedule" a sound for a specific timestamp in the future.</li>
+            <li><strong>Absolute Precision</strong>: The audio engine automatically sorts these events based on their timestamps. This guarantees perfect rhythm, regardless of your computer's processing speed or the physical order of the blocks.</li>
+        </ul>
+        <p class="note">This allows you to focus on the rhythmic values without worrying about the vertical arrangement of your code.</p>
+    </div>
+</body>
+</html>

@@ -235,6 +235,9 @@ export const MSG_EN = {
 
     // --- Musical Duration Options ---
     'SB_DUR_1M': '1 Measure (1m)',
+    'SB_DUR_2M': '2 Measures (2m)',
+    'SB_DUR_4M': '4 Measures (4m)',
+    'SB_DUR_8M': '8 Measures (8m)',
     'SB_DUR_2N': 'Half Note (2n)',
     'SB_DUR_4N': 'Quarter Note (4n)',
     'SB_DUR_8N': 'Eighth Note (8n)',
@@ -278,6 +281,7 @@ export const MSG_EN = {
     'LOG_SAMPLER_DETUNE_WARN': 'Warning: Samplers currently do not support global detune.',
     'LOG_SAMPLER_CREATED': 'Custom sampler instance "%1" created.',
     'LOG_SAMPLER_CREATE_FAIL': 'Custom sampler instance "%1" failed: %2',
+    'LOG_SWITCH_INSTR_SUCCESS': 'Switched to instrument: %1',
     'LOG_SWITCH_INSTR_NOT_EXIST': 'Error: Target source "%1" not found.',
     'LOG_SWITCHED_TO': 'Active source switched to: %1',
     'LOG_SWITCHED_WITH_CONVERT': 'Source switched to: %1 with conversion.',
@@ -388,4 +392,8 @@ export const MSG_EN = {
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': 'Plays a defined chord by its name.',
     'SB_COMMENT_MESSAGE': 'Comment: %1',
     'SB_COMMENT_TOOLTIP': 'Leave a note in the workspace. It will not affect the code.',
+    'SB_TRANSPORT_COUNT_IN_MESSAGE': 'Count In %1 Measures (Time %2 / %3) Vol %4',
+    'SB_TRANSPORT_COUNT_IN_TOOLTIP': 'Plays a metronome count-in for the specified number of measures. Volume range 0 to 10 (1 is standard, 10 is max).',
+    'SB_RHYTHM_SEQUENCE_MESSAGE': 'Step Sequencer %1 Measure %2 Sequence %3',
+    'SB_RHYTHM_SEQUENCE_TOOLTIP': 'Divides 1 measure into 16 steps. Use "x" for trigger, or specific notes (e.g., C4). Use "." for rest. Spaces or "|" are used as separators.',
 };

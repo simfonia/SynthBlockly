@@ -4,16 +4,15 @@ import { updateAdsrGraph, triggerAdsrOn, triggerAdsrOff } from '../ui/adsrVisual
 import { requestMidiAccess } from './midiEngine.js';
 
 export let blocklyLoops = {}; 
-
 let audioStarted = false;
+
+const DEFAULT_ADSR = { attack: 0.01, decay: 0.1, sustain: 0.5, release: 1.0 };
 
 export async function ensureAudioStarted() {
     if (audioStarted) return true;
     try {
         await Tone.start();
-        if (Tone.context && Tone.context.state === 'suspended') {
-            await Tone.context.resume();
-        }
+        if (Tone.context && Tone.context.state === 'suspended') await Tone.context.resume();
         audioStarted = true;
         clearErrorLog('AUDIO');
         logKey('LOG_AUDIO_STARTED');
@@ -27,325 +26,442 @@ export async function ensureAudioStarted() {
 export const analyser = new Tone.Analyser('waveform', 1024);
 analyser.toDestination();
 
-let synth = new Tone.PolySynth(Tone.Synth);
-const drum = new Tone.MembraneSynth();
-const hh = new Tone.NoiseSynth({ volume: -12 });
-const snare = new Tone.NoiseSynth({
-    noise: { type: 'white' },
-    envelope: { attack: 0.005, decay: 0.2, sustain: 0 },
-    volume: -5
-});
-const jazzKit = new Tone.Sampler({
-    urls: {
-        'C1': 'BT0A0D0.WAV', 'C#1': 'RIM127.WAV', 'D1': 'ST7T7S7.WAV', 'D#1': 'HANDCLP2.WAV',
-        'E1': 'LTAD0.WAV', 'F1': 'HHCDA.WAV', 'F#1': 'MTAD0.WAV', 'G1': 'HTAD0.WAV',
-        'G#1': 'CSHDA.WAV', 'A1': 'HHODA.WAV', 'A#1': 'RIDEDA.WAV',
-    },
-    baseUrl: import.meta.env.BASE_URL + 'samples/jazzkit/Roland_TR-909/',
-    onload: () => {
-        if (typeof Tone !== 'undefined') {
-             setTimeout(() => { logKey('LOG_JAZZKIT_LOADED'); }, 500);
-        }
-    }
-});
+let drum, hh, snare, click, jazzKit, synth;
 
-synth.chain(analyser);
-drum.chain(analyser);
-hh.chain(analyser);
-snare.chain(analyser);
-jazzKit.chain(analyser);
+function createCoreInstruments() {
+    if (drum) drum.dispose(); if (hh) hh.dispose(); if (snare) snare.dispose();
+    if (click) click.dispose(); if (jazzKit) jazzKit.dispose(); if (synth) synth.dispose();
+
+    drum = new Tone.MembraneSynth().connect(analyser);
+    hh = new Tone.NoiseSynth({ volume: -12 }).connect(analyser);
+    snare = new Tone.NoiseSynth({
+        noise: { type: 'white' },
+        envelope: { attack: 0.005, decay: 0.2, sustain: 0 },
+        volume: -5
+    }).connect(analyser);
+
+    click = new Tone.MonoSynth({
+        oscillator: { type: "square" },
+        envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 },
+        volume: 0
+    }).connect(analyser);
+
+    jazzKit = new Tone.Sampler({
+        urls: {
+            'C1': 'BT0A0D0.WAV', 'C#1': 'RIM127.WAV', 'D1': 'ST7T7S7.WAV', 'D#1': 'HANDCLP2.WAV',
+            'E1': 'LTAD0.WAV', 'F1': 'HHCDA.WAV', 'F#1': 'MTAD0.WAV', 'G1': 'HTAD0.WAV',
+            'G#1': 'CSHDA.WAV', 'A1': 'HHODA.WAV', 'A#1': 'RIDEDA.WAV',
+        },
+        baseUrl: import.meta.env.BASE_URL + 'samples/jazzkit/Roland_TR-909/',
+        onload: () => { logKey('LOG_JAZZKIT_LOADED'); }
+    }).connect(analyser);
+
+    // Default synth starts with the project's default ADSR
+    synth = new Tone.PolySynth(Tone.Synth, {
+        envelope: { ...DEFAULT_ADSR, decayCurve: 'linear', releaseCurve: 'linear' }
+    }).connect(analyser);
+}
+
+createCoreInstruments();
 
 export const audioEngine = {
     isExecutionActive: false,
-    currentADSR: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 1.0 },
+    currentADSR: { ...DEFAULT_ADSR },
     Tone: Tone,
     analyser: analyser,
-    synth: synth,
-    drum: drum,
-    hh: hh,
-    snare: snare,
-    jazzKit: jazzKit,
-    effects: {},
-    _activeEffects: [],
-    activeSFXPlayers: [],
-    instruments: {},
-    layeredInstruments: {},
+    get synth() { return synth; }, get drum() { return drum; }, get hh() { return hh; },
+    get snare() { return snare; }, get click() { return click; }, get jazzKit() { return jazzKit; },
+    
+    effects: {}, _activeEffects: [], activeSFXPlayers: [],
+    instruments: {}, layeredInstruments: {},
     currentInstrumentName: 'DefaultSynth',
     currentSemitoneOffset: 0,
-    pressedKeys: new Map(),
-    chords: {},
-    keyboardChordMap: {},
-    midiChordMap: {},
-    midiPressedNotes: new Map(),
-    midiPlayingNotes: new Map(),
-    backgroundNoise: null,
-    log: log,
-    logKey: logKey,
-    getMsg: getMsg,
+    pressedKeys: new Map(), chords: {}, keyboardChordMap: {}, midiChordMap: {},
+    midiPressedNotes: new Map(), midiPlayingNotes: new Map(), backgroundNoise: null,
+    log, logKey, getMsg,
+
+    waitForSamples: async function() { 
+        return Tone.loaded(); 
+    },
 
     getTransposedNote: function(note) {
+        if (!note) return 'C4';
+        if (this.currentSemitoneOffset === 0) return (typeof note === 'number') ? Tone.Midi(note).toNote() : note;
         try {
             const freq = (typeof note === 'number') ? Tone.Midi(note) : Tone.Frequency(note);
             return freq.transpose(this.currentSemitoneOffset).toNote();
-        } catch (e) {
-            return typeof note === 'number' ? Tone.Midi(note).toNote() : note;
-        }
+        } catch (e) { return note; }
     },
 
     updateADSR: function(a, d, s, r) {
         this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
-        const isSampler = this.currentInstrumentName.toLowerCase().includes('sampler');
-        updateAdsrGraph(a, d, s, r, isSampler);
+        updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
     },
 
     rebuildEffectChain: function(effectsConfig = []) {
-        this._activeEffects.forEach(effect => { if (effect && effect.dispose) effect.dispose(); });
+        this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); });
         this._activeEffects = [];
-        logKey('LOG_EFFECT_CLEARED');
-
-        const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);
-        const allInstruments = Array.from(instrumentSet).filter(Boolean);
-        
-        allInstruments.forEach(instr => { if (instr && typeof instr.disconnect === 'function') instr.disconnect(); });
-        
+        const all = [synth, drum, hh, snare, click, jazzKit, ...Object.values(this.instruments)];
+        all.forEach(i => { if (i && i.disconnect) i.disconnect(); });
         try {
             effectsConfig.forEach(config => {
                 if (!config || !config.type) return;
-                let effectInstance;
-                const params = { ...(config.params || {}) };
-
+                let instance; const p = config.params || {};
                 switch (config.type) {
-                    case 'distortion': effectInstance = new Tone.Distortion(params); break;
-                    case 'reverb':
-                        effectInstance = new Tone.Reverb(params.decay);
-                        if (params.preDelay) effectInstance.preDelay = params.preDelay;
-                        break;
-                    case 'feedbackDelay': {
-                        let delayInSeconds;
-                        const rawTime = params.delayTime || '8n'; 
-                        if (!isNaN(parseFloat(rawTime)) && isFinite(rawTime)) {
-                            delayInSeconds = parseFloat(rawTime);
-                        } else if (typeof rawTime === 'string') {
-                            try {
-                                const bpm = (Tone.Transport && Tone.Transport.bpm && Tone.Transport.bpm.value) ? Tone.Transport.bpm.value : 120;
-                                const quarterNoteTime = 60 / bpm;
-                                let baseDuration;
-                                const noteValue = parseInt(rawTime);
-                                if (rawTime.includes('t')) { baseDuration = (quarterNoteTime * (4 / noteValue)) * (2 / 3); }
-                                else if (rawTime.includes('n')) { baseDuration = quarterNoteTime * (4 / noteValue); }
-                                else { delayInSeconds = parseFloat(rawTime); }
-                                if(baseDuration) {
-                                    delayInSeconds = baseDuration;
-                                    if (rawTime.includes('.')) delayInSeconds *= 1.5;
-                                }
-                            } catch (e) { delayInSeconds = 0.25; }
-                        } else { delayInSeconds = 0.25; }
-                        effectInstance = new Tone.FeedbackDelay(delayInSeconds, params.feedback);
-                        break;
-                    }
-                    case 'filter':
-                        effectInstance = new Tone.Filter({
-                            type: params.type || 'lowpass',
-                            frequency: params.frequency !== undefined ? params.frequency : 20000,
-                            Q: params.Q !== undefined ? params.Q : 1,
-                            rolloff: params.rolloff !== undefined ? params.rolloff : -12
-                        });
-                        break;
-                    case 'compressor': effectInstance = new Tone.Compressor(params); break;
-                    case 'limiter': effectInstance = new Tone.Limiter({ threshold: params.threshold !== undefined ? params.threshold : -6 }); break;
-                    case 'bitCrusher': effectInstance = new Tone.BitCrusher(params); break;
-                    case 'chorus': effectInstance = new Tone.Chorus(params.frequency, params.delayTime, params.depth).start(); break;
-                    case 'phaser': effectInstance = new Tone.Phaser(params.frequency, params.octaves, params.baseFrequency); break;
-                    case 'autoPanner': effectInstance = new Tone.AutoPanner(params.frequency, params.depth).start(); break;
-                    default: logKey('LOG_UNKNOWN_EFFECT', 'warning', config.type); return;
+                    case 'distortion': instance = new Tone.Distortion(p); break;
+                    case 'reverb': instance = new Tone.Reverb(p.decay); break;
+                    case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), p.feedback); break;
+                    case 'filter': instance = new Tone.Filter(p.frequency, p.type || 'lowpass'); break;
+                    case 'compressor': instance = new Tone.Compressor(p); break;
+                    case 'limiter': instance = new Tone.Limiter(p.threshold); break;
+                    case 'bitCrusher': instance = new Tone.BitCrusher(p.bits); break;
+                    case 'chorus': instance = new Tone.Chorus(p.frequency, p.delayTime, p.depth).start(); break;
+                    case 'phaser': instance = new Tone.Phaser(p.frequency, p.octaves, p.baseFrequency); break;
+                    case 'autoPanner': instance = new Tone.AutoPanner(p.frequency, p.depth).start(); break;
                 }
-                if (params.wet !== undefined && effectInstance.wet) effectInstance.wet.value = params.wet;
-                this._activeEffects.push(effectInstance);
+                if (instance) {
+                    if (p.wet !== undefined && instance.wet) instance.wet.value = p.wet;
+                    this._activeEffects.push(instance);
+                }
             });
-        } catch (e) { logKey('LOG_EFFECT_CHAIN_ERR', 'error', e.message); }
-
+        } catch (e) { console.error(e); }
         const chain = [...this._activeEffects, analyser];
-        allInstruments.forEach(instr => {
-            if (instr && typeof instr.chain === 'function') instr.chain(...chain);
-        });
-        logKey('LOG_EFFECT_CHAIN_REBUILT', 'info', this._activeEffects.length);
-    },
-
-    updateFilter: function(freq, q) {
-        const filterEffect = this._activeEffects.find(e => e instanceof Tone.Filter);
-        if (filterEffect) {
-            if (freq !== undefined) filterEffect.frequency.value = freq;
-            if (q !== undefined) filterEffect.Q.value = q;
-        }
+        all.forEach(i => { if (i && i.chain) i.chain(...chain); });
     },
 
     createInstrument: function(name, type) {
         if (!name) return;
-        let newInstrument;
+        if (this.instruments[name]) this.instruments[name].dispose();
+        let i;
         switch(type) {
-            case 'PolySynth': newInstrument = new Tone.PolySynth(Tone.Synth); break;
-            case 'AMSynth': newInstrument = new Tone.PolySynth(Tone.AMSynth); break;
-            case 'FMSynth': newInstrument = new Tone.PolySynth(Tone.FMSynth); break;
-            case 'DuoSynth': newInstrument = new Tone.PolySynth(Tone.DuoSynth); break;
-            case 'SineWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' } }); break;
-            case 'SquareWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } }); break;
-            case 'TriangleWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } }); break;
-            case 'SawtoothWave': newInstrument = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } }); break;
-            case 'Sampler': newInstrument = new Tone.Sampler({ urls: { "C4": "C4.mp3" }, baseUrl: "https://tonejs.github.io/audio/salamander/" }); break;
+            case 'PolySynth': i = new Tone.PolySynth(Tone.Synth); break;
+            case 'AMSynth': i = new Tone.PolySynth(Tone.AMSynth); break;
+            case 'FMSynth': i = new Tone.PolySynth(Tone.FMSynth); break;
+            case 'DuoSynth': i = new Tone.PolySynth(Tone.DuoSynth); break;
+            case 'SineWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' } }); break;
+            case 'SquareWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } }); break;
+            case 'TriangleWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } }); break;
+            case 'SawtoothWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } }); break;
+            case 'Sampler': i = new Tone.Sampler({ urls: { "C4": "C4.mp3" }, baseUrl: "https://tonejs.github.io/audio/salamander/" }); break;
         }
-        if (newInstrument) {
-            newInstrument.chain(...this._activeEffects, analyser);
-            this.instruments[name] = newInstrument;
+        if (i) {
+            // Correctly apply ADSR to PolySynth or DuoSynth structure
+            try {
+                i.set({
+                    envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' }
+                });
+                if (i.get().voice0) { // DuoSynth special handling
+                    i.set({
+                        voice0: { envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' } },
+                        voice1: { envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' } }
+                    });
+                }
+            } catch(e) {}
+            
+            i.chain(...this._activeEffects, analyser); 
+            this.instruments[name] = i; 
         }
     },
 
-    transitionToInstrument: function(newInstrumentName) {
-        if (!this.instruments[newInstrumentName]) return;
-        if (this.instruments[this.currentInstrumentName] && this.instruments[this.currentInstrumentName].releaseAll) {
-            this.instruments[this.currentInstrumentName].releaseAll();
+    createCustomSampler: function(name, urls, baseUrl, settings = null) {
+        if (this.instruments[name]) this.instruments[name].dispose();
+        const s = new Tone.Sampler({ urls, baseUrl, onload: () => logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name) });
+        if (settings) s.set(settings);
+        s.chain(...this._activeEffects, analyser);
+        this.instruments[name] = s;
+    },
+
+    createLayeredInstrument: function(name, childNames) {
+        this.layeredInstruments[name] = childNames;
+        this.instruments[name] = { type: 'Layered', children: childNames };
+    },
+
+    createCustomWaveInstrument: function(name, partials) {
+        if (this.instruments[name]) this.instruments[name].dispose();
+        try {
+            const validPartials = partials.map(p => Number(p) || 0);
+            const synth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'custom', partials: validPartials },
+                envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' }
+            });
+            synth.chain(...this._activeEffects, analyser);
+            this.instruments[name] = synth;
+            logKey('LOG_CUSTOM_WAVE_CREATED', 'info', name, validPartials.join(', '));
+        } catch (e) {
+            logKey('LOG_INSTR_CREATE_FAIL', 'error', name, e.message);
         }
-        this.currentInstrumentName = newInstrumentName;
+    },
+
+    createAdditiveInstrument: function(name, components) {
+        if (this.instruments[name]) this.instruments[name].dispose();
+        
+        const self = this;
+
+        // --- Normalization Logic ---
+        // Sum up all amplitudes to check if they exceed 1.0 (0dB)
+        let totalAmp = 0;
+        components.forEach(c => { totalAmp += (Number(c.amp) || 0); });
+        
+        // If total is too high, calculate a scaling factor
+        const scaleFactor = totalAmp > 1.0 ? (1.0 / totalAmp) : 1.0;
+
+        class AdditiveVoice extends Tone.Synth {
+            constructor(options) {
+                super(options);
+                this.name = "AdditiveVoice";
+                if (this.oscillator) { this.oscillator.stop(); this.oscillator.disconnect(); }
+                this.additiveOscillators = [];
+                components.forEach(c => {
+                    // Apply normalization scale factor to each component's amplitude
+                    const normalizedAmp = (Number(c.amp) || 0) * scaleFactor;
+                    
+                    const osc = new Tone.Oscillator({
+                        type: c.waveform || 'sine',
+                        volume: Tone.gainToDb(normalizedAmp)
+                    }).connect(this.envelope);
+                    this.additiveOscillators.push({ osc, ratio: Number(c.freqRatio) || 1 });
+                    osc.start();
+                });
+            }
+                        triggerAttack(note, time, velocity) {
+                            const freq = Tone.Frequency(note).toFrequency();
+                            this.additiveOscillators.forEach(item => {
+                                item.osc.frequency.setValueAtTime(freq * item.ratio, time);
+                            });
+                            super.triggerAttack(note, time, velocity);
+                        }
+            
+                                    triggerRelease(time) {
+                                        // Correctly cancel ongoing Decay/Sustain transitions using .cancel()
+                                        this.envelope.cancel(time);
+                                        super.triggerRelease(time);
+                                    }            dispose() {
+                this.additiveOscillators.forEach(item => { item.osc.stop(); item.osc.dispose(); });
+                super.dispose();
+                return this;
+            }
+        }
+
+        try {
+            const synth = new Tone.PolySynth(AdditiveVoice, { maxPolyphony: 16 });
+            synth.set({ envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' } });
+            synth.chain(...this._activeEffects, analyser);
+            this.instruments[name] = synth;
+            logKey('LOG_ADDITIVE_CREATED', 'info', name);
+        } catch (e) {
+            logKey('LOG_ADDITIVE_CREATE_FAIL', 'error', name, e.message);
+        }
+    },
+
+    transitionToInstrument: function(name) {
+        if (name !== 'DefaultSynth' && !this.instruments[name]) {
+             logKey('LOG_ERR_INSTR_NOT_FOUND', 'warning', name);
+             return;
+        }
+        const old = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        if (old && old.releaseAll) old.releaseAll();
+        this.currentInstrumentName = name;
         this.syncAdsrToUI();
     },
 
     syncAdsrToUI: function() {
-        let instr = this.instruments[this.currentInstrumentName];
+        let instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
         if (!instr) return;
-        let a = 0.01, d = 0.1, s = 1.0, r = 0.5;
+        if (instr.type === 'Layered') instr = this.instruments[instr.children[0]];
+        if (!instr) return;
+        let a=0.01, d=0.1, s=1, r=0.5;
         try {
-            const env = instr.envelope || (instr.get?.().envelope) || (instr.get?.().voice0?.envelope);
-            if (env) { a = env.attack; d = env.decay; s = env.sustain; r = env.release; }
-            updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
-        } catch (e) {}
+            const settings = instr.get();
+            const env = settings.envelope || (settings.voice0 && settings.voice0.envelope);
+            if (env) { a=env.attack; d=env.decay; s=env.sustain; r=env.release; }
+            updateAdsrGraph(a,d,s,r, this.currentInstrumentName.toLowerCase().includes('sampler'));
+        } catch(e){}
     },
 
-    playCurrentInstrumentNote: async function(note, dur, time, velocity) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return; 
+    playCurrentInstrumentNote: function(note, dur, time, velocity) {
+        const t = (time !== undefined) ? time : Tone.now() + 0.1;
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
-        const instr = this.instruments[this.currentInstrumentName];
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
         if (instr && instr.triggerAttackRelease) {
-            triggerAdsrOn();
-            instr.triggerAttackRelease(finalNote, dur, time, velocity);
-            setTimeout(() => triggerAdsrOff(), Tone.Time(dur).toSeconds() * 1000);
+            if (instr instanceof Tone.Sampler && !instr.loaded) return; 
+            instr.triggerAttackRelease(finalNote, dur, t, velocity);
+            if (time === undefined) { 
+                const noteId = triggerAdsrOn(); 
+                setTimeout(() => triggerAdsrOff(noteId), Tone.Time(dur).toSeconds()*1000); 
+            }
         }
     },
 
-    playCurrentInstrumentNoteAttack: async function(note, velocity) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return; 
+    playCurrentInstrumentNoteAttack: function(note, velocity) {
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
-        const instr = this.instruments[this.currentInstrumentName];
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
         if (instr && instr.triggerAttack) {
-            triggerAdsrOn();
+            if (instr instanceof Tone.Sampler && !instr.loaded) return null; 
             instr.triggerAttack(finalNote, Tone.now(), velocity);
+            return triggerAdsrOn(); 
         }
+        return null;
     },
 
-    playCurrentInstrumentNoteRelease: function(note) {
+    playCurrentInstrumentNoteRelease: function(note, noteId) {
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
-        const instr = this.instruments[this.currentInstrumentName];
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
         if (instr && instr.triggerRelease) {
-            triggerAdsrOff();
             instr.triggerRelease(finalNote, Tone.now());
+            triggerAdsrOff(noteId); 
         }
     },
 
-    playKick: async function(velocity = 1, time = Tone.now()) {
-        const ok = await ensureAudioStarted();
-        if (ok) this.drum.triggerAttackRelease('C2', '8n', time, velocity);
+    playChordByNameAttack: function(name, velocity) {
+        const notes = this.chords[name];
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        if (notes && instr && instr.triggerAttack) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            instr.triggerAttack(notes.map(n => this.getTransposedNote(n)), Tone.now(), velocity);
+            triggerAdsrOn();
+        }
     },
 
-    playSnare: async function(velocity = 1, time = Tone.now()) {
-        const ok = await ensureAudioStarted();
-        if (ok) this.snare.triggerAttackRelease('8n', time, velocity);
+    playChordByNameRelease: function(name) {
+        const notes = this.chords[name];
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        if (notes && instr && instr.triggerRelease) {
+            instr.triggerRelease(notes.map(n => this.getTransposedNote(n)), Tone.now());
+            triggerAdsrOff();
+        }
     },
 
-    playJazzKitNote: async function(drumNote, velocityOverride, time, contextNote, contextVelocity) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return;
-        const finalVelocity = velocityOverride !== null ? velocityOverride : (contextVelocity !== null ? contextVelocity : 1);
-        this.jazzKit.triggerAttackRelease(drumNote, '8n', time, finalVelocity);
+    playKick: function(v = 1, time) { 
+        const t = (time !== undefined) ? time : Tone.now() + 0.05;
+        drum.triggerAttackRelease('C2', '8n', t, v); 
+    },
+    playSnare: function(v = 1, time) { 
+        const t = (time !== undefined) ? time : Tone.now() + 0.05;
+        snare.triggerAttackRelease('8n', t, v); 
+    },
+
+    playCountIn: async function(measures = 1, beats = 4, beatValue = 4, volume = 0.8) {
+        await ensureAudioStarted();
+        const boosted = volume * 10;
+        const dur = Tone.Time(beatValue + 'n').toSeconds();
+        for (let m = 0; m < measures; m++) {
+            for (let b = 0; b < beats; b++) {
+                const t = Tone.now() + 0.05;
+                if (b === 0) click.triggerAttackRelease("C6", "16n", t, boosted);
+                else click.triggerAttackRelease("G5", "16n", t, boosted * 0.5);
+                await new Promise(r => setTimeout(r, dur * 1000));
+                if (!this.isExecutionActive) return;
+            }
+        }
+    },
+
+    playJazzKitNote: function(note, vel, time) {
+        if (jazzKit.loaded) {
+            const t = (time !== undefined) ? time : Tone.now() + 0.05;
+            jazzKit.triggerAttackRelease(note, '8n', t, vel || 1);
+        }
+    },
+
+    playRhythmSequence: function(soundSource, steps, time, measure = 1) {
+        if (!steps || !Array.isArray(steps) || time === undefined) return;
+        
+        const mDur = Tone.Time('1m').toSeconds();
+        const sTime = mDur / 16;
+        
+        // Base starting point for this specific measure
+        const mStart = time + (measure - 1) * mDur;
+
+        for (let i = 0; i < Math.min(steps.length, 16); i++) {
+            const c = steps[i]; 
+            if (c === '.' || c === '-') continue;
+            
+            // Apply 0.05s look-ahead margin to avoid timing warnings in Tone.js
+            const t = mStart + (i * sTime) + 0.05;
+            
+            if (c.toLowerCase() === 'x') {
+                if (soundSource === 'KICK') this.playKick(1, t);
+                else if (soundSource === 'SNARE') this.playSnare(1, t);
+                else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
+                else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
+                else this._playSpecificInstrumentNote(soundSource, 'C4', '16n', t, 0.8);
+            } else {
+                if (['KICK','SNARE','HH','CLAP'].includes(soundSource)) {
+                    if (soundSource === 'KICK') this.playKick(1, t);
+                    else if (soundSource === 'SNARE') this.playSnare(1, t);
+                    else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
+                    else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
+                } else this._playSpecificInstrumentNote(soundSource, c, '16n', t, 0.8);
+            }
+        }
+    },
+
+    _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
+        const instr = this.instruments[name] || (name === 'DefaultSynth' ? synth : null);
+        if (instr && instr.triggerAttackRelease) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            const t = (time !== undefined) ? time : Tone.now() + 0.05;
+            instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
+        }
     },
 
     playSFX: async function(url, options = {}) {
-        const ok = await ensureAudioStarted();
-        if (!ok || !this.isExecutionActive) return;
-        try {
-            const player = new Tone.Player({
-                url: url,
-                onload: () => { if (this.isExecutionActive) player.start(); },
-                onstop: () => {
-                    const idx = this.activeSFXPlayers.indexOf(player);
-                    if (idx > -1) this.activeSFXPlayers.splice(idx, 1);
-                    player.dispose();
+        await ensureAudioStarted();
+        const p = new Tone.Player({ url, onload: () => { if (this.isExecutionActive) p.start(); }, onstop: () => p.dispose() });
+        p.chain(...this._activeEffects, analyser);
+    },
+
+    playChordByName: function(name, dur, vel, time) {
+        const notes = this.chords[name];
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        if (notes && instr) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            const t = (time !== undefined) ? time : Tone.now() + 0.1;
+            instr.triggerAttackRelease(notes.map(n => this.getTransposedNote(n)), dur, t, vel);
+        }
+    },
+
+    playMelodyString: async function(str) {
+        await ensureAudioStarted();
+        const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
+        const notes = str.split(',').join(' ').split('\n').join(' ').split('\r').join(' ').split(' ').filter(s => s.trim().length > 0);
+        for (const n of notes) {
+            if (!this.isExecutionActive) break;
+            const m = n.match(/^(R)?([A-G][#b]?)?([0-8])?([WHQEST])(\.?|_T)?$/i);
+            if (m) {
+                let d = durMap[m[4].toUpperCase()] || '4n';
+                if (m[5] === '.') d += '.'; if (m[5] === '_T') d = d.replace('n', 't');
+                if (m[1]) { await new Promise(r => setTimeout(r, Tone.Time(d).toMilliseconds())); } 
+                else {
+                    this.playCurrentInstrumentNote((m[2]||"C")+(m[3]||"4"), d, undefined, 0.8);
+                    await new Promise(r => setTimeout(r, Tone.Time(d).toMilliseconds()));
                 }
-            });
-            this.activeSFXPlayers.push(player);
-            player.reverse = options.reverse || false;
-            player.playbackRate = options.playbackRate || 1;
-            player.volume.value = Tone.gainToDb(options.volume || 1);
-            player.chain(...this._activeEffects, analyser);
-        } catch (e) { console.error(e); }
-    },
-
-    playChordByName: async function(chordName, duration, velocity) {
-        const notes = this.chords[chordName];
-        if (notes) {
-            const transposed = notes.map(n => this.getTransposedNote(n));
-            const instr = this.instruments[this.currentInstrumentName];
-            if (instr && instr.triggerAttackRelease) {
-                triggerAdsrOn();
-                instr.triggerAttackRelease(transposed, duration, Tone.now(), velocity);
-                setTimeout(() => triggerAdsrOff(), Tone.Time(duration).toSeconds() * 1000);
             }
         }
     },
 
-    playChordByNameAttack: async function(chordName, velocity) {
-        const notes = this.chords[chordName];
-        if (notes) {
-            const transposed = notes.map(n => this.getTransposedNote(n));
-            const instr = this.instruments[this.currentInstrumentName];
-            if (instr && instr.triggerAttack) {
-                triggerAdsrOn();
-                instr.triggerAttack(transposed, Tone.now(), velocity);
-            }
-        }
-    },
-
-    playChordByNameRelease: function(chordName) {
-        const notes = this.chords[chordName];
-        if (notes) {
-            const transposed = notes.map(n => this.getTransposedNote(n));
-            const instr = this.instruments[this.currentInstrumentName];
-            if (instr && instr.triggerRelease) {
-                triggerAdsrOff();
-                instr.triggerRelease(transposed, Tone.now());
-            }
-        }
-    },
-
-    midiAttack: async function(midiNoteNumber, velocityNormalized = 1, channel) {
-        const ok = await ensureAudioStarted();
-        if (!ok) return;
-        const chordName = this.midiChordMap[midiNoteNumber];
-        let notesToPlay = chordName ? (this.chords[chordName] || []).map(n => this.getTransposedNote(n)) : this.getTransposedNote(midiNoteNumber);
-        const instr = this.instruments[this.currentInstrumentName];
+    midiAttack: async function(note, vel, ch) {
+        await ensureAudioStarted();
+        const chord = this.midiChordMap[note];
+        const toPlay = chord ? this.chords[chord].map(n => this.getTransposedNote(n)) : this.getTransposedNote(note);
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
         if (instr && instr.triggerAttack) {
-            triggerAdsrOn();
-            instr.triggerAttack(notesToPlay, Tone.now(), velocityNormalized);
-            this.midiPlayingNotes.set(midiNoteNumber, notesToPlay);
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            instr.triggerAttack(toPlay, Tone.now(), vel);
+            const noteId = triggerAdsrOn();
+            this.midiPlayingNotes.set(note, { notes: toPlay, id: noteId });
         }
     },
 
-    midiRelease: async function(midiNoteNumber) {
-        const notesToRelease = this.midiPlayingNotes.get(midiNoteNumber);
-        const instr = this.instruments[this.currentInstrumentName];
-        if (notesToRelease && instr && instr.triggerRelease) {
-            triggerAdsrOff();
-            instr.triggerRelease(notesToRelease, Tone.now());
-            this.midiPlayingNotes.delete(midiNoteNumber);
+    midiRelease: async function(note) {
+        const entry = this.midiPlayingNotes.get(note);
+        if (!entry) return;
+        const toRel = entry.notes || entry;
+        const noteId = entry.id;
+        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        if (instr && instr.triggerRelease) {
+            instr.triggerRelease(toRel, Tone.now());
+            this.midiPlayingNotes.delete(note);
+            triggerAdsrOff(noteId);
         }
     },
 
@@ -353,78 +469,18 @@ export const audioEngine = {
 
     resetAudioEngineState: function() {
         this.isExecutionActive = false;
-        logKey('LOG_RESETTING_ENGINE');
-
-        // Stop the transport and cancel all events
-        Tone.Transport.stop(); 
-        Tone.Transport.cancel(0);
-        Tone.Transport.seconds = 0;
-
-        // Reset Visuals
-        this.updateADSR(0.01, 0.1, 0.5, 1.0); 
+        Tone.Transport.stop(); Tone.Transport.cancel(0); Tone.Transport.seconds = 0;
         triggerAdsrOff();
-
-        // Stop all active SFX players
-        this.activeSFXPlayers.forEach(p => { try { p.stop(); p.dispose(); } catch(e){} });
-        this.activeSFXPlayers = [];
-
-        // Stop and release all instruments
-        const instrumentSet = new Set([this.synth, this.drum, this.hh, this.snare, this.jazzKit, ...Object.values(this.instruments)]);
-        instrumentSet.forEach(instr => { 
-            if (instr) {
-                if (typeof instr.releaseAll === 'function') {
-                    try { instr.releaseAll(); } catch(e) {}
-                }
-                if (typeof instr.disconnect === 'function') {
-                    try { instr.disconnect(); } catch(e) {}
-                }
-            }
-        });
-
-        // Dispose of custom instruments (except DefaultSynth handled below)
-        for (const name in this.instruments) {
-            if (name !== 'DefaultSynth') {
-                const instrument = this.instruments[name];
-                if (instrument && typeof instrument.dispose === 'function') {
-                    try { instrument.dispose(); } catch(e) {}
-                }
-                delete this.instruments[name];
-            }
-        }
-
-        // Re-initialize default synth
-        if (this.instruments['DefaultSynth'] && typeof this.instruments['DefaultSynth'].dispose === 'function') {
-            try { this.instruments['DefaultSynth'].dispose(); } catch(e) {}
-        }
-        synth = new Tone.PolySynth(Tone.Synth).chain(analyser);
-        this.synth = synth; 
-        this.instruments['DefaultSynth'] = synth; 
+        for (const id in blocklyLoops) { if (blocklyLoops[id].stop) blocklyLoops[id].stop(); blocklyLoops[id].dispose(); } 
+        for (const k in blocklyLoops) delete blocklyLoops[k];
+        this.currentADSR = { ...DEFAULT_ADSR };
+        createCoreInstruments(); 
+        for (const name in this.instruments) { if (this.instruments[name] && this.instruments[name].dispose) this.instruments[name].dispose(); delete this.instruments[name]; } 
         this.currentInstrumentName = 'DefaultSynth';
-
-        // CRITICAL FIX: Dispose of all Blockly Loops
-        if (blocklyLoops) {
-            for (const loopId in blocklyLoops) {
-                if (blocklyLoops.hasOwnProperty(loopId) && blocklyLoops[loopId] instanceof Tone.Loop) {
-                    try {
-                        blocklyLoops[loopId].stop();
-                        blocklyLoops[loopId].dispose();
-                    } catch(e) {}
-                }
-            }
-            // Clear the object
-            for (const key in blocklyLoops) delete blocklyLoops[key];
-            logKey('LOG_LOOPS_CLEARED');
-        }
-
-        this.chords = {}; 
-        this.keyboardChordMap = {}; 
-        this.midiChordMap = {}; 
-        this.clearPressedKeys();
-        
-        this._activeEffects.forEach(e => { if (e && typeof e.dispose === 'function') e.dispose(); });
-        this._activeEffects = []; 
-        
-        this.currentSemitoneOffset = 0;
+        this.instruments['DefaultSynth'] = synth;
+        this.chords = {}; this.keyboardChordMap = {}; this.midiChordMap = {}; this.clearPressedKeys();
+        this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); }); 
+        this._activeEffects = []; this.currentSemitoneOffset = 0;
         logKey('LOG_ENGINE_RESET_DONE');
     },
 
@@ -440,6 +496,5 @@ export function startAudioOnFirstInteraction() {
     document.body.addEventListener('pointerdown', oneStart, { passive: true });
 }
 
-audioEngine.instruments['DefaultSynth'] = synth;
 window.audioEngine = audioEngine;
 window.blocklyLoops = blocklyLoops;
