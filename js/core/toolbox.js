@@ -136,10 +136,6 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_create_additive_synth"></block>
         <block type="sb_create_layered_instrument"></block>
         <block type="sb_create_sampler_instrument"></block>
-    </category>
-
-
-    <category name="%{BKY_MSG_INSTRUMENT_CONTROL_CATEGORY}" colour="%{BKY_INSTRUMENT_CONTROL_HUE}">
         <block type="sb_select_current_instrument"></block>
         <block type="sb_set_adsr"></block>
         <block type="sb_set_instrument_vibrato">
@@ -185,6 +181,9 @@ export const TOOLBOX_XML_STRING = `
             <field name="MELODY_STRING">C4Q, D4Q, E4Q, F4Q, G4H</field>
         </block>
         <block type="sb_define_chord"></block>
+        <block type="sb_play_chord_by_name">
+            <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        </block>
     </category>
 
     <category name="%{BKY_MSG_TRANSPORT_CATEGORY}" colour="%{BKY_TRANSPORT_HUE}">
@@ -228,23 +227,20 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_stop_background_noise"></block>
     </category>
 
+    <category name="%{BKY_MSG_PC_KEYBOARD_CATEGORY}" colour="%{BKY_PC_KEYBOARD_HUE}">
+        <block type="sb_toggle_pc_keyboard_midi"></block>
+        <block type="sb_map_key_to_chord"></block>
+    </category>
+
     <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">
         <block type="sb_midi_note_received"></block>
         <block type="sb_midi_play"></block>
         <block type="sb_map_midi_to_chord"></block>
     </category>
 
-    <category name="%{BKY_MSG_PC_KEYBOARD_CATEGORY}" colour="%{BKY_PC_KEYBOARD_HUE}">
-        <block type="sb_toggle_pc_keyboard_midi"></block>
-        <block type="sb_map_key_to_chord"></block>
-    </category>
-
     <category name="%{BKY_MSG_SERIAL_CATEGORY}" colour="%{BKY_SERIAL_HUE}">
         <block type="sb_serial_data_received"></block>
         <block type="sb_serial_check_key_mask"></block>
-        <block type="sb_play_chord_by_name">
-            <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-        </block>
     </category>
 </xml>
 `;

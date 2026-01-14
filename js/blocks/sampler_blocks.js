@@ -24,7 +24,7 @@ const samplerBlock = {
             ],
             "previousStatement": null,
             "nextStatement": null,
-            "colour": "%{BKY_SOUND_SOURCES_HUE}",
+            "colour": "#388E3C",
             "tooltip": "%{BKY_SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP}",
             "helpUrl": function() {
                 const lang = window.currentLanguage || 'en';

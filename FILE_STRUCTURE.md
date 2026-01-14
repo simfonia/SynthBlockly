@@ -42,7 +42,7 @@
       - `uiManager.js`: UI 翻譯。
     - `blocks/`: 積木與產生器定義。
       - `index.js`: 積木註冊入口點。
-      - `instruments_blocks.js` / `_generators.js`: 音源與演奏積木。
+      - `instruments_blocks.js` / `_generators.js`: 音源建立、控制與演奏積木。
       - `serial_blocks.js` / `_generators.js`: 序列埠相關積木。
       - `tools_blocks.js` / `_generators.js`: 註解與輔助工具積木 (NEW)。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。

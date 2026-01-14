@@ -65,6 +65,11 @@ export function initButtons() {
             event.preventDefault(); // Prevent default browser action (e.g., new line)
             runBlocksAction();
         }
+        // Check for Esc key for Panic Stop
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            audioEngine.panicStopAllSounds();
+        }
     });
 
     // Export Code Button

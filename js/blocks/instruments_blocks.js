@@ -151,7 +151,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+                "colour": "%{BKY_SOUND_SOURCES_HUE}",
                 "tooltip": "%{BKY_SB_SET_ADSR_TOOLTIP}"
             });
         }
@@ -254,7 +254,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+                "colour": "%{BKY_SOUND_SOURCES_HUE}",
                 "tooltip": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP}"
             });
         }
@@ -274,7 +274,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+                "colour": "%{BKY_SOUND_SOURCES_HUE}",
                 "tooltip": "%{BKY_SB_SET_INSTRUMENT_VIBRATO_TOOLTIP}"
             });
         }
@@ -294,7 +294,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_INSTRUMENT_CONTROL_HUE}",
+                "colour": "%{BKY_SOUND_SOURCES_HUE}",
                 "tooltip": "%{BKY_SB_SET_INSTRUMENT_VOLUME_TOOLTIP}"
             });
         }

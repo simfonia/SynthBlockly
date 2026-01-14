@@ -1,7 +1,7 @@
 // blocks/zh-hant.js — 正體中文訊息
 export const MSG_ZH_HANT = {
     // --- UI Button Tooltips ---
-    'UI_BTN_PANIC_STOP': '停止所有聲音',
+    'UI_BTN_PANIC_STOP': '停止所有聲音 (Esc)',
     'UI_BTN_PLAY_TEST_NOTE': '播放測試音 (A4)',
     'UI_BTN_SAVE_PROJECT': '儲存專案 (XML)',
     'UI_BTN_LOAD_PROJECT': '載入專案 (XML)',
@@ -51,7 +51,7 @@ export const MSG_ZH_HANT = {
     'INSTRUMENT_CONTROL_HUE': '#5BC0DE',
     'MSG_PERFORMANCE_CATEGORY': '演奏 (Performance)',
     'PERFORMANCE_HUE': '#E74C3C',
-    'MSG_TRANSPORT_CATEGORY': '放送控制 (Transport)',
+    'MSG_TRANSPORT_CATEGORY': '時序控制 (Transport)',
     'TRANSPORT_HUE': '#16A085',
     'MSG_EFFECTS_CATEGORY': '效果器 (Effects)',
     'EFFECTS_HUE': '#9B59B6',

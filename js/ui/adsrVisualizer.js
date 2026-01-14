@@ -110,27 +110,25 @@ function drawGraph() {
     }
     ctx.stroke();
 
-    // --- Map Time to X (Normalized Visual Layout) ---
-    const minVisualWidth = 0.18; // Each segment takes at least 18%
-    const totalTime = Math.max(2, currentADSR.attack + currentADSR.decay + currentADSR.release + 0.5);
+    // --- Map Time to X (Linear Time Mapping) ---
+    // Reference from #processing logic (media/generators/visual.js)
+    // Sustain is visually represented as 0.5s duration relative to others
+    const sustainVisualDuration = 0.5; 
+    const totalTime = currentADSR.attack + currentADSR.decay + currentADSR.release + sustainVisualDuration;
     
-    // Calculate raw visual widths
-    let vA = minVisualWidth + (currentADSR.attack / totalTime);
-    let vD = minVisualWidth + (currentADSR.decay / totalTime);
-    let vS = 0.2; // Constant visual width for sustain
-    let vR = minVisualWidth + (currentADSR.release / totalTime);
+    // Calculate X coordinates based on time proportion
+    // Note: padding is the start X
+    const availableWidth = graphW;
+    
+    const widthA = (currentADSR.attack / totalTime) * availableWidth;
+    const widthD = (currentADSR.decay / totalTime) * availableWidth;
+    const widthS = (sustainVisualDuration / totalTime) * availableWidth;
+    const widthR = (currentADSR.release / totalTime) * availableWidth;
 
-    // Normalize so they sum to 1.0 (to fit exactly in the graph width)
-    const totalV = vA + vD + vS + vR;
-    vA /= totalV;
-    vD /= totalV;
-    vS /= totalV;
-    vR /= totalV;
-
-    const xA = padding + vA * graphW;
-    const xD = xA + vD * graphW;
-    const xS_end = xD + vS * graphW;
-    const xR = xS_end + vR * graphW;
+    const xA = padding + widthA;
+    const xD = xA + widthD;
+    const xS_end = xD + widthS;
+    const xR = xS_end + widthR;
 
     const gainToY = (g) => padding + graphH * (1 - g);
 
@@ -170,11 +168,12 @@ function drawGraph() {
     ctx.fillStyle = '#999';
     ctx.font = 'bold 11px Arial';
     ctx.textAlign = 'center';
-    // Position labels in the middle of each segment
-    ctx.fillText('A', padding + (xA - padding) / 2, h - 5);
-    ctx.fillText('D', xA + (xD - xA) / 2, h - 5);
-    ctx.fillText('S', xD + (xS_end - xD) / 2, h - 5);
-    ctx.fillText('R', xS_end + (xR - xS_end) / 2, h - 5);
+    
+    // Only draw labels if the segment is wide enough to be legible
+    if (widthA > 15) ctx.fillText('A', padding + widthA / 2, h - 5);
+    if (widthD > 15) ctx.fillText('D', xA + widthD / 2, h - 5);
+    if (widthS > 15) ctx.fillText('S', xD + widthS / 2, h - 5);
+    if (widthR > 15) ctx.fillText('R', xS_end + widthR / 2, h - 5);
 
     // --- Playhead Logic ---
     if (playhead.active || playhead.state !== 'idle') {
@@ -186,21 +185,23 @@ function drawGraph() {
             
             if (elapsed < currentADSR.attack) {
                 playhead.state = 'attack';
+                // Handle A=0 case safely
                 const ratio = currentADSR.attack > 0 ? elapsed / currentADSR.attack : 1;
-                currentX = padding + ratio * (xA - padding);
+                currentX = padding + ratio * widthA;
                 currentY = gainToY(ratio);
             } else if (elapsed < currentADSR.attack + currentADSR.decay) {
                 playhead.state = 'decay';
                 const segmentElapsed = elapsed - currentADSR.attack;
                 const ratio = currentADSR.decay > 0 ? segmentElapsed / currentADSR.decay : 1;
                 const currentGain = 1 - (1 - currentADSR.sustain) * ratio;
-                currentX = xA + ratio * (xD - xA);
+                currentX = xA + ratio * widthD;
                 currentY = gainToY(currentGain);
             } else {
                 playhead.state = 'sustain';
-                // Loop small movement in visual sustain area
+                // Loop movement in visual sustain area
                 const sustainElapsed = now - (playhead.startTime + currentADSR.attack + currentADSR.decay);
-                currentX = xD + ((sustainElapsed % 1) / 1) * (xS_end - xD);
+                // Map sustain loop to the visual width of S block
+                currentX = xD + ((sustainElapsed % sustainVisualDuration) / sustainVisualDuration) * widthS;
                 currentY = gainToY(currentADSR.sustain);
             }
         } else {
@@ -210,11 +211,14 @@ function drawGraph() {
                 playhead.state = 'release';
                 const ratio = currentADSR.release > 0 ? elapsedSinceRelease / currentADSR.release : 1;
                 const currentGain = currentADSR.sustain * (1 - ratio);
-                currentX = xS_end + ratio * (xR - xS_end);
+                currentX = xS_end + ratio * widthR;
                 currentY = gainToY(currentGain);
             } else {
                 playhead.state = 'idle';
                 playhead.active = false;
+                // Snap to end
+                currentX = xR;
+                currentY = gainToY(0);
             }
         }
 

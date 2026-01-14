@@ -1,7 +1,7 @@
 // blocks/en.js — English messages
 export const MSG_EN = {
     // --- UI Button Tooltips ---
-    'UI_BTN_PANIC_STOP': 'Stop All Sounds',
+    'UI_BTN_PANIC_STOP': 'Stop All Sounds (Esc)',
     'UI_BTN_PLAY_TEST_NOTE': 'Play Test Note (A4)',
     'UI_BTN_SAVE_PROJECT': 'Save Project (XML)',
     'UI_BTN_LOAD_PROJECT': 'Load Project (XML)',
