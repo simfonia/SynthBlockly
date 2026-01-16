@@ -1,6 +1,7 @@
 // js/blocks/transport_blocks.js
 // Transport-related custom blocks
 import * as Blockly from 'blockly';
+import { getHelpUrl } from '../core/helpUtils.js';
 
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
@@ -85,18 +86,9 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_TONE_LOOP_MESSAGE}",
                 "args0": [
                     {
-                        "type": "field_dropdown",
+                        "type": "field_input",
                         "name": "INTERVAL",
-                        "options": [
-                            ['%{BKY_SB_DUR_1M}', '1m'],
-                            ['%{BKY_SB_DUR_2M}', '2m'],
-                            ['%{BKY_SB_DUR_4M}', '4m'],
-                            ['%{BKY_SB_DUR_8M}', '8m'],
-                            ['%{BKY_SB_DUR_2N}', '2n'],
-                            ['%{BKY_SB_DUR_4N}', '4n'],
-                            ['%{BKY_SB_DUR_8N}', '8n'],
-                            ['%{BKY_SB_DUR_16N}', '16n']
-                        ]
+                        "text": "1m"
                     },
                     {
                         "type": "input_statement",
@@ -133,10 +125,7 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_SCHEDULE_AT_OFFSET_TOOLTIP}"
             });
 
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                return `docs/transport_readme_${currentLang}.html`;
-            });
+            this.setHelpUrl(getHelpUrl('transport_readme'));
         }
     };
 
@@ -197,38 +186,69 @@ export function registerBlocks() {
         }
     };
 
-    // 步進音序器積木 (含 Mutation 與舊版相容支援)
-    Blockly.Blocks['sb_rhythm_sequence'] = {
+    // 步進音序器 來源選擇器 (Shadow Block)
+    Blockly.Blocks['sb_rhythm_source_selector'] = {
         init: function () {
             this.appendDummyInput('MAIN_ROW')
-                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%1')[0])
                 .appendField(new Blockly.FieldDropdown([
                     [Blockly.Msg['JAZZKIT_DRUM_KICK'] || "大鼓", "KICK"],
                     [Blockly.Msg['JAZZKIT_DRUM_SNARE'] || "小鼓", "SNARE"],
                     [Blockly.Msg['JAZZKIT_DRUM_CLOSED_HIHAT'] || "腳踏鈸", "HH"],
                     [Blockly.Msg['JAZZKIT_DRUM_HANDCLAP'] || "擊掌", "CLAP"],
                     [Blockly.Msg['SB_SAMPLER_TYPE_DEFAULT'] || "目前音色", "CURRENT"],
-                    ["自訂樂器/音符...", "CUSTOM"]
-                ]), "TYPE")
-                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%2')[0].split('%1')[1] || "第")
-                .appendField(new Blockly.FieldNumber(1, 1, 16, 1), "MEASURE")
-                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%3')[0].split('%2')[1] || "小節 序列")
-                .appendField(new Blockly.FieldTextInput("x . . . | x . . . | x . . . | x . . ."), "SEQUENCE");
+                    ["自訂樂器...", "CUSTOM"]
+                ]), "TYPE");
 
             this.appendDummyInput('CUSTOM_ROW')
                 .appendField("↳")
-                .appendField(new Blockly.FieldTextInput("Piano"), "CUSTOM_TYPE");
+                .appendField(new Blockly.FieldDropdown(function() {
+                    try {
+                        let workspace = null;
+                        if (this.sourceBlock_) {
+                            workspace = this.sourceBlock_.workspace;
+                        } else if (this.workspace) {
+                            workspace = this.workspace;
+                        }
 
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
+                        // Safety check: if no workspace context, return fallback immediately
+                        if (!workspace) {
+                            return [["MyInstrument", "MyInstrument"]];
+                        }
+
+                        const options = [];
+                        const targetBlockTypes = [
+                            'sb_create_synth_instrument',
+                            'sb_create_harmonic_synth',
+                            'sb_create_additive_synth',
+                            'sb_create_layered_instrument',
+                            'sb_create_sampler_instrument'
+                        ];
+
+                        targetBlockTypes.forEach(type => {
+                            const blocks = workspace.getBlocksByType(type, false);
+                            blocks.forEach(block => {
+                                const name = block.getFieldValue('NAME');
+                                if (name && !options.some(opt => opt[1] === name)) {
+                                    options.push([name, name]);
+                                }
+                            });
+                        });
+                        
+                        options.sort((a, b) => a[0].localeCompare(b[0]));
+                        if (options.length === 0) return [["MyInstrument", "MyInstrument"]];
+                        return options;
+                    } catch (e) {
+                        // Silence errors during reproduction/transient states
+                        return [["MyInstrument", "MyInstrument"]];
+                    }
+                }), "CUSTOM_TYPE");
+
+            this.setOutput(true, "String");
             this.setColour(Blockly.Msg['TRANSPORT_HUE'] || "#16A085");
-            this.setTooltip(Blockly.Msg['SB_RHYTHM_SEQUENCE_TOOLTIP']);
-            
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                return `docs/step_sequencer_readme_${currentLang}.html`;
+            this.setTooltip(function() {
+                return Blockly.Msg['SB_RHYTHM_SOURCE_SELECTOR_TOOLTIP'];
             });
-
+            
             this.updateShape_();
         },
 
@@ -240,47 +260,56 @@ export function registerBlocks() {
 
         domToMutation: function (xmlElement) {
             const isCustom = xmlElement.getAttribute('is_custom') === 'true';
-            // We store the state temporarily because field values aren't set yet
             this.is_custom_state_ = isCustom; 
             this.updateShape_();
         },
 
         onchange: function (event) {
             if (!this.workspace || this.workspace.isDragging()) return;
-            
             if (event.type === Blockly.Events.BLOCK_CHANGE && event.blockId === this.id && event.name === 'TYPE') {
                 this.is_custom_state_ = (this.getFieldValue('TYPE') === 'CUSTOM');
                 this.updateShape_();
             }
-            
-            // 處理舊版載入相容 (如果是直接從舊版 XML 載入，沒有 mutation 屬性時)
-            if (event.type === Blockly.Events.BLOCK_CREATE && event.blockId === this.id && this.is_custom_state_ === undefined) {
-                const typeField = this.getField('TYPE');
-                const currentValue = typeField.getValue();
-                const options = typeField.getOptions().map(opt => opt[1]);
-                
-                if (!options.includes(currentValue)) {
-                    const oldVal = currentValue;
-                    typeField.setValue('CUSTOM');
-                    this.setFieldValue(oldVal, 'CUSTOM_TYPE');
-                    this.is_custom_state_ = true;
-                    this.updateShape_();
-                }
-            }
         },
 
         updateShape_: function () {
-            // Priority: 1. Temporary state from domToMutation, 2. Current field value
             const isCustom = (this.is_custom_state_ !== undefined) ? this.is_custom_state_ : (this.getFieldValue('TYPE') === 'CUSTOM');
-            
             const customRow = this.getInput('CUSTOM_ROW');
             if (customRow) {
                 customRow.setVisible(isCustom);
             }
-
             if (this.rendered) {
                 this.render();
             }
+        }
+    };
+
+    // 步進音序器積木 (含 Mutation 與舊版相容支援)
+    Blockly.Blocks['sb_rhythm_sequence'] = {
+        init: function () {
+            this.appendValueInput('SOURCE')
+                .setCheck('String')
+                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%1')[0]);
+
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldCheckbox("FALSE"), "IS_CHORD")
+                .appendField("%{BKY_SB_RHYTHM_IS_CHORD_LABEL}");
+
+            this.appendValueInput('MEASURE')
+                .setCheck('Number')
+                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%2')[0].split('%1')[1] || "第");
+
+            this.appendDummyInput('MAIN_ROW')
+                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%3')[0].split('%2')[1] || "小節 序列")
+                .appendField(new Blockly.FieldTextInput("x . . . | x . . . | x . . . | x . . ."), "SEQUENCE");
+
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(Blockly.Msg['TRANSPORT_HUE'] || "#16A085");
+            this.setTooltip(Blockly.Msg['SB_RHYTHM_SEQUENCE_TOOLTIP']);
+            this.setInputsInline(true);
+            
+            this.setHelpUrl(getHelpUrl('step_sequencer_readme'));
         }
     };
 }

@@ -24,7 +24,12 @@ export async function ensureAudioStarted() {
 }
 
 export const analyser = new Tone.Analyser('waveform', 1024);
-analyser.toDestination();
+export const fftAnalyser = new Tone.Analyser('fft', 64); // Low resolution for retro look
+export const masterLimiter = new Tone.Limiter(-1); // Safety limiter at -1dB
+
+analyser.connect(fftAnalyser);
+fftAnalyser.connect(masterLimiter);
+masterLimiter.toDestination();
 
 let drum, hh, snare, click, jazzKit, synth;
 
@@ -69,6 +74,7 @@ export const audioEngine = {
     currentADSR: { ...DEFAULT_ADSR },
     Tone: Tone,
     analyser: analyser,
+    fftAnalyser: fftAnalyser,
     get synth() { return synth; }, get drum() { return drum; }, get hh() { return hh; },
     get snare() { return snare; }, get click() { return click; }, get jazzKit() { return jazzKit; },
     
@@ -118,6 +124,7 @@ export const audioEngine = {
                     case 'chorus': instance = new Tone.Chorus(p.frequency, p.delayTime, p.depth).start(); break;
                     case 'phaser': instance = new Tone.Phaser(p.frequency, p.octaves, p.baseFrequency); break;
                     case 'autoPanner': instance = new Tone.AutoPanner(p.frequency, p.depth).start(); break;
+                    case 'tremolo': instance = new Tone.Tremolo(p.frequency, p.depth).start(); break;
                 }
                 if (instance) {
                     if (p.wet !== undefined && instance.wet) instance.wet.value = p.wet;
@@ -362,35 +369,66 @@ export const audioEngine = {
         }
     },
 
-    playRhythmSequence: function(soundSource, steps, time, measure = 1) {
+    playRhythmSequence: function(soundSource, steps, time, measure = 1, isChord = false) {
         if (!steps || !Array.isArray(steps) || time === undefined) return;
         
         const mDur = Tone.Time('1m').toSeconds();
         const sTime = mDur / 16;
-        
-        // Base starting point for this specific measure
         const mStart = time + (measure - 1) * mDur;
+
+        // Determine the target instrument ONCE at scheduling time
+        // This solves the issue where changing currentInstrument later affects already scheduled notes
+        const targetInstr = this.instruments[soundSource] || this.instruments[this.currentInstrumentName] || synth;
 
         for (let i = 0; i < Math.min(steps.length, 16); i++) {
             const c = steps[i]; 
             if (c === '.' || c === '-') continue;
             
-            // Apply 0.05s look-ahead margin to avoid timing warnings in Tone.js
+            // Apply 0.05s look-ahead margin
             const t = mStart + (i * sTime) + 0.05;
             
+            // Mode A: Chord Sequence (e.g., c="C7")
+            if (isChord) {
+                const chordNotes = this.chords[c];
+                if (chordNotes && targetInstr && targetInstr.triggerAttackRelease) {
+                    if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
+                    targetInstr.triggerAttackRelease(chordNotes.map(n => this.getTransposedNote(n)), '16n', t, 0.8);
+                }
+                continue;
+            }
+
+            // Mode B: Rhythm/Note Sequence
+            // Check if soundSource is actually a defined Chord Name (Legacy support or explicit chord source)
+            if (this.chords[soundSource]) {
+                 this.playChordByName(soundSource, '16n', 0.8, t); 
+                 // Note: playChordByName still uses currentInstrument, but this path is less likely used now
+                 continue;
+            }
+
             if (c.toLowerCase() === 'x') {
                 if (soundSource === 'KICK') this.playKick(1, t);
                 else if (soundSource === 'SNARE') this.playSnare(1, t);
                 else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
                 else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
-                else this._playSpecificInstrumentNote(soundSource, 'C4', '16n', t, 0.8);
+                else {
+                    // Play default note C4 on target instrument
+                    if (targetInstr && targetInstr.triggerAttackRelease) {
+                        targetInstr.triggerAttackRelease(this.getTransposedNote('C4'), '16n', t, 0.8);
+                    }
+                }
             } else {
                 if (['KICK','SNARE','HH','CLAP'].includes(soundSource)) {
                     if (soundSource === 'KICK') this.playKick(1, t);
                     else if (soundSource === 'SNARE') this.playSnare(1, t);
                     else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
                     else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
-                } else this._playSpecificInstrumentNote(soundSource, c, '16n', t, 0.8);
+                } else {
+                    // Specific Note (e.g. "C2") on target instrument
+                    if (targetInstr && targetInstr.triggerAttackRelease) {
+                        if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
+                        targetInstr.triggerAttackRelease(this.getTransposedNote(c), '16n', t, 0.8);
+                    }
+                }
             }
         }
     },

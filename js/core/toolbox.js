@@ -181,6 +181,7 @@ export const TOOLBOX_XML_STRING = `
             <field name="MELODY_STRING">C4Q, D4Q, E4Q, F4Q, G4H</field>
         </block>
         <block type="sb_define_chord"></block>
+        <block type="sb_get_chord_name"></block>
         <block type="sb_play_chord_by_name">
             <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
         </block>
@@ -194,6 +195,12 @@ export const TOOLBOX_XML_STRING = `
             </value>
         </block>
         <block type="sb_rhythm_sequence">
+            <value name="SOURCE">
+                <shadow type="sb_rhythm_source_selector"></shadow>
+            </value>
+            <value name="MEASURE">
+                <shadow type="math_number"><field name="NUM">1</field></shadow>
+            </value>
             <field name="SEQUENCE">x---x---x---x---</field>
         </block>
         <block type="sb_transport_start_stop"></block>

@@ -59,3 +59,5 @@
 - [x] **日誌系統多語系化與區塊化**
 - [x] **音效播放 (SFX) 積木實作**
 - [x] **優化演奏旋律清單積木 (Melody List Block Optimization)**: 更新 Tooltip 加入休止符 (R) 用法說明，並連結至專屬說明文件 (HelpUrl)。
+- [x] **效果器參數優化與 Tremolo 實作**: 為 `sb_setup_effect` 新增 Tremolo 效果器，並優化動態介面。
+- [x] **修復全域 HelpUrl 路徑**: 確保所有積木的說明連結皆支援 Vite 的 `BASE_URL` 動態路徑。

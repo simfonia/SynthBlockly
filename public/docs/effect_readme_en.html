@@ -115,13 +115,33 @@
     </div>
 
     <div class="type-box">
-        <h2>6. Modulation (Chorus / Phaser / Lofi)</h2>
+        <h2>6. Modulation (Chorus / Phaser / Tremolo / Panner)</h2>
+        <div class="theory">
+            <strong>Physics</strong>: Creates movement through periodic changes in time, phase, or volume.
+        </div>
         <div class="params">
+            <ul>
+                <li><strong>Chorus</strong>: Simulates multiple voices playing at once.</li>
+                <li><strong>Phaser</strong>: Creates a sweeping, jet-like rotation effect.</li>
+                <li><strong>Tremolo</strong>: Rapidly fluctuates the <strong>volume</strong> to create a "shimmering" effect.</li>
+                <li><strong>AutoPanner</strong>: Automatically moves the sound between left and right channels.</li>
+            </ul>
             <strong>Common Parameters:</strong>
             <ul>
-                <li><strong>Frequency</strong> [Hz]: The speed of the modulation cycle.</li>
-                <li><strong>Depth</strong> [0 - 1]: The range of the modulation effect.</li>
-                <li><strong>Lofi Bits</strong> [4 - 16]: Lower values create a gritty, 8-bit retro video game sound.</li>
+                <li><strong>Frequency</strong> [Hz]: The speed of the modulation cycle. Higher values mean faster movement.</li>
+                <li><strong>Depth</strong> [0 - 1]: The intensity of the modulation (e.g., volume swing or panning width).</li>
+                <li><strong>Wet</strong> [0 - 1]: Ratio of effect to clean signal.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="type-box">
+        <h2>7. Lo-Fi Effects</h2>
+        <div class="params">
+            <strong>Parameters:</strong>
+            <ul>
+                <li><strong>Bit Depth (Lofi Bits)</strong> [4 - 16]: Lower values create a gritty, 8-bit retro video game sound.</li>
+                <li><strong>Wet</strong> [0 - 1]: Ratio of effect to clean signal.</li>
             </ul>
         </div>
     </div>

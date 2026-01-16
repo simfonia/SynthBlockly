@@ -1,6 +1,7 @@
 // js/blocks/effects_blocks.js
 // Effects-related custom blocks
 import * as Blockly from 'blockly';
+import { getHelpUrl } from '../core/helpUtils.js';
 
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
@@ -26,7 +27,8 @@ export function registerBlocks() {
                             ["%{BKY_SB_EFFECT_LOFI_TYPE_FIELD}", "lofi"],
                             ["%{BKY_SB_EFFECT_CHORUS_TYPE_FIELD}", "chorus"],
                             ["%{BKY_SB_EFFECT_PHASER_TYPE_FIELD}", "phaser"],
-                            ["%{BKY_SB_EFFECT_AUTOPANNER_TYPE_FIELD}", "autoPanner"]
+                            ["%{BKY_SB_EFFECT_AUTOPANNER_TYPE_FIELD}", "autoPanner"],
+                            ["%{BKY_SB_EFFECT_TREMOLO_TYPE_FIELD}", "tremolo"]
                         ]
                     }
                 ],
@@ -37,46 +39,30 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_SETUP_EFFECT_TOOLTIP}"
             });
 
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                if (currentLang === 'zh-hant') {
-                    return 'docs/effect_readme_zh-hant.html';
-                }
-                return 'docs/effect_readme_en.html';
-            });
+            this.setHelpUrl(getHelpUrl('effect_readme'));
 
             // Function to update the block's shape based on the selected effect
             this.updateShape_ = function () {
                 var effectType = this.getFieldValue('EFFECT_TYPE');
 
+                // List of all possible dynamic inputs to remove
+                const dynamicInputs = [
+                    'WET', 'DISTORTION_AMOUNT', 'OVERSAMPLE', 'DECAY', 'PREDELAY',
+                    'DELAY_TIME', 'FEEDBACK', 'FILTER_TYPE', 'FILTER_FREQ', 'FILTER_Q',
+                    'FILTER_ROLLOFF', 'THRESHOLD', 'RATIO', 'ATTACK', 'RELEASE',
+                    'BITDEPTH', 'CHORUS_FREQUENCY', 'CHORUS_DELAY_TIME', 'CHORUS_DEPTH',
+                    'PHASER_FREQUENCY', 'PHASER_OCTAVES', 'PHASER_BASE_FREQUENCY',
+                    'AUTOPANNER_FREQUENCY', 'AUTOPANNER_DEPTH',
+                    'TREMOLO_FREQUENCY', 'TREMOLO_DEPTH'
+                ];
+
                 // Remove existing dynamic inputs
-                if (this.getInput('WET')) this.removeInput('WET');
-                if (this.getInput('DISTORTION_AMOUNT')) this.removeInput('DISTORTION_AMOUNT');
-                if (this.getInput('OVERSAMPLE')) this.removeInput('OVERSAMPLE');
-                if (this.getInput('DECAY')) this.removeInput('DECAY');
-                if (this.getInput('PREDELAY')) this.removeInput('PREDELAY');
-                if (this.getInput('DELAY_TIME')) this.removeInput('DELAY_TIME');
-                if (this.getInput('FEEDBACK')) this.removeInput('FEEDBACK');
-                if (this.getInput('FILTER_TYPE')) this.removeInput('FILTER_TYPE');
-                if (this.getInput('FILTER_FREQ')) this.removeInput('FILTER_FREQ');
-                if (this.getInput('FILTER_Q')) this.removeInput('FILTER_Q');
-                if (this.getInput('FILTER_ROLLOFF')) this.removeInput('FILTER_ROLLOFF');
-                if (this.getInput('THRESHOLD')) this.removeInput('THRESHOLD');
-                if (this.getInput('RATIO')) this.removeInput('RATIO');
-                if (this.getInput('ATTACK')) this.removeInput('ATTACK');
-                if (this.getInput('RELEASE')) this.removeInput('RELEASE');
-                if (this.getInput('BITDEPTH')) this.removeInput('BITDEPTH');
-                if (this.getInput('CHORUS_FREQUENCY')) this.removeInput('CHORUS_FREQUENCY');
-                if (this.getInput('CHORUS_DELAY_TIME')) this.removeInput('CHORUS_DELAY_TIME');
-                if (this.getInput('CHORUS_DEPTH')) this.removeInput('CHORUS_DEPTH');
-                if (this.getInput('PHASER_FREQUENCY')) this.removeInput('PHASER_FREQUENCY');
-                if (this.getInput('PHASER_OCTAVES')) this.removeInput('PHASER_OCTAVES');
-                if (this.getInput('PHASER_BASE_FREQUENCY')) this.removeInput('PHASER_BASE_FREQUENCY');
-                if (this.getInput('AUTOPANNER_FREQUENCY')) this.removeInput('AUTOPANNER_FREQUENCY');
-                if (this.getInput('AUTOPANNER_DEPTH')) this.removeInput('AUTOPANNER_DEPTH');
+                dynamicInputs.forEach(inputName => {
+                    if (this.getInput(inputName)) this.removeInput(inputName);
+                });
 
                 // Add WET input for specific effects
-                if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner'].includes(effectType)) {
+                if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner', 'tremolo'].includes(effectType)) {
                     this.appendValueInput('WET')
                         .setCheck("Number")
                         .setAlign(Blockly.ALIGN_RIGHT)
@@ -273,6 +259,21 @@ export function registerBlocks() {
                         .setAlign(Blockly.ALIGN_RIGHT)
                         .appendField("%{BKY_SB_EFFECT_AUTOPANNER_DEPTH_FIELD}");
                     this.getInput('AUTOPANNER_DEPTH').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
+                    ));
+                } else if (effectType === 'tremolo') {
+                    this.appendValueInput('TREMOLO_FREQUENCY')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_TREMOLO_FREQUENCY_FIELD}");
+                    this.getInput('TREMOLO_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom(
+                        '<shadow type="math_number"><field name="NUM">10</field></shadow>'
+                    ));
+                    this.appendValueInput('TREMOLO_DEPTH')
+                        .setCheck("Number")
+                        .setAlign(Blockly.ALIGN_RIGHT)
+                        .appendField("%{BKY_SB_EFFECT_TREMOLO_DEPTH_FIELD}");
+                    this.getInput('TREMOLO_DEPTH').setShadowDom(Blockly.utils.xml.textToDom(
                         '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
                     ));
                 }

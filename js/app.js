@@ -10,6 +10,7 @@ import { initButtons } from './ui/buttons.js';
 import { initKeyboardController } from './ui/keyboardController.js';
 import { initVisualizer } from './ui/visualizer.js';
 import { initAdsrVisualizer } from './ui/adsrVisualizer.js';
+import { initSpectrumVisualizer } from './ui/spectrumVisualizer.js';
 import { initHelpModal } from './ui/helpModal.js';
 import { analyser, startAudioOnFirstInteraction } from './core/audioEngine.js'; // Import analyser and new function
 
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initVisualizer(analyser);
     logKey("LOG_VISUALIZER_INIT");
     initAdsrVisualizer();
+    initSpectrumVisualizer();
     initHelpModal();
     logKey("LOG_HELP_MODAL_INIT");
 

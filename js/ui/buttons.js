@@ -110,7 +110,7 @@ export function initButtons() {
             }
             try {
                 const xml = Blockly.Xml.workspaceToDom(workspace);
-                const xmlText = Blockly.Xml.domToText(xml);
+                const xmlText = Blockly.Xml.domToPrettyText(xml);
 
                 const blob = new Blob([xmlText], { type: 'text/xml' });
                 const url = URL.createObjectURL(blob);

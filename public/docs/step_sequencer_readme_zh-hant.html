@@ -24,7 +24,8 @@
         <h2>1. 參數說明</h2>
         <ul>
             <li><strong>聲音來源</strong>：指定發聲的樂器名稱 (如 <code>Piano</code>, <code>Bass</code>) 或鼓組關鍵字 (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>)。</li>
-            <li><strong>第 N 小節</strong>：在長度超過 1 小節的循環中，指定此積木負責哪一小節。</li>
+            <li><strong>使用和弦名稱?</strong>：勾選後，系統會將序列字串中的代號視為「已定義的和弦名稱」；不勾選則視為「單一音符名稱」。</li>
+            <li><strong>第 N 小節</strong>：在長度超過 1 小節的循環中，指定此積木負責哪一小節。支援使用變數或數學運算。</li>
             <li><strong>序列字串</strong>：定義節奏的內容。</li>
         </ul>
     </div>
@@ -33,22 +34,20 @@
         <h2>2. 語法符號</h2>
         <table>
             <tr><th>符號</th><th>說明</th></tr>
-            <tr><td><code>x</code></td><td>觸發發聲（適用於鼓組或單音）。</td></tr>
-            <tr><td><code>C4</code>, <code>G3</code>...</td><td>直接指定音符名稱（適用於鋼琴、貝斯等）。</td></tr>
+            <tr><td><code>x</code></td><td>觸發預設發聲（鼓組或 C4 音符）。</td></tr>
+            <tr><td><code>C4</code>, <code>G3</code>...</td><td>直接指定單一音符名稱（適用於 Bass Line 或旋律）。</td></tr>
+            <tr><td><code>Cmaj7</code>, <code>Dm7</code>...</td><td><strong>(和弦模式)</strong> 指定已定義的和弦名稱。</td></tr>
             <tr><td><code>.</code> 或 <code>-</code></td><td>休止符（不發聲）。</td></tr>
-            <tr><td><code>|</code> 或 <code>空白</code></td><td>視覺分隔符，會被系統忽略，方便人類閱讀。</td></tr>
+            <tr><td><code>|</code> 或 <code>空白</code></td><td>視覺分隔符，會被系統忽略。</td></tr>
         </table>
     </div>
 
     <div class="type-box">
         <h2>3. 16 格規則</h2>
-        <p>系統固定將一小節解析為 <strong>16 格</strong>。建議使用 <code>|</code> 將每 4 格分開，以便觀察拍點：</p>
+        <p>系統固定將一小節解析為 <strong>16 格</strong>。建議使用 <code>|</code> 將每 4 格分開：</p>
         <div class="example">
-// 四分音符大鼓節奏 (4 拍)
-x . . . | x . . . | x . . . | x . . .
-
-// 八分音符節奏
-x . x . | x . x . | x . x . | x . x .</div>
+// 勾選「使用和弦名稱」後的 12-bar Blues 範例
+C7 . . . | . . C7 . | . . . . | . . C7 .</div>
     </div>
 
     <div class="type-box">

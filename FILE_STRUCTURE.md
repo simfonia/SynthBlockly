@@ -27,6 +27,7 @@
       - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈。
       - `blocklyManager.js`: Blockly 工作區管理與即時程式碼執行。
       - `exampleManager.js`: 範例專案掃描器。
+      - `helpUtils.js`: 統一 HelpUrl 生成工具 (語系/路徑)。
       - `midiEngine.js`: MIDI 訊號接收與轉發。
       - `serialEngine.js`: 序列埠通訊。
       - `toolbox.js`: 工具箱 XML 定義。
@@ -34,6 +35,7 @@
       - `field-multilineinput.js`: 多行輸入欄位 (已重構為 ESM 格式)。
     - `ui/`: 介面組件。
       - `adsrVisualizer.js`: ADSR 包絡線視覺化。
+      - `spectrumVisualizer.js`: 即時頻譜圖視覺化。
       - `visualizer.js`: 即時示波器 (p5.js)。
       - `buttons.js`: 工具列按鈕邏輯。
       - `exampleModal.js`: 範例選單 UI。

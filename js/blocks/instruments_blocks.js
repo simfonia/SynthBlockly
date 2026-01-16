@@ -1,6 +1,7 @@
 // js/blocks/instruments_blocks.js
 // Instrument-related custom blocks
 import * as Blockly from 'blockly';
+import { getHelpUrl } from '../core/helpUtils.js';
 
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
@@ -36,13 +37,7 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_PLAY_NOTE_TOOLTIP}"
             });
 
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                if (currentLang === 'zh-hant') {
-                    return 'docs/performance_readme_zh-hant.html';
-                }
-                return 'docs/performance_readme_en.html';
-            });
+            this.setHelpUrl(getHelpUrl('performance_readme'));
         }
     };
 
@@ -74,13 +69,7 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_PLAY_NOTE_AND_WAIT_TOOLTIP}"
             });
 
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                if (currentLang === 'zh-hant') {
-                    return 'docs/performance_readme_zh-hant.html';
-                }
-                return 'docs/performance_readme_en.html';
-            });
+            this.setHelpUrl(getHelpUrl('performance_readme'));
         }
     };
 
@@ -116,6 +105,46 @@ export function registerBlocks() {
             this.jsonInit({
                 "message0": "%{BKY_SB_SET_ADSR_MESSAGE}",
                 "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TARGET",
+                        "options": function() {
+                            let workspace = null;
+                            if (this.sourceBlock_) {
+                                workspace = this.sourceBlock_.workspace;
+                            } else if (this.workspace) {
+                                workspace = this.workspace;
+                            }
+
+                            // Use Blockly.Msg directly for localization in dynamic options
+                            const allLabel = Blockly.Msg['SB_TARGET_ALL_INSTRUMENTS'] || "All Instruments";
+                            const options = [[allLabel, 'ALL']];
+                            
+                            // Always add DefaultSynth
+                            options.push(['DefaultSynth', 'DefaultSynth']);
+
+                            const targetBlockTypes = [
+                                'sb_create_synth_instrument',
+                                'sb_create_harmonic_synth',
+                                'sb_create_additive_synth',
+                                'sb_create_layered_instrument',
+                                'sb_create_sampler_instrument'
+                            ];
+
+                            if (workspace) {
+                                targetBlockTypes.forEach(type => {
+                                    const blocks = workspace.getBlocksByType(type, false);
+                                    blocks.forEach(block => {
+                                        const name = block.getFieldValue('NAME');
+                                        if (name && !options.some(opt => opt[1] === name)) {
+                                            options.push([name, name]);
+                                        }
+                                    });
+                                });
+                            }
+                            return options;
+                        }
+                    },
                     {
                         "type": "field_number",
                         "name": "A",
@@ -231,13 +260,7 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP}"
             });
 
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                if (currentLang === 'zh-hant') {
-                    return 'docs/instrument_readme_zh-hant.html';
-                }
-                return 'docs/instrument_readme_en.html';
-            });
+            this.setHelpUrl(getHelpUrl('instrument_readme'));
         }
     };
 
@@ -247,9 +270,48 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_MESSAGE}",
                 "args0": [
                     {
-                        "type": "field_input",
+                        "type": "field_dropdown",
                         "name": "NAME",
-                        "text": "DefaultSynth"
+                        "options": function() {
+                            let workspace = null;
+                            if (this.sourceBlock_) {
+                                workspace = this.sourceBlock_.workspace;
+                            } else if (this.workspace) {
+                                workspace = this.workspace;
+                            }
+
+                            const options = [["DefaultSynth", "DefaultSynth"]];
+                            const targetBlockTypes = [
+                                'sb_create_synth_instrument',
+                                'sb_create_harmonic_synth', // If exists
+                                'sb_create_additive_synth', // If exists
+                                'sb_create_layered_instrument',
+                                'sb_create_sampler_instrument' // If exists
+                            ];
+
+                            if (workspace) {
+                                targetBlockTypes.forEach(type => {
+                                    const blocks = workspace.getBlocksByType(type, false);
+                                    blocks.forEach(block => {
+                                        const name = block.getFieldValue('NAME');
+                                        // Avoid duplicates if user uses same name multiple times
+                                        if (name && !options.some(opt => opt[1] === name)) {
+                                            options.push([name, name]);
+                                        }
+                                    });
+                                });
+                            }
+                            
+                            // Sort options alphabetically, keeping DefaultSynth at top if possible, 
+                            // or just sort everything. Let's sort everything except DefaultSynth usually, 
+                            // but simple sort is fine. DefaultSynth starts with D.
+                            // Let's keep DefaultSynth at the top manually.
+                            const defaultOpt = options.shift(); // Remove DefaultSynth
+                            options.sort((a, b) => a[0].localeCompare(b[0]));
+                            options.unshift(defaultOpt); // Add it back to top
+
+                            return options;
+                        }
                     }
                 ],
                 "previousStatement": null,
@@ -320,6 +382,55 @@ export function registerBlocks() {
                 "nextStatement": null,
                 "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
+            });
+        }
+    };
+
+    Blockly.Blocks['sb_get_chord_name'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_GET_CHORD_NAME_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "NAME",
+                        "options": function() {
+                            // This function context depends on how Blockly calls it. 
+                            // Sometimes 'this' is the field, sometimes we need to access the block via sourceBlock_.
+                            // Safest way to get workspace is usually through the block.
+                            
+                            let workspace = null;
+                            if (this.sourceBlock_) {
+                                workspace = this.sourceBlock_.workspace;
+                            } else if (this.workspace) {
+                                // Fallback if 'this' is the block itself (though options function usually bound to field)
+                                workspace = this.workspace;
+                            }
+
+                            const options = [];
+                            if (workspace) {
+                                const blocks = workspace.getBlocksByType('sb_define_chord', false);
+                                blocks.forEach(block => {
+                                    const name = block.getFieldValue('NAME');
+                                    if (name) {
+                                        options.push([name, name]);
+                                    }
+                                });
+                            }
+                            
+                            // Sort options alphabetically for better UX
+                            options.sort((a, b) => a[0].localeCompare(b[0]));
+
+                            if (options.length === 0) {
+                                return [["C Major", "C Major"]];
+                            }
+                            return options;
+                        }
+                    }
+                ],
+                "output": "String",
+                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "tooltip": "%{BKY_SB_GET_CHORD_NAME_TOOLTIP}"
             });
         }
     };

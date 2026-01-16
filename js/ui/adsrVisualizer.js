@@ -166,14 +166,15 @@ function drawGraph() {
 
     // --- Labels ---
     ctx.fillStyle = '#999';
-    ctx.font = 'bold 11px Arial';
+    ctx.font = 'bold 10px Arial'; // Slightly smaller font
     ctx.textAlign = 'center';
     
     // Only draw labels if the segment is wide enough to be legible
-    if (widthA > 15) ctx.fillText('A', padding + widthA / 2, h - 5);
-    if (widthD > 15) ctx.fillText('D', xA + widthD / 2, h - 5);
-    if (widthS > 15) ctx.fillText('S', xD + widthS / 2, h - 5);
-    if (widthR > 15) ctx.fillText('R', xS_end + widthR / 2, h - 5);
+    const minLabelWidth = 8; // Lower threshold
+    if (widthA > minLabelWidth) ctx.fillText('A', padding + widthA / 2, h - 5);
+    if (widthD > minLabelWidth) ctx.fillText('D', xA + widthD / 2, h - 5);
+    if (widthS > minLabelWidth) ctx.fillText('S', xD + widthS / 2, h - 5);
+    if (widthR > minLabelWidth) ctx.fillText('R', xS_end + widthR / 2, h - 5);
 
     // --- Playhead Logic ---
     if (playhead.active || playhead.state !== 'idle') {

@@ -105,27 +105,28 @@ function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
     // --- ADSR UI Synchronization ---
-    // Handle field changes, block creations, and deletions
+    // Improved logic: only update UI if the event is relevant to ADSR blocks
     if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
         event.type === BlocklyModule.Events.BLOCK_CREATE || 
         event.type === BlocklyModule.Events.BLOCK_DELETE) {
         
-        const adsrBlocks = workspace.getBlocksByType('sb_set_adsr', false);
-        if (adsrBlocks.length > 0) {
-            const block = adsrBlocks[0]; // Sync with the first one found
-            const getNum = (name, def) => {
-                const val = block.getFieldValue(name);
-                return (val === null || val === "" || isNaN(val)) ? def : Number(val);
-            };
-            const a = getNum('A', 0.01);
-            const d = getNum('D', 0.1);
-            const s = getNum('S', 0.5);
-            const r = getNum('R', 1.0);
-            audioEngine.updateADSR(a, d, s, r);
-        } else if (event.type === BlocklyModule.Events.BLOCK_DELETE || event.type === BlocklyModule.Events.BLOCK_CREATE) {
-            // If no ADSR block exists (especially after a deletion), reset UI to default
-            // Use 0.01, 0.1, 0.5, 1.0 as the fall-back default
-            audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
+        // Use a flag to avoid excessive updates during mass deletion
+        const isAdsrRelevant = (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') || 
+                               (event.type === BlocklyModule.Events.BLOCK_DELETE);
+
+        if (isAdsrRelevant) {
+            const adsrBlocks = workspace.getBlocksByType('sb_set_adsr', false);
+            if (adsrBlocks.length > 0) {
+                const block = adsrBlocks[0]; 
+                const getNum = (name, def) => {
+                    const val = block.getFieldValue(name);
+                    return (val === null || val === "" || isNaN(val)) ? def : Number(val);
+                };
+                audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
+            } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
+                // Only reset if it was the last ADSR block that was deleted
+                audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
+            }
         }
     }
 

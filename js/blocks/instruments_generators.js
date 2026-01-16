@@ -89,6 +89,7 @@ if (!window.audioEngine.isExecutionActive) return;
     try { G.forBlock['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
 
     G['sb_set_adsr'] = function (block) {
+        const targetName = block.getFieldValue('TARGET');
         const getNum = (name, def) => {
             const val = block.getFieldValue(name);
             return (val === null || val === "" || isNaN(val)) ? def : Number(val);
@@ -100,29 +101,21 @@ if (!window.audioEngine.isExecutionActive) return;
         
         var code = `
             (function() {
-                window.audioEngine.updateADSR(${a}, ${d}, ${s}, ${r});
-
+                const target = '${targetName}';
+                const a = ${a}, d = ${d}, s = ${s}, r = ${r};
                 const envelopeParams = { 
-                    attack: ${a}, 
-                    decay: ${d}, 
-                    sustain: ${s}, 
-                    release: ${r},
-                    decayCurve: 'linear', 
-                    releaseCurve: 'linear' 
+                    attack: a, decay: d, sustain: s, release: r,
+                    decayCurve: 'linear', releaseCurve: 'linear' 
                 };
 
-                for (const name in window.audioEngine.instruments) {
-                    const instr = window.audioEngine.instruments[name];
-                    if (!instr) continue;
-
+                // Helper to apply to one instrument
+                const applyToInstr = (name, instr) => {
+                    if (!instr) return;
                     try {
                         if (instr.type === 'CustomSampler' || instr instanceof window.audioEngine.Tone.Sampler || instr.name === 'Sampler') {
-                            instr.set({ release: ${r} });
+                            instr.set({ release: r });
                         } else {
-                            // Apply to PolySynth (propagates to all voices)
                             instr.set({ envelope: envelopeParams });
-                            
-                            // Explicit handling for DuoSynth voices if present
                             if (instr.get().voice0) {
                                 instr.set({
                                     voice0: { envelope: envelopeParams },
@@ -130,11 +123,33 @@ if (!window.audioEngine.isExecutionActive) return;
                                 });
                             }
                         }
-                    } catch (e) {
-                        console.warn('Failed to apply ADSR to instrument:', name, e);
+                    } catch (e) { console.warn('ADSR apply failed:', name, e); }
+                };
+
+                if (target === 'ALL') {
+                    window.audioEngine.updateADSR(a, d, s, r); // Update global/UI
+                    // Default Synth
+                    applyToInstr('DefaultSynth', window.audioEngine.synth);
+                    // All custom instruments
+                    for (const name in window.audioEngine.instruments) {
+                        applyToInstr(name, window.audioEngine.instruments[name]);
+                    }
+                    window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'important', 'Global (All)');
+                } else {
+                    // Specific Target
+                    const instr = (target === 'DefaultSynth') ? window.audioEngine.synth : window.audioEngine.instruments[target];
+                    if (instr) {
+                        applyToInstr(target, instr);
+                        window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', target);
+                        
+                        // If updating current instrument, sync UI graph
+                        if (target === window.audioEngine.currentInstrumentName || (target === 'DefaultSynth' && window.audioEngine.currentInstrumentName === 'DefaultSynth')) {
+                             window.audioEngine.updateADSR(a, d, s, r);
+                        }
+                    } else {
+                        window.audioEngine.logKey('LOG_ERR_INSTR_NOT_FOUND', 'warning', target);
                     }
                 }
-                window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'important', 'Global / ' + window.audioEngine.currentInstrumentName);
             })();
         `;
         return code + '\n';
@@ -299,6 +314,35 @@ if (!window.audioEngine.isExecutionActive) return;
     try { if (GeneratorProto) GeneratorProto['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { } 
     try { if (JSConstructorProto) JSConstructorProto['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { } 
     try { G.forBlock['sb_play_chord_notes'] = G['sb_play_chord_notes']; } catch (e) { }
+
+    G['sb_define_chord'] = function (block) {
+        var name = block.getFieldValue('NAME');
+        var notesStr = block.getFieldValue('NOTES_STRING') || "";
+        var notesArray = notesStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        var notesJson = JSON.stringify(notesArray);
+
+        var code = `
+            (function() { 
+                window.audioEngine.chords['${name}'] = ${notesJson}; 
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', '${name}', '${notesStr}');
+            })();
+        `;
+        return code + '\n';
+    };
+    try { if (Gproto) Gproto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { } 
+    try { if (GeneratorProto) GeneratorProto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { } 
+    try { if (JSConstructorProto) JSConstructorProto['sb_define_chord'] = G['sb_define_chord']; } catch (e) { } 
+    try { G.forBlock['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }
+
+    G['sb_get_chord_name'] = function (block) {
+        var name = block.getFieldValue('NAME');
+        var code = `'${name}'`;
+        return [code, G.ORDER_ATOMIC];
+    };
+    try { if (Gproto) Gproto['sb_get_chord_name'] = G['sb_get_chord_name']; } catch (e) { } 
+    try { if (GeneratorProto) GeneratorProto['sb_get_chord_name'] = G['sb_get_chord_name']; } catch (e) { } 
+    try { if (JSConstructorProto) JSConstructorProto['sb_get_chord_name'] = G['sb_get_chord_name']; } catch (e) { } 
+    try { G.forBlock['sb_get_chord_name'] = G['sb_get_chord_name']; } catch (e) { }
 
     return true;
 }

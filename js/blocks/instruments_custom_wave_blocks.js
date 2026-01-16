@@ -1,4 +1,5 @@
 // js/blocks/instruments_custom_wave_blocks.js
+import { getHelpUrl } from '../core/helpUtils.js';
 
 export function registerBlocks(BlocklyInstance) {
 
@@ -112,13 +113,7 @@ export function registerBlocks(BlocklyInstance) {
         "tooltip": "%{BKY_MSG_HARMONIC_SYNTH_TOOLTIP}"
       });
 
-      this.setHelpUrl(() => {
-        const currentLang = window.currentLanguage || 'en';
-        if (currentLang === 'zh-hant') {
-          return 'docs/instrument_readme_zh-hant.html';
-        }
-        return 'docs/instrument_readme_en.html';
-      });
+      this.setHelpUrl(getHelpUrl('instrument_readme'));
 
       // Manually add the mutator icon
       this.setMutator(new BlocklyInstance.icons.MutatorIcon(['sb_harmonic_partial_item'], this));
@@ -298,13 +293,7 @@ export function registerBlocks(BlocklyInstance) {
         "tooltip": "%{BKY_MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP}"
       });
 
-      this.setHelpUrl(() => {
-        const currentLang = window.currentLanguage || 'en';
-        if (currentLang === 'zh-hant') {
-          return 'docs/instrument_readme_zh-hant.html';
-        }
-        return 'docs/instrument_readme_en.html';
-      });
+      this.setHelpUrl(getHelpUrl('instrument_readme'));
 
       this.setMutator(new BlocklyInstance.icons.MutatorIcon(['sb_additive_synth_item'], this));
       this.itemCount_ = 1;

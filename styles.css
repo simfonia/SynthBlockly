@@ -111,18 +111,25 @@ html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial}
     flex-shrink: 0;
     min-width: 0;
 }
-#adsrContainer {
+#visualizerRow {
+    display: flex;
+    gap: 8px;
     width: 100%;
-    height: 70px; /* Further reduced height to maximize log space */
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+#adsrContainer, #spectrumContainer {
+    flex: 1; /* 50% width each */
+    height: 70px;
     background: #fdfdfd;
     border: 1px solid #ddd;
-    margin-top: 8px;
     border-radius: 4px;
     overflow: hidden;
-    flex-shrink: 0; /* Prevent shrinking when log grows */
     min-width: 0;
 }
-#adsrCanvas {
+
+#adsrCanvas, #spectrumCanvas {
     width: 100%;
     height: 100%;
     display: block;

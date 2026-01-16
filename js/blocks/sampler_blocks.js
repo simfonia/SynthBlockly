@@ -1,5 +1,6 @@
 // js/blocks/sampler_blocks.js
 import * as Blockly from 'blockly';
+import { getHelpUrl } from '../core/helpUtils.js';
 
 const samplerBlock = {
     init: function () {
@@ -26,14 +27,7 @@ const samplerBlock = {
             "nextStatement": null,
             "colour": "#388E3C",
             "tooltip": "%{BKY_SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP}",
-            "helpUrl": function() {
-                const lang = window.currentLanguage || 'en';
-                let docFile = 'custom_sampler_readme_en.html';
-                if (lang === 'zh-hant') {
-                    docFile = 'custom_sampler_readme_zh-hant.html';
-                }
-                return `${import.meta.env.BASE_URL}docs/${docFile}`;
-            },
+            "helpUrl": getHelpUrl('custom_sampler_readme'),
             "mutator": "sampler_type_mutator"
         });
     },

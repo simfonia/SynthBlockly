@@ -24,7 +24,8 @@
         <h2>1. Parameters</h2>
         <ul>
             <li><strong>Sound Source</strong>: Specify the instrument (e.g., <code>Piano</code>, <code>Bass</code>) or drum keyword (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>).</li>
-            <li><strong>Measure N</strong>: In loops longer than 1 measure, specifies which bar this block controls.</li>
+            <li><strong>Use Chord Names?</strong>: When checked, identifiers in the sequence string are treated as "Defined Chord Names". When unchecked, they are treated as "Single Note Names".</li>
+            <li><strong>Measure N</strong>: Specifies which bar this block controls. Supports variables or math operations for dynamic scheduling.</li>
             <li><strong>Sequence String</strong>: Defines the rhythmic content.</li>
         </ul>
     </div>
@@ -33,22 +34,20 @@
         <h2>2. Syntax Symbols</h2>
         <table>
             <tr><th>Symbol</th><th>Description</th></tr>
-            <tr><td><code>x</code></td><td>Trigger sound (useful for drums or single notes).</td></tr>
-            <tr><td><code>C4</code>, <code>G3</code>...</td><td>Specific note name (useful for melodic instruments).</td></tr>
+            <tr><td><code>x</code></td><td>Trigger default sound (drums or C4 note).</td></tr>
+            <tr><td><code>C4</code>, <code>G3</code>...</td><td>Specific single note name (useful for Bass or melodies).</td></tr>
+            <tr><td><code>Cmaj7</code>, <code>Dm7</code>...</td><td><strong>(Chord Mode)</strong> Specific defined chord name.</td></tr>
             <tr><td><code>.</code> or <code>-</code></td><td>Rest (silence).</td></tr>
-            <tr><td><code>|</code> or <code>Space</code></td><td>Visual separators. Ignored by the system, used for readability.</td></tr>
+            <tr><td><code>|</code> or <code>Space</code></td><td>Visual separators.</td></tr>
         </table>
     </div>
 
     <div class="type-box">
         <h2>3. The 16-Step Rule</h2>
-        <p>The system always parses one measure as <strong>16 steps</strong>. We recommend using <code>|</code> to separate every 4 steps for clarity:</p>
+        <p>The system always parses one measure as <strong>16 steps</strong>. We recommend using <code>|</code> to separate every 4 steps:</p>
         <div class="example">
-// 4-on-the-floor Kick rhythm
-x . . . | x . . . | x . . . | x . . .
-
-// Eighth note hi-hats
-x . x . | x . x . | x . x . | x . x .</div>
+// Example: 12-bar Blues sequence with "Use Chord Names" enabled
+C7 . . . | . . C7 . | . . . . | . . C7 .</div>
     </div>
 
     <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">

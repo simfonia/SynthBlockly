@@ -1,5 +1,6 @@
 // js/blocks/melody_blocks.js
 import * as Blockly from 'blockly';
+import { getHelpUrl } from '../core/helpUtils.js';
 
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
@@ -24,13 +25,7 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_PLAY_MELODY_TOOLTIP}"
             });
 
-            this.setHelpUrl(() => {
-                const currentLang = window.currentLanguage || 'en';
-                if (currentLang === 'zh-hant') {
-                    return 'docs/melody_readme_zh-hant.html';
-                }
-                return 'docs/melody_readme_en.html';
-            });
+            this.setHelpUrl(getHelpUrl('melody_readme'));
         }
     };
 }

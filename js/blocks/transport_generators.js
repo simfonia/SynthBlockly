@@ -137,24 +137,34 @@ if (window.blocklyLoops) {
     try { if (JSConstructorProto) JSConstructorProto['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
     try { G.forBlock['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
 
-    G['sb_rhythm_sequence'] = function (block) {
+    G['sb_rhythm_source_selector'] = function (block) {
         var type = block.getFieldValue('TYPE');
         var customType = block.getFieldValue('CUSTOM_TYPE');
-        var measure = Number(block.getFieldValue('MEASURE')) || 1;
-        var sequence = block.getFieldValue('SEQUENCE') || "";
         
-        const steps = sequence.match(/([A-G][#b]?\d+|[xX]|[.\-])/g) || [];
-        const stepsJson = JSON.stringify(steps);
-
         var soundType;
         if (type === 'CUSTOM') {
             soundType = `'${customType}'`;
         } else {
             soundType = (type === 'CURRENT') ? "'C4'" : `'${type}'`;
         }
+        return [soundType, G.ORDER_ATOMIC];
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_rhythm_source_selector'] = G['sb_rhythm_source_selector']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_rhythm_source_selector'] = G['sb_rhythm_source_selector']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_rhythm_source_selector'] = G['sb_rhythm_source_selector']; } catch (e) { }
+    try { G.forBlock['sb_rhythm_source_selector'] = G['sb_rhythm_source_selector']; } catch (e) { }
+
+    G['sb_rhythm_sequence'] = function (block) {
+        var soundType = G.valueToCode(block, 'SOURCE', G.ORDER_ATOMIC) || "'KICK'";
+        var measure = G.valueToCode(block, 'MEASURE', G.ORDER_ATOMIC) || "1";
+        var sequence = block.getFieldValue('SEQUENCE') || "";
+        var isChord = block.getFieldValue('IS_CHORD') === 'TRUE';
+        
+        const steps = sequence.match(/([A-G][#b]?\d+|[xX]|[.\-])/g) || [];
+        const stepsJson = JSON.stringify(steps);
 
         // Always pass 'scheduledTime' variable which is guaranteed to exist in Loop or Offset scope
-        return `window.audioEngine.playRhythmSequence(${soundType}, ${stepsJson}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${measure});\n`;
+        return `window.audioEngine.playRhythmSequence(${soundType}, ${stepsJson}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${measure}, ${isChord});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }

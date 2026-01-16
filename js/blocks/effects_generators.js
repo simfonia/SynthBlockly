@@ -51,7 +51,7 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
 
         // Collect parameters based on effect type
-        if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner', 'bitCrusher'].includes(effectType)) {
+        if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner', 'bitCrusher', 'tremolo'].includes(effectType)) {
             if (block.getInput('WET')) {
                 params.wet = getNumericValue('WET', 0);
             }
@@ -93,6 +93,9 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         } else if (effectType === 'autoPanner') {
             params.frequency = getNumericValue('AUTOPANNER_FREQUENCY', 1);
             params.depth = getNumericValue('AUTOPANNER_DEPTH', 0.5);
+        } else if (effectType === 'tremolo') {
+            params.frequency = getNumericValue('TREMOLO_FREQUENCY', 10);
+            params.depth = getNumericValue('TREMOLO_DEPTH', 0.5);
         }
 
         const config = {
