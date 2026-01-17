@@ -104,33 +104,49 @@ const blockListeners = {};
 function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
-    // --- ADSR UI Synchronization ---
-    // Improved logic: only update UI if the event is relevant to ADSR blocks
+    // --- ADSR UI Synchronization (On Change or On Select) ---
     if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
         event.type === BlocklyModule.Events.BLOCK_CREATE || 
-        event.type === BlocklyModule.Events.BLOCK_DELETE) {
+        event.type === BlocklyModule.Events.BLOCK_DELETE ||
+        event.type === BlocklyModule.Events.SELECTED) {
         
-        // Use a flag to avoid excessive updates during mass deletion
-        const isAdsrRelevant = (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') || 
-                               (event.type === BlocklyModule.Events.BLOCK_DELETE);
+        let targetBlock = null;
 
-        if (isAdsrRelevant) {
-            const adsrBlocks = workspace.getBlocksByType('sb_set_adsr', false);
-            if (adsrBlocks.length > 0) {
-                const block = adsrBlocks[0]; 
+        // If it's a selection event, use the selected block ID
+        if (event.type === BlocklyModule.Events.SELECTED && event.newElementId) {
+            const block = workspace.getBlockById(event.newElementId);
+            if (block && block.type === 'sb_set_adsr') {
+                targetBlock = block;
+            }
+        } 
+        // Otherwise, if it's a change to an ADSR block, use that
+        else if (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') {
+            targetBlock = workspace.getBlockById(event.blockId);
+        }
+
+        if (targetBlock) {
+            const getNum = (name, def) => {
+                const val = targetBlock.getFieldValue(name);
+                return (val === null || val === "" || isNaN(val)) ? def : Number(val);
+            };
+            audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
+        } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
+            // Re-sync to the first available ADSR block or reset to default
+            const remainingAdsr = workspace.getBlocksByType('sb_set_adsr', false);
+            if (remainingAdsr.length > 0) {
+                const block = remainingAdsr[0];
                 const getNum = (name, def) => {
                     const val = block.getFieldValue(name);
                     return (val === null || val === "" || isNaN(val)) ? def : Number(val);
                 };
                 audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
-            } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
-                // Only reset if it was the last ADSR block that was deleted
+            } else {
                 audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
             }
         }
     }
 
-    if (event.isUiEvent) return; 
+    if (event.isUiEvent && event.type !== BlocklyModule.Events.SELECTED) return; 
 
     const serialHats = workspace.getBlocksByType('sb_serial_data_received', false);
     const midiHats = workspace.getBlocksByType('sb_midi_note_received', false);

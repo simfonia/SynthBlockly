@@ -1,0 +1,179 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <!-- 慵懶爵士註解 -->
+  <block type="sb_comment" id="bossanova_flow_guide" x="10" y="10">
+    <field name="COMMENT">【小野麗莎風格：流暢 Bossa Nova】&amp;#10;&amp;#10;1. 經典和弦進行：&amp;#10;使用 Dm7 -> G7 -> CM7 -> A7，這是 Bossa Nova 中最令人放鬆的循環。&amp;#10;&amp;#10;2. 流暢度優化：&amp;#10;- 移除序列中的空格，確保 16 分音符精確對位。&amp;#10;- 鋼琴 (Piano)：利用切分音（不在正拍發聲）營造慵懶感。&amp;#10;- 低音 (Bass)：使用「根音-五音」交替，提供溫暖的支撐。&amp;#10;&amp;#10;3. 演奏技巧：&amp;#10;請確保點擊「執行程式」後，Log 出現「取樣載入成功」再聆聽，以獲得最佳音質。</field>
+    <next>
+      <block type="sb_create_sampler_instrument" id="setup_piano">
+        <field name="NAME">Piano</field>
+        <field name="SAMPLER_TYPE">DEFAULT</field>
+        <next>
+          <block type="sb_create_synth_instrument" id="setup_bass">
+            <field name="NAME">Bass</field>
+            <field name="TYPE">DuoSynth</field>
+            <next>
+              <block type="sb_set_adsr" id="bass_adsr">
+                <field name="TARGET">Bass</field>
+                <field name="A">0.05</field>
+                <field name="D">0.3</field>
+                <field name="S">0.3</field>
+                <field name="R">0.4</field>
+                <next>
+                  <!-- 定義爵士和弦 -->
+                  <block type="sb_define_chord" id="def_dm7">
+                    <field name="NAME">Dm7</field>
+                    <field name="NOTES_STRING">D4,F4,A4,C5</field>
+                    <next>
+                      <block type="sb_define_chord" id="def_g7">
+                        <field name="NAME">G7</field>
+                        <field name="NOTES_STRING">G3,B3,D4,F4</field>
+                        <next>
+                          <block type="sb_define_chord" id="def_cm7">
+                            <field name="NAME">CM7</field>
+                            <field name="NOTES_STRING">C4,E4,G4,B4</field>
+                            <next>
+                              <block type="sb_define_chord" id="def_a7">
+                                <field name="NAME">A7</field>
+                                <field name="NOTES_STRING">A3,C#4,E4,G4</field>
+                                <next>
+                                  <block type="sb_transport_set_bpm" id="set_bpm">
+                                    <field name="BPM">105</field>
+                                    <next>
+                                      <block type="sb_transport_count_in" id="pre_count">
+                                        <field name="MEASURES">1</field>
+                                        <field name="BEATS">4</field>
+                                        <field name="BEAT_VALUE">4</field>
+                                        <value name="VOLUME">
+                                          <shadow type="math_number">
+                                            <field name="NUM">0.3</field>
+                                          </shadow>
+                                        </value>
+                                        <next>
+                                          <block type="sb_transport_start_stop" id="start_transport">
+                                            <field name="ACTION">START</field>
+                                            <next>
+                                              <block type="sb_tone_loop" id="main_loop">
+                                                <field name="INTERVAL">4m</field>
+                                                <statement name="DO">
+                                                  <!-- 第 1 小節: Dm7 -->
+                                                  <block type="sb_rhythm_sequence" id="k1">
+                                                    <field name="IS_CHORD">FALSE</field>
+                                                    <field name="SEQUENCE">x-------x-------</field>
+                                                    <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">KICK</field></shadow></value>
+                                                    <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+                                                    <next>
+                                                      <block type="sb_rhythm_sequence" id="p1">
+                                                        <field name="IS_CHORD">TRUE</field>
+                                                        <field name="SEQUENCE">..Dm7---Dm7-----</field>
+                                                        <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Piano</field></shadow></value>
+                                                        <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+                                                        <next>
+                                                          <block type="sb_rhythm_sequence" id="b1">
+                                                            <field name="IS_CHORD">FALSE</field>
+                                                            <field name="SEQUENCE">D2------A1------</field>
+                                                            <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Bass</field></shadow></value>
+                                                            <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+                                                            <next>
+                                                              <!-- 第 2 小節: G7 -->
+                                                              <block type="sb_rhythm_sequence" id="k2">
+                                                                <field name="IS_CHORD">FALSE</field>
+                                                                <field name="SEQUENCE">x-------x-------</field>
+                                                                <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">KICK</field></shadow></value>
+                                                                <value name="MEASURE"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
+                                                                <next>
+                                                                  <block type="sb_rhythm_sequence" id="p2">
+                                                                    <field name="IS_CHORD">TRUE</field>
+                                                                    <field name="SEQUENCE">..G7----G7------</field>
+                                                                    <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Piano</field></shadow></value>
+                                                                    <value name="MEASURE"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
+                                                                    <next>
+                                                                      <block type="sb_rhythm_sequence" id="b2">
+                                                                        <field name="IS_CHORD">FALSE</field>
+                                                                        <field name="SEQUENCE">G1------D2------</field>
+                                                                        <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Bass</field></shadow></value>
+                                                                        <value name="MEASURE"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
+                                                                        <next>
+                                                                          <!-- 第 3 小節: CM7 -->
+                                                                          <block type="sb_rhythm_sequence" id="k3">
+                                                                            <field name="IS_CHORD">FALSE</field>
+                                                                            <field name="SEQUENCE">x-------x-------</field>
+                                                                            <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">KICK</field></shadow></value>
+                                                                            <value name="MEASURE"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
+                                                                            <next>
+                                                                              <block type="sb_rhythm_sequence" id="p3">
+                                                                                <field name="IS_CHORD">TRUE</field>
+                                                                                <field name="SEQUENCE">..CM7---CM7-----</field>
+                                                                                <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Piano</field></shadow></value>
+                                                                                <value name="MEASURE"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
+                                                                                <next>
+                                                                                  <block type="sb_rhythm_sequence" id="b3">
+                                                                                    <field name="IS_CHORD">FALSE</field>
+                                                                                    <field name="SEQUENCE">C2------G1------</field>
+                                                                                    <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Bass</field></shadow></value>
+                                                                                    <value name="MEASURE"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
+                                                                                    <next>
+                                                                                      <!-- 第 4 小節: A7 -->
+                                                                                      <block type="sb_rhythm_sequence" id="k4">
+                                                                                        <field name="IS_CHORD">FALSE</field>
+                                                                                        <field name="SEQUENCE">x-------x---x---</field>
+                                                                                        <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">KICK</field></shadow></value>
+                                                                                        <value name="MEASURE"><shadow type="math_number"><field name="NUM">4</field></shadow></value>
+                                                                                        <next>
+                                                                                          <block type="sb_rhythm_sequence" id="p4">
+                                                                                            <field name="IS_CHORD">TRUE</field>
+                                                                                            <field name="SEQUENCE">..A7----A7------</field>
+                                                                                            <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Piano</field></shadow></value>
+                                                                                            <value name="MEASURE"><shadow type="math_number"><field name="NUM">4</field></shadow></value>
+                                                                                            <next>
+                                                                                              <block type="sb_rhythm_sequence" id="b4">
+                                                                                                <field name="IS_CHORD">FALSE</field>
+                                                                                                <field name="SEQUENCE">A1------E2------</field>
+                                                                                                <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><mutation is_custom="true"></mutation><field name="TYPE">CUSTOM</field><field name="CUSTOM_TYPE">Bass</field></shadow></value>
+                                                                                                <value name="MEASURE"><shadow type="math_number"><field name="NUM">4</field></shadow></value>
+                                                                                              </block>
+                                                                                            </next>
+                                                                                          </block>
+                                                                                        </next>
+                                                                                      </block>
+                                                                                    </next>
+                                                                                  </block>
+                                                                                </next>
+                                                                              </block>
+                                                                            </next>
+                                                                          </block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </statement>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -28,12 +28,9 @@ export function registerBlocks() {
                     }
                 ],
                 "inputsInline": false,
-                "output": null,
-                "previousStatement": null,
-                "nextStatement": true,
                 "colour": "%{BKY_SERIAL_HUE}",
                 "tooltip": "%{BKY_SB_SERIAL_DATA_RECEIVED_TOOLTIP}",
-                "hat": true
+                "hat": "cap"
             });
         }
     };

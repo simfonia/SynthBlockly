@@ -38,12 +38,9 @@ export function registerBlocks() {
                     }
                 ],
                 "inputsInline": false,
-                "output": null,
-                "previousStatement": null,
-                "nextStatement": true, // Hat blocks that take statements usually have nextStatement: true
                 "colour": "%{BKY_MIDI_HUE}",
                 "tooltip": "%{BKY_SB_MIDI_NOTE_RECEIVED_TOOLTIP}",
-                "hat": true
+                "hat": "cap"
             });
         }
     };

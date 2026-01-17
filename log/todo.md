@@ -61,3 +61,6 @@
 - [x] **優化演奏旋律清單積木 (Melody List Block Optimization)**: 更新 Tooltip 加入休止符 (R) 用法說明，並連結至專屬說明文件 (HelpUrl)。
 - [x] **效果器參數優化與 Tremolo 實作**: 為 `sb_setup_effect` 新增 Tremolo 效果器，並優化動態介面。
 - [x] **修復全域 HelpUrl 路徑**: 確保所有積木的說明連結皆支援 Vite 的 `BASE_URL` 動態路徑。
+- [x] **修正 `sb_set_adsr` 目標選擇邏輯**: 解決 `DefaultSynth` 名稱衝突問題，確保使用者建立的樂器能正確接收 ADSR 設定。
+- [x] **教材範例優化**: 補齊 01-03 範例註解與功能演示，加入和弦破音處理 (Compressor) 教案。
+- [x] **系統預設值調整**: 將預設 Release 時間從 1.0s 調優為 0.5s。

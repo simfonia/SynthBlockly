@@ -6,7 +6,7 @@ import { requestMidiAccess } from './midiEngine.js';
 export let blocklyLoops = {}; 
 let audioStarted = false;
 
-const DEFAULT_ADSR = { attack: 0.01, decay: 0.1, sustain: 0.5, release: 1.0 };
+const DEFAULT_ADSR = { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.5 };
 
 export async function ensureAudioStarted() {
     if (audioStarted) return true;

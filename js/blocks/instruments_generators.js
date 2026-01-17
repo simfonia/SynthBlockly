@@ -89,7 +89,10 @@ if (!window.audioEngine.isExecutionActive) return;
     try { G.forBlock['sb_play_drum'] = G['sb_play_drum']; } catch (e) { }
 
     G['sb_set_adsr'] = function (block) {
-        const targetName = block.getFieldValue('TARGET');
+        let targetName = block.getFieldValue('TARGET');
+        // Fallback for old blocks
+        if (!targetName) targetName = 'ALL';
+
         const getNum = (name, def) => {
             const val = block.getFieldValue(name);
             return (val === null || val === "" || isNaN(val)) ? def : Number(val);
@@ -103,20 +106,28 @@ if (!window.audioEngine.isExecutionActive) return;
             (function() {
                 const target = '${targetName}';
                 const a = ${a}, d = ${d}, s = ${s}, r = ${r};
+                
                 const envelopeParams = { 
                     attack: a, decay: d, sustain: s, release: r,
                     decayCurve: 'linear', releaseCurve: 'linear' 
                 };
 
-                // Helper to apply to one instrument
                 const applyToInstr = (name, instr) => {
                     if (!instr) return;
                     try {
                         if (instr.type === 'CustomSampler' || instr instanceof window.audioEngine.Tone.Sampler || instr.name === 'Sampler') {
                             instr.set({ release: r });
                         } else {
+                            // Standard Synth / PolySynth
                             instr.set({ envelope: envelopeParams });
-                            if (instr.get().voice0) {
+                            
+                            // Extra robustness for PolySynth in some contexts
+                            if (instr.name === 'PolySynth' || instr instanceof window.audioEngine.Tone.PolySynth) {
+                                instr.set({ envelope: envelopeParams }); 
+                            }
+
+                            // Handling specific synth types with multiple voices (like DuoSynth)
+                            if (instr.get && instr.get().voice0) {
                                 instr.set({
                                     voice0: { envelope: envelopeParams },
                                     voice1: { envelope: envelopeParams }
@@ -127,26 +138,41 @@ if (!window.audioEngine.isExecutionActive) return;
                 };
 
                 if (target === 'ALL') {
-                    window.audioEngine.updateADSR(a, d, s, r); // Update global/UI
-                    // Default Synth
-                    applyToInstr('DefaultSynth', window.audioEngine.synth);
-                    // All custom instruments
-                    for (const name in window.audioEngine.instruments) {
-                        applyToInstr(name, window.audioEngine.instruments[name]);
+                    window.audioEngine.updateADSR(a, d, s, r);
+                    
+                    // Apply to system default
+                    applyToInstr('DefaultSynth_System', window.audioEngine.synth);
+                    
+                    // Apply to all user instruments
+                    if (window.audioEngine.instruments) {
+                        for (const name in window.audioEngine.instruments) {
+                            applyToInstr(name, window.audioEngine.instruments[name]);
+                        }
                     }
                     window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'important', 'Global (All)');
                 } else {
-                    // Specific Target
-                    const instr = (target === 'DefaultSynth') ? window.audioEngine.synth : window.audioEngine.instruments[target];
+                    // Specific Target Logic Fix:
+                    // Priority 1: Check user-defined instruments (even if named 'DefaultSynth')
+                    // Priority 2: Fallback to system default synth if target is 'DefaultSynth'
+                    
+                    let instr = null;
+                    if (window.audioEngine.instruments && window.audioEngine.instruments[target]) {
+                        instr = window.audioEngine.instruments[target];
+                    } else if (target === 'DefaultSynth') {
+                        instr = window.audioEngine.synth;
+                    }
+
                     if (instr) {
                         applyToInstr(target, instr);
                         window.audioEngine.logKey('LOG_ADSR_SET_INSTR', 'info', target);
                         
-                        // If updating current instrument, sync UI graph
-                        if (target === window.audioEngine.currentInstrumentName || (target === 'DefaultSynth' && window.audioEngine.currentInstrumentName === 'DefaultSynth')) {
+                        // Sync UI if targeting DefaultSynth or the currently active instrument
+                        const currentName = window.audioEngine.currentInstrumentName || 'DefaultSynth';
+                        if (target === 'DefaultSynth' || target === currentName) {
                              window.audioEngine.updateADSR(a, d, s, r);
                         }
                     } else {
+                        console.warn('Instrument not found for ADSR:', target);
                         window.audioEngine.logKey('LOG_ERR_INSTR_NOT_FOUND', 'warning', target);
                     }
                 }
@@ -194,7 +220,14 @@ if (!window.audioEngine.isExecutionActive) return;
 
     G['sb_select_current_instrument'] = function (block) {
         var name = G.quote_(block.getFieldValue('NAME')); // Quote the name for string literal
-        return `window.audioEngine.transitionToInstrument(${name});\n`;
+        var code = `
+            (function() {
+                const targetName = ${name};
+                window.audioEngine.transitionToInstrument(targetName);
+                window.audioEngine.logKey('LOG_SWITCH_INSTR_SUCCESS', 'important', targetName);
+            })();
+        `;
+        return code;
     }.bind(G);
     try { if (Gproto) Gproto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { } 
     try { if (GeneratorProto) GeneratorProto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { } 
