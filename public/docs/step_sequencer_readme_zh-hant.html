@@ -10,6 +10,7 @@
         .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
         code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #16A085; font-weight: bold; }
         .example { background: #e6fffb; padding: 10px; border-left: 4px solid #16A085; margin: 10px 0; font-family: monospace; white-space: pre; }
+        .important { color: #e74c3c; font-weight: bold; }
         .note { color: #666; font-style: italic; font-size: 0.9em; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -25,47 +26,59 @@
         <ul>
             <li><strong>聲音來源</strong>：指定發聲的樂器名稱 (如 <code>Piano</code>, <code>Bass</code>) 或鼓組關鍵字 (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>)。</li>
             <li><strong>使用和弦名稱?</strong>：勾選後，系統會將序列字串中的代號視為「已定義的和弦名稱」；不勾選則視為「單一音符名稱」。</li>
-            <li><strong>第 N 小節</strong>：在長度超過 1 小節的循環中，指定此積木負責哪一小節。支援使用變數或數學運算。</li>
-            <li><strong>序列字串</strong>：定義節奏的內容。</li>
+            <li><strong>第 N 小節</strong>：在長度超過 1 小節的循環中，指定此積木負責哪一小節。</li>
+            <li><strong>序列字串</strong>：定義節奏的內容。必須剛好包含 16 個發聲單元（含休止符）。</li>
         </ul>
     </div>
 
     <div class="type-box">
-        <h2>2. 語法符號</h2>
+        <h2>2. 語法與符號規範</h2>
+        <p>序列解析引擎會自動忽略 <code>|</code> 符號，但對其餘字元有嚴格要求：</p>
         <table>
-            <tr><th>符號</th><th>說明</th></tr>
-            <tr><td><code>x</code></td><td>觸發預設發聲（鼓組或 C4 音符）。</td></tr>
-            <tr><td><code>C4</code>, <code>G3</code>...</td><td>直接指定單一音符名稱（適用於 Bass Line 或旋律）。</td></tr>
-            <tr><td><code>Cmaj7</code>, <code>Dm7</code>...</td><td><strong>(和弦模式)</strong> 指定已定義的和弦名稱。</td></tr>
-            <tr><td><code>.</code> 或 <code>-</code></td><td>休止符（不發聲）。</td></tr>
-            <tr><td><code>|</code> 或 <code>空白</code></td><td>視覺分隔符，會被系統忽略。</td></tr>
+            <tr><th>符號類型</th><th>範例</th><th>規範</th></tr>
+            <tr><td><strong>觸發符</strong></td><td><code>x</code></td><td>播放預設音色（鼓組或 C4）。</td></tr>
+            <tr><td><strong>單一音符</strong></td><td><code>C4</code>, <code>Bb2</code></td><td>字母 + (選填#b) + 數字。</td></tr>
+            <tr><td><strong>和弦名稱</strong></td><td><code>Dm7</code>, <code>Cmin_aug</code></td><td>支援字母、數字、<code>#</code>、<code>b</code> 以及底線 <code>_</code>。</td></tr>
+            <tr><td><strong>休止/延續</strong></td><td><code>.</code> 或 <code>-</code></td><td><code>.</code> 代表靜音，<code>-</code> 代表延續上一個音（視音源支援而定）。</td></tr>
         </table>
+        <p class="important">注意：符號中間不可有空格。若需要分隔複雜名稱，請使用底線 <code>_</code> (例如：<code>Am7_b5</code> 而非 <code>Am7-5</code>)。</p>
     </div>
 
     <div class="type-box">
-        <h2>3. 16 格規則</h2>
-        <p>系統固定將一小節解析為 <strong>16 格</strong>。建議使用 <code>|</code> 將每 4 格分開：</p>
+        <h2>3. 16 格規則與視覺分隔</h2>
+        <p>系統固定將一小節解析為 <strong>16 格</strong>。為了提高易讀性，我們強烈建議使用 <code>|</code> 或 <code>空白</code> 將每 4 格分為一組：</p>
         <div class="example">
-// 勾選「使用和弦名稱」後的 12-bar Blues 範例
-C7 . . . | . . C7 . | . . . . | . . C7 .</div>
+// 推薦寫法：使用 | 或 空格分隔（系統會自動忽略這些分隔符）
+x--- | x--- | x--- | x---
+..Dm7--- ..G7---- ..CM7--- ....</div>
+        <p class="important">若解析後的總單元數不等於 16，日誌視窗會顯示警告訊息，幫助您檢查是否漏打了符號。</p>
     </div>
 
     <div class="type-box">
-        <h2>4. 實戰範例：琶音與多聲部</h2>
-        <p>利用「自訂」模式，您可以讓不同的音序器積木並行運作：</p>
+        <h2>4. 實戰範例：Bossa Nova 鋼琴</h2>
+        <p>利用「使用和弦名稱」模式，製作慵懶的切分節奏：</p>
         <div class="example">
-// 軌道 1 (來源: KICK)
-x . . . | . . . . | x . . . | . . . .
-
-// 軌道 2 (來源: Piano)
-C4 . E4 . | G4 . E4 . | C4 . E4 . | G4 . E4 .</div>
+// 來源: Piano (勾選和弦模式)
+..CM7---CM7----- | ..G7----G7------</div>
     </div>
 
     <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">
-        <h2>5. 專家提示</h2>
+        <h2>5. 進階：編曲時間軸觀念</h2>
+        <p>理解編曲時的「雙時間軸」關係，能讓您隨心所欲地控制長篇樂曲：</p>
         <ul>
-            <li><strong>必須放在循環內</strong>：此積木必須放在「每隔 N 循環執行」內部才能運作。</li>
-            <li><strong>預備拍的重要性</strong>：如果您的樂曲包含 Piano 等大型取樣器，強烈建議在樂曲開始前放置一個<strong>「預備拍」</strong>積木，這能確保所有資源在第一小節開始前就緒。</li>
+            <li><strong>t1 (程式執行)</strong>：像是一台「舖路機」，負責將音符排入時間軸。</li>
+            <li><strong>t2 (Transport)</strong>：像是音樂的「進度條」，決定目前聽到的聲音。</li>
+        </ul>
+        <p><strong>小節數 [N] 的運算邏輯：</strong></p>
+        <ul>
+            <li><strong>在「每隔 [4] 小節循環」中</strong>：起始點永遠固定在 0。此時 <code>小節 [3]</code> 就是指整首歌的第 3 小節。</li>
+            <li><strong>在「函式」或「主程式」中</strong>：起始點會隨著 <code>t1</code> (程式跑到了哪裡) 而推移。如果您前面已經 <code>等待 2m</code>，此時的 <code>小節 [3]</code> 就會被排在 <code>3 + (3 - 1) = 5</code> (即第 5 小節)。</li>
+        </ul>
+        <p><strong>編曲秘訣：</strong></p>
+        <ul>
+            <li><strong>銜接段落</strong>：在「步進音序器」積木後加上 <code>等待 1m</code> 積木。這能確保舖路機停下來休息，等音樂播完一小節才繼續排下一段。</li>
+            <li><strong>疊加軌道</strong>：連續放置多個「步進音序器」而不加等待，它們會同時在同一個時間點響起。</li>
+            <li><strong>靈活運用</strong>：此積木<strong>不限於</strong>在循環中使用，您可以將其封裝在「函式」中，製作主歌、副歌等模組化段落。</li>
         </ul>
     </div>
 </body>

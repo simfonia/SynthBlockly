@@ -185,6 +185,9 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_play_chord_by_name">
             <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
         </block>
+        <block type="sb_play_chord_notes">
+            <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        </block>
     </category>
 
     <category name="%{BKY_MSG_TRANSPORT_CATEGORY}" colour="%{BKY_TRANSPORT_HUE}">

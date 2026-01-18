@@ -1,0 +1,147 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="sb_comment" id="init_header" x="10" y="10">
+    <field name="COMMENT">【初始化設定】&amp;#10;這裡定義全曲共用的和弦與設定，確保在演奏開始前就緒。</field>
+    <next>
+      <block type="sb_transport_set_bpm" id="set_bpm">
+        <field name="BPM">120</field>
+        <next>
+          <block type="sb_define_chord" id="setup_chord_f">
+            <field name="NAME">F</field>
+            <field name="NOTES_STRING">F4,A4,C5</field>
+            <next>
+              <block type="sb_define_chord" id="setup_chord_g">
+                <field name="NAME">G</field>
+                <field name="NOTES_STRING">G4,B4,D5</field>
+                <next>
+                  <block type="sb_comment" id="flow_start">
+                    <field name="COMMENT">【主程式】安排段落結構 (注意：段落切換會有微小延遲)&amp;#10;&amp;#10;由於本範例使用「播放並等待 (await)」的方式來控制時間，&amp;#10;在呼叫函式與執行等待積木之間會產生極短的運算時間差。&amp;#10;這會導致verse與chorus切換時，聽起來稍微慢了一點點 (不夠精準)。&amp;#10;若需要絕對精準的拍子銜接，請參考範例「10-2: Sequencer Arranger」。</field>
+                    <next>
+                      <block type="procedures_callnoreturn" id="call_v1">
+                        <mutation name="verse"></mutation>
+                        <next>
+                          <block type="procedures_callnoreturn" id="call_c1">
+                            <mutation name="chorus"></mutation>
+                            <next>
+                              <block type="procedures_callnoreturn" id="call_v2">
+                                <mutation name="verse"></mutation>
+                                <next>
+                                  <block type="procedures_callnoreturn" id="call_c2">
+                                    <mutation name="chorus"></mutation>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+  <block type="procedures_defnoreturn" id="def_verse" x="170" y="290">
+    <field name="NAME">verse</field>
+    <comment pinned="false" h="80" w="160">描述此函式...</comment>
+    <statement name="STACK">
+      <block type="sb_play_note_and_wait" id="v1">
+        <field name="DUR">4n</field>
+        <value name="NOTE">
+          <shadow type="text" id="dFCY!ze5g_[ci#Y(7~NG">
+            <field name="TEXT">C4</field>
+          </shadow>
+        </value>
+        <value name="VELOCITY">
+          <shadow type="math_number" id="3t[tJywLK=j5rk~-V:HP">
+            <field name="NUM">0.8</field>
+          </shadow>
+        </value>
+        <next>
+          <block type="sb_play_note_and_wait" id="v2">
+            <field name="DUR">4n</field>
+            <value name="NOTE">
+              <shadow type="text" id="Cm%rFv,b3inq8?yoR?d(">
+                <field name="TEXT">E4</field>
+              </shadow>
+            </value>
+            <value name="VELOCITY">
+              <shadow type="math_number" id="{vcy_+(A$|%B:tkKl}Je">
+                <field name="NUM">0.8</field>
+              </shadow>
+            </value>
+            <next>
+              <block type="sb_play_note_and_wait" id="v3">
+                <field name="DUR">4n</field>
+                <value name="NOTE">
+                  <shadow type="text" id="[3U):h?bTA`cpPRJ-Y]/">
+                    <field name="TEXT">G4</field>
+                  </shadow>
+                </value>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="cMfpMb35@r3PJCQE#$*_">
+                    <field name="NUM">0.8</field>
+                  </shadow>
+                </value>
+                <next>
+                  <block type="sb_play_note_and_wait" id="v4">
+                    <field name="DUR">4n</field>
+                    <value name="NOTE">
+                      <shadow type="text" id="4Zyp+%VdRw10=0=){lCS">
+                        <field name="TEXT">C5</field>
+                      </shadow>
+                    </value>
+                    <value name="VELOCITY">
+                      <shadow type="math_number" id="WH7rvb.b!0?w3jQlK0+e">
+                        <field name="NUM">0.8</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="procedures_defnoreturn" id="def_chorus" x="170" y="510">
+    <field name="NAME">chorus</field>
+    <comment pinned="false" h="80" w="160">描述此函式...</comment>
+    <statement name="STACK">
+      <block type="sb_play_chord_by_name" id="c1">
+        <field name="CHORD_NAME">F</field>
+        <field name="DUR">2n</field>
+        <value name="VELOCITY">
+          <shadow type="math_number" id="xSxBg^qLvsb{rj8iIqrl">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <next>
+          <block type="sb_wait_musical" id="wait1">
+            <field name="DURATION">2n</field>
+            <next>
+              <block type="sb_play_chord_by_name" id="c2">
+                <field name="CHORD_NAME">G</field>
+                <field name="DUR">2n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="eEjhX:qPe6Uo.=eZ73K|">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+                <next>
+                  <block type="sb_wait_musical" id="wait2">
+                    <field name="DURATION">2n</field>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

@@ -15,12 +15,15 @@
       - `transport_readme_*.html`: 小節偏移排程指南 (NEW)。
     - `locales/`: Blockly 核心語言包 (JSON)。
     - `samples/`: 音訊樣本庫（包含爵士鼓、小提琴與特殊音效 SFX）。
-  - `src/`: 原始碼目錄 (支援 Vite Glob Import)。
-    - `examples/`: 範例專案庫。
-      - `*.xml`: 純軟體範例。
-      - `FolderName/`: 硬體整合範例資料夾 (含 .xml, .ino, .md)。
-      - `10_Chord_Pad/`: TTP229 和弦觸發板範例。
-      - `11_Drum_Pad/`: TTP229 觸控打擊墊範例 (Bitmask 模式)。
+    - `src/`: 原始碼目錄。
+      - `examples/`: 範例專案庫。
+        - `*.xml`: 純軟體範例 (01-09)。
+        - `10-1_Functions...xml`: 函式模組化編曲。
+        - `10-2_Sequencer...xml`: 音序器編曲技巧。
+        - `11_Serial_KICK/`: Arduino 觸發大鼓範例。
+        - `12_wah-wah/`: Arduino 光敏電阻動態效果範例。
+        - `13_Chord_Pad/`: TTP229 和弦觸發板範例。
+        - `14_Drum_Pad/`: TTP229 觸控打擊墊範例。
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
@@ -49,3 +52,7 @@
       - `tools_blocks.js` / `_generators.js`: 註解與輔助工具積木 (NEW)。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。
     - `log/`: 開發紀錄。
+      - `handover.md`: 任務交接說明。
+      - `todo.md`: 任務進度清單。
+      - `details.md`: 關鍵技術細節 (踩過的坑)。
+      - `work/`: 每日工作日誌 (YYYY-MM-DD.md)。

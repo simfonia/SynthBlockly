@@ -328,6 +328,46 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_SET_INSTRUMENT_VIBRATO_MESSAGE}",
                 "args0": [
                     {
+                        "type": "field_dropdown",
+                        "name": "TARGET",
+                        "options": function() {
+                            let workspace = null;
+                            if (this.sourceBlock_) workspace = this.sourceBlock_.workspace;
+                            else if (this.workspace) workspace = this.workspace;
+
+                            const allLabel = Blockly.Msg['SB_TARGET_ALL_INSTRUMENTS'] || "All Instruments";
+                            const options = [[allLabel, 'ALL']];
+                            
+                            // 系統預設音源
+                            options.push(['DefaultSynth', 'DefaultSynth']);
+                            options.push([Blockly.Msg['JAZZKIT_DRUM_KICK'] || '大鼓 (Kick)', 'KICK']);
+                            options.push([Blockly.Msg['JAZZKIT_DRUM_SNARE'] || '小鼓 (Snare)', 'SNARE']);
+                            options.push([Blockly.Msg['JAZZKIT_DRUM_CLOSED_HIHAT'] || '腳踏鈸 (HH)', 'HH']);
+                            options.push(['爵士鼓組 (JazzKit)', 'JAZZKIT']);
+
+                            const targetBlockTypes = [
+                                'sb_create_synth_instrument',
+                                'sb_create_harmonic_synth',
+                                'sb_create_additive_synth',
+                                'sb_create_layered_instrument',
+                                'sb_create_sampler_instrument'
+                            ];
+
+                            if (workspace) {
+                                targetBlockTypes.forEach(type => {
+                                    const blocks = workspace.getBlocksByType(type, false);
+                                    blocks.forEach(block => {
+                                        const name = block.getFieldValue('NAME');
+                                        if (name && !options.some(opt => opt[1] === name)) {
+                                            options.push([name, name]);
+                                        }
+                                    });
+                                });
+                            }
+                            return options;
+                        }
+                    },
+                    {
                         "type": "input_value",
                         "name": "DETUNE_VALUE",
                         "check": "Number"
@@ -347,6 +387,46 @@ export function registerBlocks() {
             this.jsonInit({
                 "message0": "%{BKY_SB_SET_INSTRUMENT_VOLUME_MESSAGE}",
                 "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TARGET",
+                        "options": function() {
+                            let workspace = null;
+                            if (this.sourceBlock_) workspace = this.sourceBlock_.workspace;
+                            else if (this.workspace) workspace = this.workspace;
+
+                            const allLabel = Blockly.Msg['SB_TARGET_ALL_INSTRUMENTS'] || "All Instruments";
+                            const options = [[allLabel, 'ALL']];
+                            
+                            // 系統預設音源
+                            options.push(['DefaultSynth', 'DefaultSynth']);
+                            options.push([Blockly.Msg['JAZZKIT_DRUM_KICK'] || '大鼓 (Kick)', 'KICK']);
+                            options.push([Blockly.Msg['JAZZKIT_DRUM_SNARE'] || '小鼓 (Snare)', 'SNARE']);
+                            options.push([Blockly.Msg['JAZZKIT_DRUM_CLOSED_HIHAT'] || '腳踏鈸 (HH)', 'HH']);
+                            options.push(['爵士鼓組 (JazzKit)', 'JAZZKIT']);
+
+                            const targetBlockTypes = [
+                                'sb_create_synth_instrument',
+                                'sb_create_harmonic_synth',
+                                'sb_create_additive_synth',
+                                'sb_create_layered_instrument',
+                                'sb_create_sampler_instrument'
+                            ];
+
+                            if (workspace) {
+                                targetBlockTypes.forEach(type => {
+                                    const blocks = workspace.getBlocksByType(type, false);
+                                    blocks.forEach(block => {
+                                        const name = block.getFieldValue('NAME');
+                                        if (name && !options.some(opt => opt[1] === name)) {
+                                            options.push([name, name]);
+                                        }
+                                    });
+                                });
+                            }
+                            return options;
+                        }
+                    },
                     {
                         "type": "input_value",
                         "name": "VOLUME_VALUE",
@@ -370,7 +450,7 @@ export function registerBlocks() {
                     {
                         "type": "field_input",
                         "name": "NAME",
-                        "text": "C Major"
+                        "text": "C"
                     },
                     {
                         "type": "field_input",
@@ -383,6 +463,8 @@ export function registerBlocks() {
                 "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
             });
+
+            this.setHelpUrl(getHelpUrl('step_sequencer_readme'));
         }
     };
 
@@ -395,15 +477,10 @@ export function registerBlocks() {
                         "type": "field_dropdown",
                         "name": "NAME",
                         "options": function() {
-                            // This function context depends on how Blockly calls it. 
-                            // Sometimes 'this' is the field, sometimes we need to access the block via sourceBlock_.
-                            // Safest way to get workspace is usually through the block.
-                            
                             let workspace = null;
                             if (this.sourceBlock_) {
                                 workspace = this.sourceBlock_.workspace;
                             } else if (this.workspace) {
-                                // Fallback if 'this' is the block itself (though options function usually bound to field)
                                 workspace = this.workspace;
                             }
 
@@ -418,11 +495,10 @@ export function registerBlocks() {
                                 });
                             }
                             
-                            // Sort options alphabetically for better UX
                             options.sort((a, b) => a[0].localeCompare(b[0]));
 
                             if (options.length === 0) {
-                                return [["C Major", "C Major"]];
+                                return [["C", "C"]];
                             }
                             return options;
                         }
@@ -467,9 +543,26 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_PLAY_CHORD_BY_NAME_MESSAGE}",
                 "args0": [
                     {
-                        "type": "field_input",
+                        "type": "field_dropdown",
                         "name": "CHORD_NAME",
-                        "text": "C"
+                        "options": function() {
+                            let workspace = null;
+                            if (this.sourceBlock_) workspace = this.sourceBlock_.workspace;
+                            else if (this.workspace) workspace = this.workspace;
+
+                            const options = [];
+                            if (workspace) {
+                                const blocks = workspace.getBlocksByType('sb_define_chord', false);
+                                blocks.forEach(block => {
+                                    const name = block.getFieldValue('NAME');
+                                    if (name && !options.some(opt => opt[1] === name)) {
+                                        options.push([name, name]);
+                                    }
+                                });
+                            }
+                            options.sort((a, b) => a[0].localeCompare(b[0]));
+                            return options.length > 0 ? options : [["C", "C"]];
+                        }
                     },
                     {
                         "type": "field_input",
@@ -479,16 +572,12 @@ export function registerBlocks() {
                     {
                         "type": "input_value",
                         "name": "VELOCITY",
-                        "check": "Number",
-                        "shadow": {
-                            "type": "math_number",
-                            "fields": { "NUM": 1 }
-                        }
+                        "check": "Number"
                     }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}", // Moved to Performance
+                "colour": "%{BKY_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_CHORD_BY_NAME_TOOLTIP}"
             });
         }
@@ -513,11 +602,7 @@ export function registerBlocks() {
                     {
                         "type": "input_value",
                         "name": "VELOCITY",
-                        "check": "Number",
-                        "shadow": {
-                            "type": "math_number",
-                            "fields": { "NUM": 1 }
-                        }
+                        "check": "Number"
                     }
                 ],
                 "previousStatement": null,

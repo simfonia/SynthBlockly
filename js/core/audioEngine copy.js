@@ -339,11 +339,11 @@ export const audioEngine = {
     },
 
     playKick: function(v = 1, time) { 
-        const t = (time !== undefined) ? time : (Tone.now() + 0.05);
+        const t = (time !== undefined) ? time : Tone.now() + 0.05;
         drum.triggerAttackRelease('C2', '8n', t, v); 
     },
     playSnare: function(v = 1, time) { 
-        const t = (time !== undefined) ? time : (Tone.now() + 0.05);
+        const t = (time !== undefined) ? time : Tone.now() + 0.05;
         snare.triggerAttackRelease('8n', t, v); 
     },
 
@@ -364,7 +364,7 @@ export const audioEngine = {
 
     playJazzKitNote: function(note, vel, time) {
         if (jazzKit.loaded) {
-            const t = (time !== undefined) ? time : (Tone.now() + 0.05);
+            const t = (time !== undefined) ? time : Tone.now() + 0.05;
             jazzKit.triggerAttackRelease(note, '8n', t, vel || 1);
         }
     },

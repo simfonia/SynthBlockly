@@ -1,0 +1,44 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="6RWWQO~9biQds24zD[J]">serial_data</variable>
+  </variables>
+
+  <!-- 教學註解 -->
+  <block type="sb_comment" id="serial_kick_guide" x="10" y="10">
+    <field name="COMMENT">【範例 11：Arduino 序列埠觸發大鼓】&amp;#10;&amp;#10;此範例展示如何連結實體硬體與合成器：&amp;#10;1. 事件驅動：使用「當收到序列埠資料」帽子積木，系統會即時監聽訊息。&amp;#10;2. 邏輯判斷：如果收到的文字剛好是 "KICK"（需搭配換行符號），則執行發聲。&amp;#10;3. Arduino 端的寫法範例：&amp;#10;   Serial.println("KICK");&amp;#10;&amp;#10;請點擊右上方「連接序列埠」按鈕並選擇您的 Arduino 設備後開始測試！</field>
+  </block>
+
+  <!-- 序列埠事件監聽 (帽子積木，獨立放置) -->
+  <block type="sb_serial_data_received" id="i5EjH5aTrCuv77I_JPN{" x="10" y="220">
+    <field name="DATA" id="6RWWQO~9biQds24zD[J]">serial_data</field>
+    <statement name="DO">
+      <block type="controls_if" id="@tvL%OaJm0NUAzRH9?0R">
+        <value name="IF0">
+          <block type="logic_compare" id="h0=MEvd~re.!VK=Fi+^s">
+            <field name="OP">EQ</field>
+            <value name="A">
+              <block type="variables_get" id="kktSMcdrxj@BPckqdrlV">
+                <field name="VAR" id="6RWWQO~9biQds24zD[J]">serial_data</field>
+              </block>
+            </value>
+            <value name="B">
+              <block type="text" id="5S007$w88Hyo2/{5)B^D">
+                <field name="TEXT">KICK</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="sb_play_drum" id="GweNIx|D7.onHWjpf+xd">
+            <field name="TYPE">KICK</field>
+            <value name="VELOCITY">
+              <shadow type="math_number" id="MmpornW|BvFYjK0ABYH{">
+                <field name="NUM">0.8</field>
+              </shadow>
+            </value>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+</xml>

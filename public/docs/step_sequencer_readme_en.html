@@ -10,6 +10,7 @@
         .type-box { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
         code { background: #eee; padding: 2px 4px; border-radius: 4px; color: #16A085; font-weight: bold; }
         .example { background: #e6fffb; padding: 10px; border-left: 4px solid #16A085; margin: 10px 0; font-family: monospace; white-space: pre; }
+        .important { color: #e74c3c; font-weight: bold; }
         .note { color: #666; font-style: italic; font-size: 0.9em; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -18,43 +19,66 @@
 </head>
 <body>
     <h1>Step Sequencer Guide</h1>
-    <p>The Step Sequencer is a fundamental tool for electronic music. It divides one measure into 16 equal slices (16th notes), allowing you to create complex rhythms and arpeggios with simple strings.</p>
+    <p>The Step Sequencer is a core tool for electronic music arrangement. It divides a single measure into 16 equal parts (sixteenth notes), allowing you to quickly compose rhythms and arpeggios using simple strings.</p>
 
     <div class="type-box">
         <h2>1. Parameters</h2>
         <ul>
-            <li><strong>Sound Source</strong>: Specify the instrument (e.g., <code>Piano</code>, <code>Bass</code>) or drum keyword (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>).</li>
-            <li><strong>Use Chord Names?</strong>: When checked, identifiers in the sequence string are treated as "Defined Chord Names". When unchecked, they are treated as "Single Note Names".</li>
-            <li><strong>Measure N</strong>: Specifies which bar this block controls. Supports variables or math operations for dynamic scheduling.</li>
-            <li><strong>Sequence String</strong>: Defines the rhythmic content.</li>
+            <li><strong>Sound Source</strong>: Specify the instrument name (e.g., <code>Piano</code>, <code>Bass</code>) or drum keywords (<code>KICK</code>, <code>SNARE</code>, <code>HH</code>, <code>CLAP</code>).</li>
+            <li><strong>Use Chord Names?</strong>: When checked, symbols in the sequence are treated as "Defined Chord Names". If unchecked, they are treated as "Single Note Names".</li>
+            <li><strong>Measure N</strong>: In loops longer than 1 measure, specify which measure this block controls.</li>
+            <li><strong>Sequence String</strong>: Defines the rhythm. It must contain exactly 16 units (including rests).</li>
         </ul>
     </div>
 
     <div class="type-box">
-        <h2>2. Syntax Symbols</h2>
+        <h2>2. Syntax & Symbol Standards</h2>
+        <p>The engine ignores <code>|</code> characters but has strict rules for others:</p>
         <table>
-            <tr><th>Symbol</th><th>Description</th></tr>
-            <tr><td><code>x</code></td><td>Trigger default sound (drums or C4 note).</td></tr>
-            <tr><td><code>C4</code>, <code>G3</code>...</td><td>Specific single note name (useful for Bass or melodies).</td></tr>
-            <tr><td><code>Cmaj7</code>, <code>Dm7</code>...</td><td><strong>(Chord Mode)</strong> Specific defined chord name.</td></tr>
-            <tr><td><code>.</code> or <code>-</code></td><td>Rest (silence).</td></tr>
-            <tr><td><code>|</code> or <code>Space</code></td><td>Visual separators.</td></tr>
+            <tr><th>Symbol Type</th><th>Example</th><th>Standards</th></tr>
+            <tr><td><strong>Trigger</strong></td><td><code>x</code></td><td>Triggers default sound (Drum kit or C4 note).</td></tr>
+            <tr><td><strong>Single Note</strong></td><td><code>C4</code>, <code>Bb2</code></td><td>Letter + (optional #b) + Number.</td></tr>
+            <tr><td><strong>Chord Name</strong></td><td><code>Dm7</code>, <code>Cmin_aug</code></td><td>Supports letters, numbers, <code>#</code>, <code>b</code>, and underscores <code>_</code>.</td></tr>
+            <tr><td><strong>Rest/Sustain</strong></td><td><code>.</code> or <code>-</code></td><td><code>.</code> for silence, <code>-</code> to sustain the previous sound (if supported).</td></tr>
         </table>
+        <p class="important">Warning: No spaces allowed within symbols. Use underscores <code>_</code> for complex names (e.g., <code>Am7_b5</code> instead of <code>Am7-5</code>).</p>
     </div>
 
     <div class="type-box">
-        <h2>3. The 16-Step Rule</h2>
-        <p>The system always parses one measure as <strong>16 steps</strong>. We recommend using <code>|</code> to separate every 4 steps:</p>
+        <h2>3. 16-Step Rule & Visual Separators</h2>
+        <p>A measure is always parsed into <strong>16 steps</strong>. To improve readability, we strongly recommend using <code>|</code> or <code>spaces</code> to group every 4 steps:</p>
         <div class="example">
-// Example: 12-bar Blues sequence with "Use Chord Names" enabled
-C7 . . . | . . C7 . | . . . . | . . C7 .</div>
+// Recommended: Use | or spaces (the engine ignores them)
+x--- | x--- | x--- | x---
+..Dm7--- ..G7---- ..CM7--- ....</div>
+        <p class="important">If the total number of units parsed does not equal 16, a warning will appear in the log to help you check for missing or extra symbols.</p>
+    </div>
+
+    <div class="type-box">
+        <h2>4. Real-world Example: Bossa Nova Piano</h2>
+        <p>Using "Chord Mode" to create a laid-back syncopated groove:</p>
+        <div class="example">
+// Source: Piano (Chord Mode ON)
+..CM7---CM7----- | ..G7----G7------</div>
     </div>
 
     <div class="type-box" style="border: 1px solid #16A085; background: #f0fdfa;">
-        <h2>4. Pro Tips</h2>
+        <h2>5. Advanced: Dual Timeline Logic</h2>
+        <p>Understanding the two timelines is key to long-form arrangement:</p>
         <ul>
-            <li><strong>Loops Only</strong>: This block must be placed inside an "Every N measure loop" to function.</li>
-            <li><strong>Metronome Benefit</strong>: If your track uses heavy samplers like Piano, add a <strong>"Count In"</strong> block at the start. This gives the browser time to load assets before the first bar begins.</li>
+            <li><strong>t1 (Execution)</strong>: The "Paver" that lays down musical notes onto the timeline.</li>
+            <li><strong>t2 (Transport)</strong>: The "Playback" car that drives over the paved road.</li>
+        </ul>
+        <p><strong>How Measure [N] is Calculated:</strong></p>
+        <ul>
+            <li><strong>Inside a "Loop every [4] measures"</strong>: The start point is fixed at 0. <code>Measure [3]</code> refers to the 3rd measure of the song.</li>
+            <li><strong>In "Functions" or "Main Program"</strong>: The start point shifts with <code>t1</code> (where the code is). If you have already <code>Wait 2m</code>, then <code>Measure [3]</code> will be placed at <code>3 + (3 - 1) = 5</code> (the 5th measure).</li>
+        </ul>
+        <p><strong>Arrangement Tips:</strong></p>
+        <ul>
+            <li><strong>Sequential Sections</strong>: Place a <code>Wait 1m</code> block after a "Step Sequencer" block. This pauses the paver so segments play one after another.</li>
+            <li><strong>Layering Tracks</strong>: Placing multiple "Step Sequencer" blocks consecutively without waiting causes them to play at the same time.</li>
+            <li><strong>Total Flexibility</strong>: This block is <strong>not limited</strong> to loops. Use it in "Functions" to create modular verses, choruses, and more.</li>
         </ul>
     </div>
 </body>

@@ -191,11 +191,10 @@ export function registerBlocks() {
         init: function () {
             this.appendDummyInput('MAIN_ROW')
                 .appendField(new Blockly.FieldDropdown([
-                    [Blockly.Msg['JAZZKIT_DRUM_KICK'] || "大鼓", "KICK"],
-                    [Blockly.Msg['JAZZKIT_DRUM_SNARE'] || "小鼓", "SNARE"],
-                    [Blockly.Msg['JAZZKIT_DRUM_CLOSED_HIHAT'] || "腳踏鈸", "HH"],
-                    [Blockly.Msg['JAZZKIT_DRUM_HANDCLAP'] || "擊掌", "CLAP"],
-                    [Blockly.Msg['SB_SAMPLER_TYPE_DEFAULT'] || "目前音色", "CURRENT"],
+                    [Blockly.Msg['SB_RHYTHM_SOURCE_KICK'] || "合成音源：大鼓", "KICK"],
+                    [Blockly.Msg['SB_RHYTHM_SOURCE_SNARE'] || "合成音源：小鼓", "SNARE"],
+                    [Blockly.Msg['SB_RHYTHM_SOURCE_HH'] || "合成音源：腳踏鈸", "HH"],
+                    [Blockly.Msg['SB_SAMPLER_TYPE_DEFAULT_LABEL'] || "鋼琴", "CURRENT"],
                     ["自訂樂器...", "CUSTOM"]
                 ]), "TYPE");
 
@@ -210,12 +209,15 @@ export function registerBlocks() {
                             workspace = this.workspace;
                         }
 
-                        // Safety check: if no workspace context, return fallback immediately
-                        if (!workspace) {
-                            return [["MyInstrument", "MyInstrument"]];
+                        const options = [];
+                        
+                        // IMPORTANT: Add the current value of the field to the options 
+                        // to prevent "unavailable option" errors during XML loading.
+                        const currentValue = this.getValue();
+                        if (currentValue && currentValue !== 'MyInstrument') {
+                            options.push([currentValue, currentValue]);
                         }
 
-                        const options = [];
                         const targetBlockTypes = [
                             'sb_create_synth_instrument',
                             'sb_create_harmonic_synth',
@@ -224,21 +226,22 @@ export function registerBlocks() {
                             'sb_create_sampler_instrument'
                         ];
 
-                        targetBlockTypes.forEach(type => {
-                            const blocks = workspace.getBlocksByType(type, false);
-                            blocks.forEach(block => {
-                                const name = block.getFieldValue('NAME');
-                                if (name && !options.some(opt => opt[1] === name)) {
-                                    options.push([name, name]);
-                                }
+                        if (workspace) {
+                            targetBlockTypes.forEach(type => {
+                                const blocks = workspace.getBlocksByType(type, false);
+                                blocks.forEach(block => {
+                                    const name = block.getFieldValue('NAME');
+                                    if (name && !options.some(opt => opt[1] === name)) {
+                                        options.push([name, name]);
+                                    }
+                                });
                             });
-                        });
+                        }
                         
                         options.sort((a, b) => a[0].localeCompare(b[0]));
                         if (options.length === 0) return [["MyInstrument", "MyInstrument"]];
                         return options;
                     } catch (e) {
-                        // Silence errors during reproduction/transient states
                         return [["MyInstrument", "MyInstrument"]];
                     }
                 }), "CUSTOM_TYPE");

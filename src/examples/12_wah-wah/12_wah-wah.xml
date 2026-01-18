@@ -1,0 +1,149 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</variable>
+    <variable id="C_1^b8R[wzF_Nl}YjV$L">ldrValue</variable>
+    <variable id="8y6_D@qG=zLwOa*V7`|:">filterFreq</variable>
+  </variables>
+
+  <!-- 教學註解 -->
+  <block type="sb_comment" id="wah_guide" x="10" y="10">
+    <field name="COMMENT">【範例 12：光控 Wah-wah 效果器】&amp;#10;&amp;#10;此範例示範如何用感測器數值即時控制聲音參數：&amp;#10;1. 序列埠解析：監聽格式如 "LDR:350" 的字串。&amp;#10;2. 數值映射 (Map)：將 LDR 的原始數值 (200-500) 轉換為音訊頻率 (200-5000 Hz)。&amp;#10;3. 即時濾波：透過「掛載效果器」積木，將計算好的頻率套用至濾波器。&amp;#10;&amp;#10;Arduino 寫法：&amp;#10;Serial.print("LDR:");&amp;#10;Serial.println(analogRead(A0));&amp;#10;&amp;#10;請連接 Arduino 後，用手遮擋光敏電阻，體驗音色的動態變化！</field>
+    <next>
+      <block type="sb_toggle_pc_keyboard_midi" id="Y_9^75N{62I]d`LgDSb(">
+        <field name="ACTION">ON</field>
+      </block>
+    </next>
+  </block>
+
+  <!-- 序列埠事件監聽 (帽子積木) -->
+  <block type="sb_serial_data_received" id="K%V]k)/j[)pBv{B=9_hY" x="10" y="300">
+    <field name="DATA" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
+    <statement name="DO">
+      <block type="controls_if" id="z=o;c(7?b88R}7+m+@#*">
+        <mutation elseif="1"></mutation>
+        <value name="IF0">
+          <block type="logic_compare" id="4@d9K|J|g^!KkI*zWnFm">
+            <field name="OP">EQ</field>
+            <value name="A">
+              <block type="variables_get">
+                <field name="VAR" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
+              </block>
+            </value>
+            <value name="B">
+              <shadow type="text">
+                <field name="TEXT">KICK</field>
+              </shadow>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="jazzkit_play_drum" id="Sg=8*Y`q0]R[1v]Hn*~3">
+            <field name="DRUM_TYPE">C1</field>
+            <value name="VELOCITY">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+          </block>
+        </statement>
+        <value name="IF1">
+          <block type="logic_compare" id="CHECK_LDR_PREFIX">
+            <field name="OP">GTE</field>
+            <value name="A">
+              <block type="text_indexOf" id="FIND_LDR_PREFIX">
+                <field name="END">FIRST</field>
+                <value name="VALUE">
+                  <block type="variables_get">
+                    <field name="VAR" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
+                  </block>
+                </value>
+                <value name="FIND">
+                  <shadow type="text" id="SHADOW_LDR_PREFIX">
+                    <field name="TEXT">LDR:</field>
+                  </shadow>
+                </value>
+              </block>
+            </value>
+            <value name="B">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+          </block>
+        </value>
+        <statement name="DO1">
+          <!-- 解析 LDR 數值 -->
+          <block type="variables_set" id="wXh+W7z[wH,Z-N8{p1@Q">
+            <field name="VAR" id="C_1^b8R[wzF_Nl}YjV$L">ldrValue</field>
+            <value name="VALUE">
+              <block type="lists_getIndex" id="A8-j{M$W5q#Hk`r7Zk^u">
+                <mutation statement="false" at="true"></mutation>
+                <field name="MODE">GET</field>
+                <field name="WHERE">FROM_START</field>
+                <value name="VALUE">
+                  <block type="lists_split" id="U+g}l@;`R2]K#17Pj[Yk">
+                    <mutation mode="SPLIT"></mutation>
+                    <field name="MODE">SPLIT</field>
+                    <value name="INPUT">
+                      <block type="variables_get">
+                        <field name="VAR" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
+                      </block>
+                    </value>
+                    <value name="DELIM">
+                      <shadow type="text">
+                        <field name="TEXT">:</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </value>
+                <value name="AT">
+                  <shadow type="math_number">
+                    <field name="NUM">2</field>
+                  </shadow>
+                </value>
+              </block>
+            </value>
+            <next>
+              <!-- 映射為濾波頻率 -->
+              <block type="variables_set" id="set_freq">
+                <field name="VAR" id="8y6_D@qG=zLwOa*V7`|:">filterFreq</field>
+                <value name="VALUE">
+                  <block type="math_map" id="map_logic">
+                    <value name="VALUE">
+                      <block type="variables_get">
+                        <field name="VAR" id="C_1^b8R[wzF_Nl}YjV$L">ldrValue</field>
+                      </block>
+                    </value>
+                    <value name="FROM_LOW"><shadow type="math_number"><field name="NUM">200</field></shadow></value>
+                    <value name="FROM_HIGH"><shadow type="math_number"><field name="NUM">500</field></shadow></value>
+                    <value name="TO_LOW"><shadow type="math_number"><field name="NUM">5000</field></shadow></value>
+                    <value name="TO_HIGH"><shadow type="math_number"><field name="NUM">200</field></shadow></value>
+                  </block>
+                </value>
+                <next>
+                  <!-- 更新效果器參數 -->
+                  <block type="sb_setup_effect" id="K(U,l+kP%JvH.Qk=Z9tE">
+                    <mutation effect_type="filter" filter_type_value="lowpass" filter_rolloff_value="-12"></mutation>
+                    <field name="EFFECT_TYPE">filter</field>
+                    <field name="FILTER_TYPE_VALUE">lowpass</field>
+                    <field name="FILTER_ROLLOFF_VALUE">-12</field>
+                    <value name="FILTER_FREQ">
+                      <block type="variables_get">
+                        <field name="VAR" id="8y6_D@qG=zLwOa*V7`|:">filterFreq</field>
+                      </block>
+                    </value>
+                    <value name="FILTER_Q">
+                      <shadow type="math_number">
+                        <field name="NUM">5</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+</xml>

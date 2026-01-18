@@ -1,0 +1,115 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="ha,_*1.4{#wE5_3p{f1)">serial_data</variable>
+    <variable id="clean_data">clean_data</variable>
+  </variables>
+
+  <!-- 教學註解 -->
+  <block type="sb_comment" id="drum_pad_guide" x="10" y="10">
+    <field name="COMMENT">【範例 14：多點觸控電子鼓墊】&amp;#10;&amp;#10;此範例展示如何處理「多鍵同時觸發」的高級技巧：&amp;#10;1. 建立樂器：預設使用 Piano (PolySynth)。&amp;#10;2. 位元遮罩 (Bitmask)：TTP229 設為 16 鍵模式後，會送出像 "KEYS:5" 這種包含多鍵資訊的訊息。&amp;#10;3. 檢查按鍵積木：利用「檢查資料...中按鍵 N 是否按下？」來過濾出哪些鍵被觸發。&amp;#10;4. 同步發聲：不同於範例 13，這種寫法支援同時按下多個鍵並發出多個聲音。&amp;#10;&amp;#10;請連接 Arduino 後，嘗試同時拍打多個觸控位，體驗電子鼓墊的反應！</field>
+    <next>
+      <block type="sb_create_synth_instrument" id="sWKNmc2qwf||mWjz+G;U">
+        <field name="NAME">Piano</field>
+        <field name="TYPE">PolySynth</field>
+        <next>
+          <block type="sb_select_current_instrument" id="TWI,s^0H,L)~cj2N4aq-">
+            <field name="NAME">Piano</field>
+            <next>
+              <block type="sb_set_adsr" id="=b@9tbW!U}|{FxW8oQX[">
+                <field name="TARGET">Piano</field>
+                <field name="A">0.01</field>
+                <field name="D">0.3</field>
+                <field name="S">0.4</field>
+                <field name="R">1</field>
+                <next>
+                  <!-- 定義常用和弦 -->
+                  <block type="sb_define_chord" id="c_c"><field name="NAME">C</field><field name="NOTES_STRING">C4,E4,G4</field><next>
+                  <block type="sb_define_chord" id="c_f"><field name="NAME">F</field><field name="NOTES_STRING">F4,A4,C5</field><next>
+                  <block type="sb_define_chord" id="c_g"><field name="NAME">G</field><field name="NOTES_STRING">G3,B3,D4</field><next>
+                  <block type="sb_define_chord" id="c_am"><field name="NAME">Am</field><field name="NOTES_STRING">A3,C4,E4</field></block>
+                  </next></block></next></block></next></block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+
+  <!-- 序列埠事件監聽 (帽子積木) -->
+  <block type="sb_serial_data_received" id="BO(JO;Ykbe#Izmj8Io.C" x="10" y="450">
+    <field name="DATA" id="ha,_*1.4{#wE5_3p{f1)">serial_data</field>
+    <statement name="DO">
+      <block type="variables_set" id="O7IRn1MwUx~$j4eF?%2;">
+        <field name="VAR" id="clean_data">clean_data</field>
+        <value name="VALUE">
+          <block type="text_trim" id="+bNa;_Uqd8LfbC_*I_Xm">
+            <field name="MODE">BOTH</field>
+            <value name="TEXT">
+              <block type="variables_get">
+                <field name="VAR" id="ha,_*1.4{#wE5_3p{f1)">serial_data</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <next>
+          <!-- 檢查按鍵 1: 大鼓 -->
+          <block type="controls_if" id="check_k1">
+            <value name="IF0">
+              <block type="sb_serial_check_key_mask">
+                <field name="KEY">1</field>
+                <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="jazzkit_play_drum"><field name="DRUM_TYPE">C1</field></block>
+            </statement>
+            <next>
+              <!-- 檢查按鍵 2: 拍手 -->
+              <block type="controls_if" id="check_k2">
+                <value name="IF0">
+                  <block type="sb_serial_check_key_mask">
+                    <field name="KEY">2</field>
+                    <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="jazzkit_play_drum"><field name="DRUM_TYPE">D#1</field></block>
+                </statement>
+                <next>
+                  <!-- 檢查按鍵 3: 和弦 C -->
+                  <block type="controls_if" id="check_k3">
+                    <value name="IF0">
+                      <block type="sb_serial_check_key_mask">
+                        <field name="KEY">3</field>
+                        <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="sb_play_chord_by_name"><field name="CHORD_NAME">C</field><field name="DUR">8n</field></block>
+                    </statement>
+                    <next>
+                      <!-- 檢查按鍵 4: 和弦 F -->
+                      <block type="controls_if" id="check_k4">
+                        <value name="IF0">
+                          <block type="sb_serial_check_key_mask">
+                            <field name="KEY">4</field>
+                            <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <block type="sb_play_chord_by_name"><field name="CHORD_NAME">F</field><field name="DUR">8n</field></block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

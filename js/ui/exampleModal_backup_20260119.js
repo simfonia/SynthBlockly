@@ -192,17 +192,9 @@ export async function showExampleModal() {
             const tagClass = isHw ? 'tag-hardware' : 'tag-software';
             const tagText = isHw ? 'Hardware + Code' : 'Blockly Only';
             
-            // 提取序號並格式化顯示標題
-            const match = ex.id.match(/^(\d+(?:[-.]\d+)?)/);
-            let displayTitle = ex.name;
-            if (match) {
-                const indexStr = match[1].replace(/^0+/, ''); // 去掉開頭的 0，如 01 -> 1
-                displayTitle = `範例 ${indexStr}: ${ex.name}`;
-            }
-
             item.innerHTML = `
                 <span class="example-icon">${icon}</span>
-                <span class="example-name">${displayTitle}</span>
+                <span class="example-name">${ex.name}</span>
                 <span class="example-tag ${tagClass}">${tagText}</span>
             `;
             

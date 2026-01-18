@@ -99,27 +99,23 @@ function processXmlString(xmlString) {
 
 let workspace = null; 
 const blockListeners = {};
+let hatUpdateTimer = null;
 
 
 function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
-    // --- ADSR UI Synchronization (On Change or On Select) ---
+    // --- ADSR UI Synchronization (Immediate response for visual feedback) ---
     if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
         event.type === BlocklyModule.Events.BLOCK_CREATE || 
         event.type === BlocklyModule.Events.BLOCK_DELETE ||
         event.type === BlocklyModule.Events.SELECTED) {
         
         let targetBlock = null;
-
-        // If it's a selection event, use the selected block ID
         if (event.type === BlocklyModule.Events.SELECTED && event.newElementId) {
             const block = workspace.getBlockById(event.newElementId);
-            if (block && block.type === 'sb_set_adsr') {
-                targetBlock = block;
-            }
+            if (block && block.type === 'sb_set_adsr') targetBlock = block;
         } 
-        // Otherwise, if it's a change to an ADSR block, use that
         else if (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') {
             targetBlock = workspace.getBlockById(event.blockId);
         }
@@ -131,7 +127,6 @@ function onWorkspaceChanged(event) {
             };
             audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
         } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
-            // Re-sync to the first available ADSR block or reset to default
             const remainingAdsr = workspace.getBlocksByType('sb_set_adsr', false);
             if (remainingAdsr.length > 0) {
                 const block = remainingAdsr[0];
@@ -148,12 +143,26 @@ function onWorkspaceChanged(event) {
 
     if (event.isUiEvent && event.type !== BlocklyModule.Events.SELECTED) return; 
 
+    // --- Hat Block Registration (Debounced to prevent log spam and improve performance) ---
+    if (hatUpdateTimer) clearTimeout(hatUpdateTimer);
+    hatUpdateTimer = setTimeout(() => {
+        updateAllHatBlocks();
+    }, 150); // Wait 150ms for workspace to stabilize
+}
+
+/**
+ * Scans workspace for hat blocks and synchronizes event listeners.
+ */
+function updateAllHatBlocks() {
+    if (!workspace) return;
+
     const serialHats = workspace.getBlocksByType('sb_serial_data_received', false);
     const midiHats = workspace.getBlocksByType('sb_midi_note_received', false);
     const registeredIds = Object.keys(blockListeners);
     const allCurrentHats = [...serialHats, ...midiHats];
     const allCurrentHatIds = allCurrentHats.map(b => b.id);
 
+    // 1. Unregister hats that no longer exist
     registeredIds.forEach(blockId => {
         if (!allCurrentHatIds.includes(blockId)) {
             if (blockListeners[blockId].type === 'serial') {
@@ -164,11 +173,14 @@ function onWorkspaceChanged(event) {
         }
     });
 
+    // 2. Register or Update existing hats
     allCurrentHats.forEach(block => {
-        // 如果已經存在，檢查內容是否改變
         if (blockListeners[block.id]) {
             const current = blockListeners[block.id];
+            
+            // Check if code or variable mapping has changed
             javascriptGenerator.init(workspace);
+            applyAsyncProcedureOverrides(javascriptGenerator); // Ensure async support during check
             const newCode = javascriptGenerator.statementToCode(block, 'DO');
             javascriptGenerator.finish('');
             
@@ -181,12 +193,11 @@ function onWorkspaceChanged(event) {
                 newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
             }
 
-            // 只有當程式碼或變數名稱改變時才更新
             if (current.code === newCode && current.varName === newVarName) {
-                return; // 沒變，跳過
+                return; // No changes, keep existing listener
             }
 
-            // 有變，先移除舊的
+            // Code changed, unregister old one before re-registering
             if (current.type === 'serial') {
                 unregisterListenerForBlock(block.id);
             } else {
@@ -194,6 +205,7 @@ function onWorkspaceChanged(event) {
             }
         }
 
+        // Register the hat (either new or updated)
         if (block.type === 'sb_serial_data_received') {
             registerListenerForBlock(block);
         } else if (block.type === 'sb_midi_note_received') {
@@ -239,6 +251,63 @@ function registerListenerForBlock(block) {
             return [variable ? variable.name : 'undefined', javascriptGenerator.ORDER_ATOMIC];
         };
     }
+
+    // --- 強制讓所有 Blockly 函式支援 Async/Await ---
+    javascriptGenerator.forBlock['procedures_defnoreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        let xfix1 = '';
+        if (javascriptGenerator.STATEMENT_PREFIX) {
+            xfix1 += javascriptGenerator.injectId(javascriptGenerator.STATEMENT_PREFIX, block);
+        }
+        if (javascriptGenerator.TERMINATOR) {
+            xfix1 += javascriptGenerator.TERMINATOR;
+        }
+        const branch = javascriptGenerator.statementToCode(block, 'STACK');
+        let returnValue = javascriptGenerator.valueToCode(block, 'RETURN', javascriptGenerator.ORDER_NONE) || '';
+        let xfix2 = '';
+        if (returnValue && javascriptGenerator.STATEMENT_SUFFIX) {
+            xfix2 += javascriptGenerator.injectId(javascriptGenerator.STATEMENT_SUFFIX, block);
+        }
+        if (returnValue) {
+            returnValue = javascriptGenerator.INDENT + 'return ' + returnValue + ';\n';
+        }
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.nameDB_.getName(variables[i], 'VARIABLE');
+        }
+        // 關鍵：加入 async 關鍵字
+        let code = 'async function ' + funcName + '(' + args.join(', ') + ') {\n' + xfix1 + branch + xfix2 + returnValue + '}';
+        code = javascriptGenerator.scrub_(block, code);
+        javascriptGenerator.definitions_['%' + funcName] = code;
+        return null;
+    };
+
+    javascriptGenerator.forBlock['procedures_defreturn'] = javascriptGenerator.forBlock['procedures_defnoreturn'];
+
+    javascriptGenerator.forBlock['procedures_callnoreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.valueToCode(block, 'ARG' + i, javascriptGenerator.ORDER_NONE) || 'null';
+        }
+        // 關鍵：呼叫時加入 await
+        const code = 'await ' + funcName + '(' + args.join(', ') + ');\n';
+        return code;
+    };
+
+    javascriptGenerator.forBlock['procedures_callreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.valueToCode(block, 'ARG' + i, javascriptGenerator.ORDER_NONE) || 'null';
+        }
+        // 關鍵：呼叫時加入 await
+        const code = 'await ' + funcName + '(' + args.join(', ') + ')';
+        return [code, javascriptGenerator.ORDER_AWAIT || 0];
+    };
 
     javascriptGenerator.init(workspace);
     const rawCode = javascriptGenerator.statementToCode(block, 'DO');
@@ -328,6 +397,63 @@ function unregisterListenerForMidiBlock(blockId) {
     }
 }
 
+// --- 強制讓所有 Blockly 函式支援 Async/Await 的覆寫函式 ---
+function applyAsyncProcedureOverrides(javascriptGenerator) {
+    javascriptGenerator.forBlock['procedures_defnoreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        const branch = javascriptGenerator.statementToCode(block, 'STACK');
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.nameDB_.getName(variables[i], 'VARIABLE');
+        }
+        // 核心修正：強制使用 async function
+        let code = 'async function ' + funcName + '(' + args.join(', ') + ') {\n' + branch + '}';
+        code = javascriptGenerator.scrub_(block, code);
+        javascriptGenerator.definitions_['%' + funcName] = code;
+        return null;
+    };
+
+    javascriptGenerator.forBlock['procedures_defreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        const branch = javascriptGenerator.statementToCode(block, 'STACK');
+        let returnValue = javascriptGenerator.valueToCode(block, 'RETURN', javascriptGenerator.ORDER_NONE) || '';
+        if (returnValue) {
+            returnValue = javascriptGenerator.INDENT + 'return ' + returnValue + ';\n';
+        }
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.nameDB_.getName(variables[i], 'VARIABLE');
+        }
+        let code = 'async function ' + funcName + '(' + args.join(', ') + ') {\n' + branch + returnValue + '}';
+        code = javascriptGenerator.scrub_(block, code);
+        javascriptGenerator.definitions_['%' + funcName] = code;
+        return null;
+    };
+
+    javascriptGenerator.forBlock['procedures_callnoreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.valueToCode(block, 'ARG' + i, javascriptGenerator.ORDER_NONE) || 'null';
+        }
+        // 核心修正：呼叫時強制使用 await
+        return 'await ' + funcName + '(' + args.join(', ') + ');\n';
+    };
+
+    javascriptGenerator.forBlock['procedures_callreturn'] = function(block) {
+        const funcName = javascriptGenerator.nameDB_.getName(block.getFieldValue('NAME'), 'PROCEDURE');
+        const args = [];
+        const variables = block.getVars();
+        for (let i = 0; i < variables.length; i++) {
+            args[i] = javascriptGenerator.valueToCode(block, 'ARG' + i, javascriptGenerator.ORDER_NONE) || 'null';
+        }
+        return ['await ' + funcName + '(' + args.join(', ') + ')', 0];
+    };
+}
+
 /**
  * Initializes Blockly workspace and registers blocks/generators.
  */
@@ -374,7 +500,6 @@ export async function getBlocksCode() {
         return '';
     }
     
-    // 清除舊的執行期與效果器錯誤
     clearErrorLog('EXEC');
     clearErrorLog('EFFECT');
 
@@ -382,51 +507,60 @@ export async function getBlocksCode() {
         logKey('LOG_GENERATOR_NOT_READY', 'error');
         return '';
     }
+    
     audioEngine.resetAudioEngineState();
+    
     try {
-        try {
-            if (javascriptGenerator && typeof javascriptGenerator.init === 'function') {
-                javascriptGenerator.init(workspace);
+        // --- 關鍵：在產生前一刻套用非同步覆寫 ---
+        applyAsyncProcedureOverrides(javascriptGenerator);
+
+        // 1. 初始化產生器
+        javascriptGenerator.init(workspace);
+        
+        // 2. 產生主程式碼
+        let mainCode = javascriptGenerator.workspaceToCode(workspace);
+        
+        // 3. 提取定義與函式
+        const variableDefs = [];
+        const funcDefs = [];
+        const otherDefs = [];
+        
+        for (let name in javascriptGenerator.definitions_) {
+            const def = javascriptGenerator.definitions_[name];
+            if (name.startsWith('variable')) {
+                variableDefs.push(def);
+            } else if (name.startsWith('%')) { 
+                funcDefs.push(def);
+            } else {
+                otherDefs.push(def);
             }
-        } catch (e) { } // Ignore errors during init
-
-        try {
-            if (javascriptGenerator && javascriptGenerator.forBlock) {
-                const pbsxGens = ['play_note', 'sb_play_drum', 'sb_set_adsr', 'sb_midi_note_received', 'sb_serial_data_received'];
-                for (const name of pbsxGens) {
-                    if (javascriptGenerator[name] && !javascriptGenerator.forBlock[name]) {
-                        javascriptGenerator.forBlock[name] = javascriptGenerator[name];
-                    }
-                }
-            }
-        } catch (e) { } // Ignore errors during forBlock assignment
-
-        const effectConfigs = [];
-        let effectBlocks = workspace.getBlocksByType('sb_setup_effect', false);
-        effectBlocks.sort((a, b) => a.getRelativeToSurfaceXY().y - b.getRelativeToSurfaceXY().y);
-        const configRegex = /\/\* EFFECT_CONFIG:(.*?) \*\//;
-
-        effectBlocks.forEach(block => {
-            try {
-                const blockCode = javascriptGenerator.blockToCode(block, true);
-                if (blockCode) {
-                    const match = blockCode.match(configRegex);
-                    if (match && match[1]) {
-                        effectConfigs.push(JSON.parse(match[1]));
-                    }
-                }
-            } catch (err) {
-                logKey('LOG_EFFECT_BLOCK_ERR', 'error', block.id, err.message);
-            }
-        });
-
-        audioEngine.rebuildEffectChain(effectConfigs);
-        let code = javascriptGenerator.workspaceToCode(workspace);
-        code = javascriptGenerator.finish(code);
-        if (!code || code.trim() === '') logKey('LOG_CODE_EMPTY', 'warning');
-        else logKey('LOG_CODE_GENERATED');
+        }
+        
+        // 清除定義以重設狀態
+        javascriptGenerator.definitions_ = Object.create(null);
+        
+        // 4. 組裝最終程式碼
+        let code = [
+            '// Variable Declarations',
+            variableDefs.join('\n'),
+            '// Other Definitions',
+            otherDefs.join('\n'),
+            '// Function Definitions',
+            funcDefs.join('\n\n'),
+            '// Main Execution',
+            mainCode
+        ].join('\n\n');
+        
+        if (!code || code.trim() === '' || mainCode.trim() === '') {
+            logKey('LOG_CODE_EMPTY', 'warning');
+        } else {
+            logKey('LOG_CODE_GENERATED');
+        }
+        
         return code;
     } catch (e) {
+        // ... (備援模式保留不變)
+
         logKey('LOG_FALLBACK_MODE');
         try {
             javascriptGenerator.init(workspace);

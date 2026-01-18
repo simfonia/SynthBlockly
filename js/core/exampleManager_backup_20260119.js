@@ -11,9 +11,8 @@ const mdFiles = import.meta.glob('../../src/examples/**/*.md', { eager: true, qu
  * e.g., "09_wah-wah" -> "Wah Wah"
  */
 function formatName(name) {
-    // 移除開頭的數字序號，支援 "01_", "10-2_", "10.1_" 等格式
-    // 匹配開頭的：數字 (可能包含 -數字 或 .數字) 後面跟著 - 或 _ 或 . 或 空格
-    const cleanName = name.replace(/^(\d+([-.]\d+)?)[-_.\s]?/, '');
+    // 移除開頭的數字序號 (如 "01_" 或 "09.")
+    const cleanName = name.replace(/^\d+[-_.]?/, '');
     return cleanName
         .replace(/[-_]/g, ' ')
         .replace(/\b\w/g, c => c.toUpperCase());
@@ -76,15 +75,25 @@ export function getExampleList() {
              };
         }
 
-    if (exampleObj) {
+        if (exampleObj) {
             examples.push(exampleObj);
         }
     }
     
-    // 排序：使用自然排序法 (Natural Sort)
-    // 這樣可以正確處理 01, 02, 10, 10-2, 11 等序號
-    const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-    examples.sort((a, b) => collator.compare(a.id, b.id));
+    // 排序：嘗試解析開頭的數字
+    examples.sort((a, b) => {
+        // 從原始 ID 提取數字，例如 "09_Wah" -> 9
+        const getNum = (str) => {
+            const match = str.match(/^(\d+)/);
+            return match ? parseInt(match[1]) : 999;
+        };
+        
+        const numA = getNum(a.id);
+        const numB = getNum(b.id);
+        
+        if (numA !== numB) return numA - numB;
+        return a.name.localeCompare(b.name);
+    });
 
     return examples;
 }
