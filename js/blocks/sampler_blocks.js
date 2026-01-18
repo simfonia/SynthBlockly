@@ -19,6 +19,17 @@ const samplerBlock = {
                         ["%{BKY_SB_SAMPLER_TYPE_DEFAULT}", "DEFAULT"],
                         ["%{BKY_SB_SAMPLER_TYPE_VIOLIN_PIZZ}", "VIOLIN_PIZZ"],
                         ["%{BKY_SB_SAMPLER_TYPE_VIOLIN_SUSTAIN}", "VIOLIN_SUSTAIN"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_KICK}", "JK_KICK"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_SNARE}", "JK_SNARE"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_HH}", "JK_HH"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_OHH}", "JK_OHH"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_CLAP}", "JK_CLAP"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_RIM}", "JK_RIM"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_TOM_H}", "JK_TOM_H"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_TOM_M}", "JK_TOM_M"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_TOM_L}", "JK_TOM_L"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_CRASH}", "JK_CRASH"],
+                        ["%{BKY_SB_SAMPLER_TYPE_JK_RIDE}", "JK_RIDE"],
                         ["%{BKY_SB_SAMPLER_TYPE_CUSTOM}", "CUSTOM"]
                     ]
                 }

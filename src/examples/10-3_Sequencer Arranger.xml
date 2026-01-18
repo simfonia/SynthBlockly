@@ -1,0 +1,95 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <!-- 教學註解 -->
+  <block type="sb_comment" id="seq_arr_guide" x="10" y="10">
+    <field name="COMMENT">【範例 10-3：音序器長篇編曲技巧】&amp;#10;&amp;#10;1. 為什麼要用「等待」？&amp;#10;音序器是「非阻塞」的，它會立刻預約好一小節的音符。&amp;#10;如果您希望一段一段接下去，請在音序器後加上「等待 1m」積木。&amp;#10;&amp;#10;2. 軌道疊加：&amp;#10;您可以連續放置多個音序器（如 Kick 和 Piano），它們會同時開始演奏，形成多軌並行的效果。&amp;#10;&amp;#10;3. 模組化編曲：&amp;#10;主程式只需要呼叫「演奏 2 次主歌節奏」，剩下的交給函式處理。</field>
+    <next>
+      <block type="sb_transport_set_bpm" id="set_bpm">
+        <field name="BPM">120</field>
+        <next>
+          <block type="sb_transport_start_stop" id="start_transport">
+            <field name="ACTION">START</field>
+            <next>
+              <block type="sb_transport_count_in" id="pre_count">
+                <field name="MEASURES">1</field>
+                <field name="BEATS">4</field>
+                <field name="BEAT_VALUE">4</field>
+                <value name="VOLUME"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value>
+                <next>
+                  <!-- 主程式：接龍編排 -->
+                  <block type="procedures_callnoreturn" id="call_v1">
+                    <mutation name="演奏兩小節主歌"></mutation>
+                    <next>
+                      <block type="procedures_callnoreturn" id="call_c1">
+                        <mutation name="演奏兩小節副歌"></mutation>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+
+  <!-- 函式定義：主歌 (音序器疊軌 + 等待) -->
+  <block type="procedures_defnoreturn" id="def_verse" x="500" y="10">
+    <field name="NAME">演奏兩小節主歌</field>
+    <statement name="STACK">
+      <!-- 第一小節：疊加 KICK 和 HH -->
+      <block type="sb_rhythm_sequence" id="v1_k">
+        <field name="IS_CHORD">FALSE</field>
+        <field name="SEQUENCE">x--- ---- x--- ----</field>
+        <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">KICK</field></shadow></value>
+        <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        <next>
+          <block type="sb_rhythm_sequence" id="v1_h">
+            <field name="IS_CHORD">FALSE</field>
+            <field name="SEQUENCE">x-x- x-x- x-x- x-x-</field>
+            <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">HH</field></shadow></value>
+            <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+            <next>
+              <!-- 重要：等待 1 小節才跑後面的內容 -->
+              <block type="sb_wait_musical" id="wait_v1">
+                <field name="DURATION">1m</field>
+                <next>
+                  <!-- 第二小節 -->
+                  <block type="sb_rhythm_sequence" id="v2_k">
+                    <field name="IS_CHORD">FALSE</field>
+                    <field name="SEQUENCE">x--- x--- x--- x---</field>
+                    <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">KICK</field></shadow></value>
+                    <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+                    <next>
+                      <block type="sb_wait_musical" id="wait_v2">
+                        <field name="DURATION">1m</field>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+
+  <!-- 函式定義：副歌 -->
+  <block type="procedures_defnoreturn" id="def_chorus" x="500" y="300">
+    <field name="NAME">演奏兩小節副歌</field>
+    <statement name="STACK">
+      <block type="sb_rhythm_sequence" id="c1_s">
+        <field name="IS_CHORD">FALSE</field>
+        <field name="SEQUENCE">---- x--- ---- x---</field>
+        <value name="SOURCE"><shadow type="sb_rhythm_source_selector"><field name="TYPE">SNARE</field></shadow></value>
+        <value name="MEASURE"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        <next>
+          <block type="sb_wait_musical" id="wait_c1">
+            <field name="DURATION">1m</field>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

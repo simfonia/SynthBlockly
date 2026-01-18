@@ -72,7 +72,7 @@ if (!window.audioEngine.isExecutionActive) return;
 if (window.blocklyLoops['${loopId}']) {
     window.blocklyLoops['${loopId}'].dispose();
 }
-window.blocklyLoops['${loopId}'] = new window.audioEngine.Tone.Loop((scheduledTime) => {
+window.blocklyLoops['${loopId}'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
     if (!window.audioEngine.isExecutionActive) return;
     ${doCode}
 }, '${interval}');
@@ -160,11 +160,24 @@ if (window.blocklyLoops) {
         var sequence = block.getFieldValue('SEQUENCE') || "";
         var isChord = block.getFieldValue('IS_CHORD') === 'TRUE';
         
-        const steps = sequence.match(/([A-G][#b]?\d+|[xX]|[.\-])/g) || [];
+        // Robust Musical Token Extraction:
+        // This regex ignores spaces, pipes (|), and other separators.
+        // It ONLY captures:
+        // 1. Chords/Notes (Alphanumeric starting with letter, e.g., Dm7, C4, Cmin_aug)
+        // 2. Trigger (x, X)
+        // 3. Silence (.)
+        // 4. Sustain (-)
+        const steps = sequence.match(/([A-Za-z0-9#b_]+|[xX]|[.\-])/g) || [];
         const stepsJson = JSON.stringify(steps);
 
-        // Always pass 'scheduledTime' variable which is guaranteed to exist in Loop or Offset scope
-        return `window.audioEngine.playRhythmSequence(${soundType}, ${stepsJson}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${measure}, ${isChord});\n`;
+        // Validation check for the 16-step rule
+        var validationCode = `
+            if (${steps.length} !== 16) {
+                window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + ${measure} + ': Expected 16 steps, found ${steps.length}. Current sequence: "' + "${sequence}" + '"');
+            }
+        `;
+
+        return validationCode + `window.audioEngine.playRhythmSequence(${soundType}, ${stepsJson}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${measure}, ${isChord});\n`;
     }.bind(G);
     try { if (Gproto) Gproto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_rhythm_sequence'] = G['sb_rhythm_sequence']; } catch (e) { }

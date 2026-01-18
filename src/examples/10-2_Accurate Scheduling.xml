@@ -1,0 +1,106 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_note">note</variable>
+  </variables>
+
+  <!-- 教學註解 -->
+  <block type="sb_comment" id="melody_guide" x="10" y="10">
+    <field name="COMMENT">【範例 10-2：利用「排程」實現精確銜接】&amp;#10;&amp;#10;1. 零延遲：透過「於小節偏移...處執行」，所有音符的時間點都在執行前就排定好了。&amp;#10;2. 防重疊技巧：在排程模式下，主程式必須精確分配每個段落的小節位置（0, 1m, 2m...）。&amp;#10;3. 副歌編排：副歌總長為 1 小節（F 和弦 2 拍 + G 和弦 2 拍），因此下一個段落必須排在 +1 小節之後。&amp;#10;&amp;#10;執行後，您會發現段落之間的轉換變得絲滑順暢，完全沒有 10 號範例中的跳拍感。</field>
+    <next>
+      <block type="sb_transport_set_bpm" id="set_bpm">
+        <field name="BPM">120</field>
+        <next>
+          <block type="sb_transport_start_stop" id="start_transport">
+            <field name="ACTION">START</field>
+            <next>
+              <block type="sb_define_chord" id="setup_chord_f">
+                <field name="NAME">F</field>
+                <field name="NOTES_STRING">F4,A4,C5</field>
+                <next>
+                  <block type="sb_define_chord" id="setup_chord_g">
+                    <field name="NAME">G</field>
+                    <field name="NOTES_STRING">G4,B4,D5</field>
+                    <next>
+                      <!-- 主程式精確對位 -->
+                      <block type="sb_schedule_at_offset" id="s1">
+                        <field name="OFFSET">0</field>
+                        <statement name="DO">
+                          <block type="procedures_callnoreturn" id="call_v1">
+                            <mutation name="演奏主歌"></mutation>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="sb_schedule_at_offset" id="s2">
+                            <field name="OFFSET">1m</field>
+                            <statement name="DO">
+                              <block type="procedures_callnoreturn" id="call_c1">
+                                <mutation name="演奏副歌"></mutation>
+                              </block>
+                            </statement>
+                            <next>
+                              <block type="sb_schedule_at_offset" id="s3">
+                                <field name="OFFSET">2m</field>
+                                <statement name="DO">
+                                  <block type="procedures_callnoreturn" id="call_v2">
+                                    <mutation name="演奏主歌"></mutation>
+                                  </block>
+                                </statement>
+                                <next>
+                                  <block type="sb_schedule_at_offset" id="s4">
+                                    <field name="OFFSET">3m</field>
+                                    <statement name="DO">
+                                      <block type="procedures_callnoreturn" id="call_c2">
+                                        <mutation name="演奏副歌"></mutation>
+                                      </block>
+                                    </statement>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+
+  <block type="procedures_defnoreturn" id="def_verse" x="500" y="10">
+    <field name="NAME">演奏主歌</field>
+    <statement name="STACK">
+      <block type="sb_play_melody" id="v_melody">
+        <field name="MELODY_STRING">C4Q E4Q G4Q C5Q</field>
+      </block>
+    </statement>
+  </block>
+
+  <block type="procedures_defnoreturn" id="def_chorus" x="500" y="150">
+    <field name="NAME">演奏副歌</field>
+    <statement name="STACK">
+      <block type="sb_play_chord_by_name" id="c1">
+        <field name="CHORD_NAME">F</field>
+        <field name="DUR">2n</field>
+        <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        <next>
+          <!-- 確保 G 和弦在 2 拍後響起 -->
+          <block type="sb_schedule_at_offset" id="offset_c2">
+            <field name="OFFSET">2n</field>
+            <statement name="DO">
+              <block type="sb_play_chord_by_name" id="c2">
+                <field name="CHORD_NAME">G</field>
+                <field name="DUR">2n</field>
+                <value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

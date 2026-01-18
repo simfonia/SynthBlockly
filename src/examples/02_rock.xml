@@ -5,9 +5,9 @@
     <variable id="S?aA@O9)vMw$HxDYnqT,">channel</variable>
   </variables>
   <block type="sb_comment" id="lNv8p^FXgNcv.G$Cq{~=" x="10" y="10">
-    <field name="COMMENT">此範例中的「演奏音符」積木屬於「觸發式 (Trigger)」。&amp;#10;聲音長度完全由積木設定的「時值 (例如 8n)」決定。&amp;#10;不論您的 MIDI 琴鍵按住多久，聲音都會在時值結束後自動釋放。&amp;#10;這適合用於步進音序器或節奏控制。&amp;#10;&amp;#10;如果改成「觸發音源」積木來發聲，&amp;#10;您就可以按住琴鍵來控制持續發聲的時間，&amp;#10;適合模擬管風琴或合成器的現場演奏。&amp;#10;&amp;#10;若您使用PC鍵盤來演奏，&amp;#10;預設是以按鍵時間來控制持續發聲的。&amp;#10;&amp;#10;範例中利用「於小節偏移[時間]處執行」積木來做時序控制編曲，&amp;#10;您可以在積木上按右鍵/說明 取得詳細使用方法。&amp;#10;&amp;#10;由於示範中使用爵士鼓取樣音色，&amp;#10;給一小節預備拍讓程式有時間下載這些聲音檔，&amp;#10;之後的音樂才能同步發聲。</field>
+    <field name="COMMENT">此範例中的「演奏音符」積木屬於「觸發式 (Trigger)」。&amp;#10;聲音長度完全由積木設定的「時值 (例如 8n)」決定。&amp;#10;不論您的 MIDI 琴鍵按住多久，聲音都會在時值結束後自動釋放。&amp;#10;這適合用於步進音序器或節奏控制。&amp;#10;&amp;#10;如果改成「觸發音源」積木來發聲，&amp;#10;您就可以按住琴鍵來控制持續發聲的時間，&amp;#10;適合模擬管風琴或合成器的現場演奏。&amp;#10;&amp;#10;若您使用PC鍵盤來演奏，&amp;#10;預設是以按鍵時間來控制持續發聲的。&amp;#10;&amp;#10;範例中利用「於小節偏移[時間]處執行」積木來做時序控制編曲，&amp;#10;您可以在積木上按右鍵/說明 取得詳細使用方法。&amp;#10;&amp;#10;由於示範中使用爵士鼓取樣音色，&amp;#10;給一小節預備拍讓程式有時間下載這些聲音檔，&amp;#10;之後的音樂才能同步發聲。&amp;#10;&amp;#10;Rock 的特色就是 Back-beat，二、四拍為小鼓重拍。</field>
   </block>
-  <block type="sb_midi_note_received" id=";jELbhrkQe7ykO9M!JI=" x="10" y="410">
+  <block type="sb_midi_note_received" id=";jELbhrkQe7ykO9M!JI=" x="10" y="450">
     <field name="NOTE" id="j(G}u4O{4q`Zm,6aurdi">note</field>
     <field name="VELOCITY" id="b0Hr!s||dWB[#K-a~}5G">velocity</field>
     <field name="CHANNEL" id="S?aA@O9)vMw$HxDYnqT,">channel</field>
@@ -52,7 +52,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_toggle_pc_keyboard_midi" id="mxE}j.``?INdbJ}^CNsq" x="10" y="550">
+  <block type="sb_toggle_pc_keyboard_midi" id="mxE}j.``?INdbJ}^CNsq" x="10" y="590">
     <field name="ACTION">ON</field>
     <next>
       <block type="sb_transport_set_bpm" id="4|JfY:U$1vT|ae0R/m0I">

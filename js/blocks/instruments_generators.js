@@ -235,16 +235,61 @@ if (!window.audioEngine.isExecutionActive) return;
     try { G.forBlock['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { }
 
     G['sb_set_instrument_vibrato'] = function (block) {
+        let targetName = block.getFieldValue('TARGET') || 'ALL';
         var detuneValue = G.valueToCode(block, 'DETUNE_VALUE', G.ORDER_ATOMIC) || '0';
+        
         var code = `
             (function() {
-                const instrName = window.audioEngine.currentInstrumentName;
-                const currentInstrument = window.audioEngine.instruments[instrName];
-                if (currentInstrument) {
-                    currentInstrument.set({ detune: Number(${detuneValue}) });
-                    window.audioEngine.logKey('LOG_VIBRATO_SET_INSTR', 'info', instrName + " (" + ${detuneValue} + ")");
+                const target = '${targetName}';
+                const detune = Number(${detuneValue});
+                const engine = window.audioEngine;
+
+                const applyVibrato = (name, instr) => {
+                    if (!instr) return;
+                    try {
+                        if (instr.type === 'CustomSampler' || instr instanceof engine.Tone.Sampler) {
+                            // Samplers usually don't support direct detune in the same way as oscillators
+                            engine.logKey('LOG_SAMPLER_DETUNE_WARN', 'warning', name);
+                        } else {
+                            instr.set({ detune: detune });
+                        }
+                    } catch (e) { console.warn('Vibrato apply failed:', name, e); }
+                };
+
+                if (target === 'ALL') {
+                    applyVibrato('DefaultSynth', engine.synth);
+                    applyVibrato('KICK', engine.drum);
+                    applyVibrato('SNARE', engine.snare);
+                    applyVibrato('HH', engine.hh);
+                    applyVibrato('JazzKit', engine.jazzKit);
+                    if (engine.instruments) {
+                        for (const name in engine.instruments) {
+                            applyVibrato(name, engine.instruments[name]);
+                        }
+                    }
+                    engine.logKey('LOG_VIBRATO_SET_INSTR', 'info', 'Global (All) -> ' + detune);
                 } else {
-                    window.audioEngine.logKey('LOG_VIBRATO_ERR', 'error', instrName);
+                    let instr = null;
+                    if (engine.instruments && engine.instruments[target]) {
+                        instr = engine.instruments[target];
+                    } else if (target === 'DefaultSynth') {
+                        instr = engine.synth;
+                    } else if (target === 'KICK') {
+                        instr = engine.drum;
+                    } else if (target === 'SNARE') {
+                        instr = engine.snare;
+                    } else if (target === 'HH') {
+                        instr = engine.hh;
+                    } else if (target === 'JAZZKIT') {
+                        instr = engine.jazzKit;
+                    }
+
+                    if (instr) {
+                        applyVibrato(target, instr);
+                        engine.logKey('LOG_VIBRATO_SET_INSTR', 'info', target + " (" + detune + ")");
+                    } else {
+                        engine.logKey('LOG_VIBRATO_ERR', 'error', target);
+                    }
                 }
             })();
         `;
@@ -256,23 +301,61 @@ if (!window.audioEngine.isExecutionActive) return;
     try { G.forBlock['sb_set_instrument_vibrato'] = G['sb_set_instrument_vibrato']; } catch (e) { }
 
     G['sb_set_instrument_volume'] = function (block) {
+        let targetName = block.getFieldValue('TARGET') || 'ALL';
         var volumeValue = G.valueToCode(block, 'VOLUME_VALUE', G.ORDER_ATOMIC) || '0';
+        
         var code = `
             (function() {
-                const instrName = window.audioEngine.currentInstrumentName;
-                const currentInstrument = window.audioEngine.instruments[instrName];
-                if (currentInstrument) {
-                    const gain = Math.max(0, Math.min(1, Number(${volumeValue}))); // Clamp 0-1
-                    const db = window.audioEngine.Tone.gainToDb(gain);
-                    
-                    if (currentInstrument.type === 'CustomSampler' || currentInstrument.volume) {
-                        currentInstrument.set({ volume: db });
-                        window.audioEngine.logKey('LOG_VOL_SET_INSTR', 'info', instrName + " (" + ${volumeValue} + ")");
-                    } else {
-                        window.audioEngine.logKey('LOG_VOL_NOT_SUPPORTED', 'error');
+                const target = '${targetName}';
+                const gain = Math.max(0, Math.min(1, Number(${volumeValue})));
+                const engine = window.audioEngine;
+                const db = engine.Tone.gainToDb(gain);
+
+                const applyVolume = (name, instr) => {
+                    if (!instr) return;
+                    try {
+                        if (instr.volume) {
+                            instr.set({ volume: db });
+                        } else {
+                            engine.logKey('LOG_VOL_NOT_SUPPORTED', 'error', name);
+                        }
+                    } catch (e) { console.warn('Volume apply failed:', name, e); }
+                };
+
+                if (target === 'ALL') {
+                    applyVolume('DefaultSynth', engine.synth);
+                    applyVolume('KICK', engine.drum);
+                    applyVolume('SNARE', engine.snare);
+                    applyVolume('HH', engine.hh);
+                    applyVolume('JazzKit', engine.jazzKit);
+                    if (engine.instruments) {
+                        for (const name in engine.instruments) {
+                            applyVolume(name, engine.instruments[name]);
+                        }
                     }
+                    engine.logKey('LOG_VOL_SET_INSTR', 'info', 'Global (All) -> ' + Number(${volumeValue}));
                 } else {
-                    window.audioEngine.logKey('LOG_VOL_ERR', 'error', instrName);
+                    let instr = null;
+                    if (engine.instruments && engine.instruments[target]) {
+                        instr = engine.instruments[target];
+                    } else if (target === 'DefaultSynth') {
+                        instr = engine.synth;
+                    } else if (target === 'KICK') {
+                        instr = engine.drum;
+                    } else if (target === 'SNARE') {
+                        instr = engine.snare;
+                    } else if (target === 'HH') {
+                        instr = engine.hh;
+                    } else if (target === 'JAZZKIT') {
+                        instr = engine.jazzKit;
+                    }
+
+                    if (instr) {
+                        applyVolume(target, instr);
+                        engine.logKey('LOG_VOL_SET_INSTR', 'info', target + " (" + Number(${volumeValue}) + ")");
+                    } else {
+                        engine.logKey('LOG_VOL_ERR', 'error', target);
+                    }
                 }
             })();
         `;

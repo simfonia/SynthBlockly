@@ -16,13 +16,17 @@ async function runBlocksAction() {
     log(code);
     logKey('LOG_CODE_END');
     try {
-        const runner = new Function(`(async () => { ${code} })();`);
+        // Correctly create an AsyncFunction to allow top-level await in the generated code
+        const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+        const runner = new AsyncFunction(code);
+        
         audioEngine.isExecutionActive = true; 
         
-        // 1. Run the blocks code (this creates instruments like Piano)
-        runner();
+        // 1. Run the blocks code (this creates instruments and starts playback)
+        // We await it so that any "play and wait" blocks work correctly.
+        await runner();
         
-        // 2. Wait for the newly created instruments to load their samples
+        // 2. Wait for samples if needed (though runner already awaited, this is an extra safety)
         await audioEngine.waitForSamples();
         
         logKey('LOG_EXEC_DONE');
