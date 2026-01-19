@@ -201,42 +201,36 @@ export function registerBlocks() {
             this.appendDummyInput('CUSTOM_ROW')
                 .appendField("↳")
                 .appendField(new Blockly.FieldDropdown(function() {
-                    let options = [];
                     try {
-                        // Safely get workspace
                         let workspace = null;
-                        // Use standard API getSourceBlock() if available
-                        if (typeof this.getSourceBlock === 'function') {
-                            const block = this.getSourceBlock();
-                            if (block) workspace = block.workspace;
-                        } else if (this.sourceBlock_) {
-                            // Fallback for older Blockly versions or specific states
+                        if (this.sourceBlock_) {
                             workspace = this.sourceBlock_.workspace;
+                        } else if (this.workspace) {
+                            workspace = this.workspace;
                         }
-                        
-                        // Default fallback
-                        const fallback = [["MyInstrument", "MyInstrument"]];
 
-                        // IMPORTANT: Add the current value to prevents errors
+                        const options = [];
+                        
+                        // IMPORTANT: Add the current value of the field to the options 
+                        // to prevent "unavailable option" errors during XML loading.
                         const currentValue = this.getValue();
                         if (currentValue && currentValue !== 'MyInstrument') {
                             options.push([currentValue, currentValue]);
                         }
 
-                        if (workspace) {
-                            const targetBlockTypes = [
-                                'sb_create_synth_instrument',
-                                'sb_create_harmonic_synth',
-                                'sb_create_additive_synth',
-                                'sb_create_layered_instrument',
-                                'sb_create_sampler_instrument'
-                            ];
+                        const targetBlockTypes = [
+                            'sb_create_synth_instrument',
+                            'sb_create_harmonic_synth',
+                            'sb_create_additive_synth',
+                            'sb_create_layered_instrument',
+                            'sb_create_sampler_instrument'
+                        ];
 
+                        if (workspace) {
                             targetBlockTypes.forEach(type => {
                                 const blocks = workspace.getBlocksByType(type, false);
                                 blocks.forEach(block => {
                                     const name = block.getFieldValue('NAME');
-                                    // Avoid duplicates
                                     if (name && !options.some(opt => opt[1] === name)) {
                                         options.push([name, name]);
                                     }
@@ -245,13 +239,9 @@ export function registerBlocks() {
                         }
                         
                         options.sort((a, b) => a[0].localeCompare(b[0]));
-                        
-                        if (options.length === 0) return fallback;
+                        if (options.length === 0) return [["MyInstrument", "MyInstrument"]];
                         return options;
-
                     } catch (e) {
-                        console.warn("Error in instrument dropdown generator:", e);
-                        // Ensure we always return a valid option list to prevent render crash
                         return [["MyInstrument", "MyInstrument"]];
                     }
                 }), "CUSTOM_TYPE");
@@ -265,19 +255,6 @@ export function registerBlocks() {
             this.updateShape_();
         },
 
-        // JSON Serialization (Modern) - Fixes copy/paste issues
-        saveExtraState: function() {
-            return {
-                'isCustom': this.getFieldValue('TYPE') === 'CUSTOM'
-            };
-        },
-
-        loadExtraState: function(state) {
-            this.is_custom_state_ = state['isCustom'];
-            this.updateShape_();
-        },
-
-        // XML Serialization (Legacy compatibility)
         mutationToDom: function () {
             var container = Blockly.utils.xml.createElement('mutation');
             container.setAttribute('is_custom', this.getFieldValue('TYPE') === 'CUSTOM');

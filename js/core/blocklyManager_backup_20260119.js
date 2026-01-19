@@ -100,60 +100,45 @@ function processXmlString(xmlString) {
 let workspace = null; 
 const blockListeners = {};
 let hatUpdateTimer = null;
-let adsrUpdateTimer = null;
 
 
 function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
-    // --- ADSR UI Synchronization (Debounced to prevent render issues during copy/paste) ---
+    // --- ADSR UI Synchronization (Immediate response for visual feedback) ---
     if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
         event.type === BlocklyModule.Events.BLOCK_CREATE || 
         event.type === BlocklyModule.Events.BLOCK_DELETE ||
         event.type === BlocklyModule.Events.SELECTED) {
         
-        if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
-        adsrUpdateTimer = setTimeout(() => {
-            // 強制重繪所有積木，解決複製貼上時 Shadow Block 塌陷的問題
-            // workspace.resize() 不夠力，必須直接呼叫 block.render()
-            if (workspace) {
-                const allBlocks = workspace.getAllBlocks(false);
-                for (const block of allBlocks) {
-                    if (block.rendered) {
-                        block.render();
-                    }
-                }
-            }
+        let targetBlock = null;
+        if (event.type === BlocklyModule.Events.SELECTED && event.newElementId) {
+            const block = workspace.getBlockById(event.newElementId);
+            if (block && block.type === 'sb_set_adsr') targetBlock = block;
+        } 
+        else if (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') {
+            targetBlock = workspace.getBlockById(event.blockId);
+        }
 
-            let targetBlock = null;
-            if (event.type === BlocklyModule.Events.SELECTED && event.newElementId) {
-                const block = workspace.getBlockById(event.newElementId);
-                if (block && block.type === 'sb_set_adsr') targetBlock = block;
-            } 
-            else if (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') {
-                targetBlock = workspace.getBlockById(event.blockId);
-            }
-
-            if (targetBlock) {
+        if (targetBlock) {
+            const getNum = (name, def) => {
+                const val = targetBlock.getFieldValue(name);
+                return (val === null || val === "" || isNaN(val)) ? def : Number(val);
+            };
+            audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
+        } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
+            const remainingAdsr = workspace.getBlocksByType('sb_set_adsr', false);
+            if (remainingAdsr.length > 0) {
+                const block = remainingAdsr[0];
                 const getNum = (name, def) => {
-                    const val = targetBlock.getFieldValue(name);
+                    const val = block.getFieldValue(name);
                     return (val === null || val === "" || isNaN(val)) ? def : Number(val);
                 };
                 audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
-            } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
-                const remainingAdsr = workspace.getBlocksByType('sb_set_adsr', false);
-                if (remainingAdsr.length > 0) {
-                    const block = remainingAdsr[0];
-                    const getNum = (name, def) => {
-                        const val = block.getFieldValue(name);
-                        return (val === null || val === "" || isNaN(val)) ? def : Number(val);
-                    };
-                    audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
-                } else {
-                    audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
-                }
+            } else {
+                audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
             }
-        }, 50); // Wait 50ms for render to settle
+        }
     }
 
     if (event.isUiEvent && event.type !== BlocklyModule.Events.SELECTED) return; 

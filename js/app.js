@@ -11,7 +11,6 @@ import { initKeyboardController } from './ui/keyboardController.js';
 import { initVisualizer } from './ui/visualizer.js';
 import { initAdsrVisualizer } from './ui/adsrVisualizer.js';
 import { initSpectrumVisualizer } from './ui/spectrumVisualizer.js';
-import { initHelpModal } from './ui/helpModal.js';
 import { analyser, startAudioOnFirstInteraction } from './core/audioEngine.js'; // Import analyser and new function
 
 // Initial logging as modules load
@@ -42,8 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     logKey("LOG_VISUALIZER_INIT");
     initAdsrVisualizer();
     initSpectrumVisualizer();
-    initHelpModal();
-    logKey("LOG_HELP_MODAL_INIT");
 
     startAudioOnFirstInteraction(); // Start audio context on first interaction
     logKey("LOG_AUDIO_STARTER_INIT");

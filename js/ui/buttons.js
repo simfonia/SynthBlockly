@@ -3,6 +3,7 @@ import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js';
 import { getBlocksCode, resetWorkspaceAndAudio } from '../core/blocklyManager.js'; // Import resetWorkspaceAndAudio
 import * as Blockly from 'blockly'; // Import Blockly
 import { showExampleModal } from './exampleModal.js'; // Import Example Modal
+import { showHelpModal } from './helpModal.js'; // Import Help Modal
 
 // New function to encapsulate run logic
 async function runBlocksAction() {
@@ -188,6 +189,14 @@ export function initButtons() {
     if (btnExample) {
         btnExample.addEventListener('click', () => {
             showExampleModal();
+        });
+    }
+
+    // Help Button
+    const btnHelp = document.getElementById('btnHelp');
+    if (btnHelp) {
+        btnHelp.addEventListener('click', () => {
+            showHelpModal();
         });
     }
 

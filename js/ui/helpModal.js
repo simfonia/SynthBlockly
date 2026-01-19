@@ -1,104 +1,303 @@
-// js/ui/helpModal.js
+import { logKey } from './logger.js';
 
-const HELP_CONTENT = {
-    'distortion': {
-        title: 'Distortion (失真) 效果器',
-        content: `<p>失真效果會為聲音帶來沙啞、有力的顆粒感，常用於電吉他或電子貝斯。</p>
-                  <ul>
-                    <li><b>Wet (濕度):</b> 控制效果的乾濕混合比例 (0-1)。0 為原始聲音，1 為完全失真。</li>
-                    <li><b>Amount (量):</b> 失真的程度，數值越高越沙啞。</li>
-                    <li><b>Oversample (超取樣):</b> 減少高頻的數位雜訊，讓聲音更平滑。'4x' 的品質最好。</li>
-                  </ul>`
-    },
-    'reverb': {
-        title: 'Reverb (混響) 效果器',
-        content: `<p>混響模擬聲音在不同空間（如房間、教堂）中的反射效果，為聲音增加空間感和深度。</p>
-                  <ul>
-                    <li><b>Wet (濕度):</b> 控制效果的乾濕混合比例 (0-1)。</li>
-                    <li><b>Decay (衰減):</b> 混響的持續時間，模擬空間的大小。</li>
-                    <li><b>Predelay (預延遲):</b> 原始聲音與第一個反射音之間的時間差，可增加聲音的清晰度。</li>
-                  </ul>`
-    },
-    'feedbackDelay': {
-        title: 'Feedback Delay (回饋延遲) 效果器',
-        content: `<p>產生回音或延遲的效果，就像在山谷中呼喊一樣。</p>
-                  <ul>
-                    <li><b>Wet (濕度):</b> 控制效果的乾濕混合比例 (0-1)。</li>
-                    <li><b>Delay Time (延遲時間):</b> 每次回音之間的間隔。可使用 "4n" (四分音符), "8n." (附點八分音符) 等音樂時值。</li>
-                    <li><b>Feedback (回饋):</b> 回音的次數/強度。0.5 表示每次回音的音量都是上一次的一半。</li>
-                  </ul>`
-    },
-    'filter': {
-        title: 'Filter (濾波器)',
-        content: `<p>濾波器可以切除或增強聲音的特定頻率部分，是塑造音色的核心工具。</p>
-                  <ul>
-                    <li><b>Type (類型):</b> <ul><li><b>lowpass:</b> 只讓低頻通過，常用來讓聲音變悶。</li><li><b>highpass:</b> 只讓高頻通過，常用來切除低頻雜訊。</li><li><b>bandpass:</b> 只讓一個特定頻段的聲音通過。</li></ul></li>
-                    <li><b>Frequency (頻率):</b> 濾波器作用的中心頻率 (Hz)。</li>
-                    <li><b>Q (共振):</b> 濾波器在中心頻率附近的銳利程度，數值越高聲音聽起來越「尖」。</li>
-                    <li><b>Rolloff (滾降斜率):</b> 濾波器截止的陡峭程度，數值越低（如 -48）斜坡越陡，濾波效果越強烈。</li>
-                  </ul>`
-    },
-    'compressor': {
-        title: 'Compressor (壓縮器)',
-        content: `<p><b>用途:</b> 藝術性地塑造聲音動態，讓聲音聽起來更平穩、有力。</p>
-                  <p><b>比喻:</b> 像一個有彈性的「軟墊天花板」。當聲音太大頂到軟墊時，聲音還是會變大，只是沒有原本那麼多。</p>
-                  <ul>
-                    <li><b>Threshold (閾值):</b> 開始壓縮的音量水平(dB)，範圍約 -100 到 0。數值越低，越多聲音會被壓縮，平均音量聽起來可能更大。</li>
-                    <li><b>Ratio (比率):</b> 壓縮比率。4 代表 4:1，表示訊號每超過閾值 4dB，輸出只會增加 1dB。</li>
-                    <li><b>Attack (起始時間):</b> 聲音超過閾值後，壓縮器「反應過來」開始壓縮所需的時間 (秒)。</li>
-                    <li><b>Release (釋放時間):</b> 聲音回到閾值以下後，壓縮器「放手」停止壓縮所需的時間 (秒)。</li>
-                  </ul>`
-    },
-    'limiter': {
-        title: 'Limiter (限幅器)',
-        content: `<p><b>用途:</b> 保護性地防止聲音峰值超標，避免數位破音。</p>
-                  <p><b>比喻:</b> 像一個堅硬的「鋼筋水泥天花板」。聲音一旦頂到就絕對無法再上去了。</p>
-                  <ul>
-                    <li><b>Threshold (閾值):</b> 不允許訊號超過的音量水平(dB)，最大值為 0，範圍約 -100 到 0。</li>
-                  </ul>`
-    }
-};
+// 使用 Vite 的 glob 導入功能自動掃描文件
+// 規則：public/docs/ 下的 *_readme_*.html
+// 注意：Vite 的 import.meta.glob 路徑是相對於此 js 檔案的
+// public 資料夾在開發時位於根目錄，但在 glob 中我們通常指向 src 或相對路徑
+// 由於 public 中的檔案在 build 後會被複製到根目錄，這裡我們主要獲取 "開發時的檔案列表"
+// 或者是直接列出 url。
+// 修正：import.meta.glob 最好用於 src 下的模組。對於 public 下的靜態資源，
+// 我們通常無法直接用 glob "遍歷" 它們，除非它們在 src 內。
+// **重要調整**：為了讓 Vite 能追蹤，建議將 docs 移入 `src/docs`，或者我們保持在 public，
+// 但利用一個已知清單或透過 fetch 一個索引檔。
+// 但既然範例管理器能用 `../../src/examples/**/*.xml`，我們試試看能不能 glob public。
+// 通常 public 內的檔案不參與 bundle，所以 glob 可能抓不到。
+// **替代方案**：最穩健的方式是把這些文檔視為 src 的一部分 (move to src/docs)，或者我們在 exampleManager 看到它是 glob `../../src/examples`。
+// 如果您的文件確實在 `SynthBlockly/public/docs`，在 Vite 中 glob `../../public/docs/*.html` 是可行的（開發模式）。
+// 但在生產模式 (build) 後，這些檔案會被 copy 到 dist 根目錄，這時 import.meta.glob 的映射表依然有效（指向 assets）。
 
-let modalElement, titleElement, contentElement, closeButton;
+// 根據您的需求，我們嘗試 glob public 下的 readme
+const docFiles = import.meta.glob('../../public/docs/*_readme_*.html', { query: '?url', import: 'default' });
 
-export function initHelpModal() {
-    modalElement = document.getElementById('helpModal');
-    titleElement = document.getElementById('helpModalTitle');
-    contentElement = document.getElementById('helpModalContent');
-    closeButton = modalElement.querySelector('.modal-close-button');
+// 用於快取已載入的內容
+const contentCache = {};
 
-    if (!modalElement || !titleElement || !contentElement || !closeButton) {
-        console.error('Help modal elements not found!');
-        return;
-    }
+let modal = null;
+let currentLang = 'zh-hant'; // 預設語系，後續可從 localStorage 或 html lang 屬性取得
 
-    const closeModal = () => {
-        modalElement.style.display = 'none';
+/**
+ * 解析檔名以獲取標題與語系
+ * 格式範例: xyz_for_abc_readme_zh-hant.html
+ * 標題: Xyz For Abc
+ * 語系: zh-hant
+ */
+function parseDocInfo(path) {
+    // 提取檔名 (移除路徑)
+    const filename = path.split('/').pop();
+    
+    // 移除副檔名
+    const nameNoExt = filename.replace(/\.html$/, '');
+    
+    // 分割語系 (假設最後一個底線後是語系，且該語系可能包含 - )
+    // Regex: 找最後一個 "_readme_"
+    const parts = nameNoExt.split('_readme_');
+    
+    if (parts.length < 2) return null; // 不符合格式
+    
+    const titlePart = parts[0];
+    const langPart = parts[1];
+    
+    // 格式化標題: "xyz_for_abc" -> "Xyz For Abc"
+    const title = titlePart
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+    return {
+        id: titlePart,
+        title: title,
+        lang: langPart,
+        path: path, // 原始 glob key
+        url: null   // 待解析
     };
-
-    closeButton.addEventListener('click', closeModal);
-    modalElement.addEventListener('click', (event) => {
-        // Close if backdrop is clicked, but not content
-        if (event.target === modalElement) {
-            closeModal();
-        }
-    });
 }
 
-export function showHelpModal(effectType) {
-    if (!modalElement) {
-        console.error('Help modal not initialized.');
-        return;
+/**
+ * 準備文件列表
+ */
+async function getDocList() {
+    const docs = [];
+    
+    for (const path in docFiles) {
+        const info = parseDocInfo(path);
+        if (info) {
+            // 解析實際 URL (Vite 會處理)
+            info.url = await docFiles[path]();
+            docs.push(info);
+        }
     }
+    return docs;
+}
 
-    const help = HELP_CONTENT[effectType];
-    if (help) {
-        titleElement.textContent = help.title;
-        contentElement.innerHTML = help.content;
-        modalElement.style.display = 'flex';
-    } else {
-        titleElement.textContent = '無說明';
-        contentElement.innerHTML = `<p>找不到 <b>${effectType}</b> 的相關說明。</p>`;
-        modalElement.style.display = 'flex';
+function createHelpModal() {
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'helpModal';
+    modalDiv.className = 'modal-backdrop';
+    modalDiv.style.display = 'none';
+    
+    modalDiv.innerHTML = `
+        <div class="modal-content help-modal-content">
+            <span class="modal-close-button" id="closeHelpModal">&times;</span>
+            <div class="help-layout">
+                <div class="help-sidebar">
+                    <h3>說明主題 (Topics)</h3>
+                    <ul id="helpMenu"></ul>
+                </div>
+                <div class="help-body">
+                    <div id="helpContent" class="help-article">
+                        <div style="text-align:center; color:#666; margin-top:50px;">
+                            請從左側選擇主題<br>Select a topic from the left
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalDiv);
+    
+    // CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        .help-modal-content {
+            width: 90%;
+            max-width: 1000px;
+            height: 80vh;
+            padding: 0; /* Reset padding for layout */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .help-layout {
+            display: flex;
+            flex: 1;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .help-sidebar {
+            width: 250px;
+            background: #f5f5f5;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .help-sidebar h3 {
+            padding: 15px;
+            margin: 0;
+            background: #e0e0e0;
+            font-size: 16px;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        #helpMenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        #helpMenu li {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+            font-size: 14px;
+            color: #444;
+        }
+        
+        #helpMenu li:hover {
+            background: #fff;
+            color: #FE2F89; /* SynthBlockly Pink */
+        }
+        
+        #helpMenu li.active {
+            background: #fff;
+            border-left: 4px solid #FE2F89;
+            color: #FE2F89;
+            font-weight: bold;
+        }
+        
+        .help-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fff;
+        }
+        
+        .help-article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* 覆寫 modal close button 位置 */
+        #helpModal .modal-close-button {
+            top: 10px;
+            right: 15px;
+            z-index: 10;
+            background: rgba(255,255,255,0.8);
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            line-height: 30px;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Events
+    modalDiv.querySelector('#closeHelpModal').onclick = () => { modalDiv.style.display = 'none'; };
+    window.addEventListener('click', (e) => {
+        if (e.target == modalDiv) modalDiv.style.display = 'none';
+    });
+
+    return modalDiv;
+}
+
+/**
+ * 載入並顯示特定文件內容
+ */
+async function loadDocContent(docItem) {
+    const container = document.getElementById('helpContent');
+    const menuItems = document.querySelectorAll('#helpMenu li');
+    
+    // Update Menu Active State
+    menuItems.forEach(li => li.classList.remove('active'));
+    const activeLi = Array.from(menuItems).find(li => li.dataset.id === docItem.id);
+    if (activeLi) activeLi.classList.add('active');
+
+    // Load Content
+    container.innerHTML = '<div style="text-align:center; margin-top:50px;">載入中 (Loading)...</div>';
+    
+    try {
+        let html = "";
+        if (contentCache[docItem.url]) {
+            html = contentCache[docItem.url];
+        } else {
+            const resp = await fetch(docItem.url);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            html = await resp.text();
+            contentCache[docItem.url] = html;
+        }
+        
+        // 簡單處理：移除 head/body 標籤，只保留內容，避免樣式衝突
+        // 或者使用 Shadow DOM (較複雜)。這裡我們假設 readme html 結構簡單。
+        // 為了安全與樣式隔離，我們可以把內容包在一個 div 裡，或者用 iframe。
+        // 考慮到 readme 內有 <style>，直接 innerHTML 可能會污染全域樣式。
+        // 但 iframe 在 modal 裡有時會有捲動條問題。
+        // 這裡採用直接 innerHTML，但建議 readme 的 css 要有 scope (如範例中的 body {...})
+        // 為了防止 <style> body {} 影響主頁面，我們可以做一點正則替換
+        
+        const scopedHtml = html.replace(/body\s*{/g, '.help-article {'); 
+        
+        container.innerHTML = scopedHtml;
+        
+    } catch (e) {
+        console.error("Doc load failed:", e);
+        container.innerHTML = '<div style="color:red; text-align:center;">載入失敗 (Load Failed)</div>';
+    }
+}
+
+export async function showHelpModal() {
+    if (!modal) modal = createHelpModal();
+    
+    // 偵測語系 (優先使用 html lang，預設 zh-hant)
+    const langAttr = document.documentElement.lang || 'zh-Hant';
+    currentLang = langAttr.toLowerCase().includes('en') ? 'en' : 'zh-hant';
+    
+    // 取得並過濾文件列表
+    const allDocs = await getDocList();
+    
+    // 過濾當前語系，若無則 fallback 到 zh-hant 或 en
+    // 這裡的邏輯：針對每個 'id' (標題)，優先找 currentLang，找不到找 'en'
+    
+    const uniqueIds = [...new Set(allDocs.map(d => d.id))].sort();
+    const displayList = [];
+    
+    uniqueIds.forEach(id => {
+        const variants = allDocs.filter(d => d.id === id);
+        let target = variants.find(d => d.lang === currentLang);
+        if (!target) target = variants.find(d => d.lang === 'en'); // Fallback to English
+        if (!target) target = variants[0]; // Fallback to whatever exists
+        
+        if (target) displayList.push(target);
+    });
+
+    // 渲染選單
+    const menu = document.getElementById('helpMenu');
+    menu.innerHTML = '';
+    
+    displayList.forEach(doc => {
+        const li = document.createElement('li');
+        li.textContent = doc.title;
+        li.dataset.id = doc.id;
+        li.onclick = () => loadDocContent(doc);
+        menu.appendChild(li);
+    });
+
+    modal.style.display = 'flex';
+    
+    // 自動載入第一個主題 (如果有)
+    if (displayList.length > 0) {
+        // 如果還沒有內容被載入過，才載入第一個
+        if (document.getElementById('helpContent').innerHTML.includes('選擇主題')) {
+            loadDocContent(displayList[0]);
+        }
     }
 }
