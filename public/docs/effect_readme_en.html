@@ -11,12 +11,23 @@
         .theory { font-size: 0.9em; color: #666; font-style: italic; margin-top: 10px; border-left: 3px solid #ccc; padding-left: 10px; margin-bottom: 10px; }
         .params { font-size: 0.95em; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #eee; }
         .params strong { color: #9B59B6; }
+        .important { background-color: #fffbe6; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
         code { background: #eee; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <h1>Audio Effects: Principles & Parameters</h1>
     <p>Using the "Set Effect" block, you can add professional post-processing to your instruments. Understanding the meaning and range of each parameter will help you shape your sound precisely.</p>
+
+    <div class="important">
+        <h3>⚠️ Usage Notice: Global Effects</h3>
+        <p>Currently, effects in SynthBlockly are <strong>Global</strong>. This means:</p>
+        <ul>
+            <li>When you add an effect, it applies to <strong>ALL</strong> instruments (Synth, Drum, Sampler, etc.).</li>
+            <li>You cannot yet apply distortion only to the guitar while keeping the piano clean.</li>
+            <li>We are working on "Targeted Effects" for a future update!</li>
+        </ul>
+    </div>
 
     <div class="type-box">
         <h2>Common Parameter: Wet/Dry Mix</h2>

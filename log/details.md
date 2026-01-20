@@ -50,3 +50,29 @@
 *   **外觀**：移除 `previousStatement` 並設定 `hat: "cap"`。
 *   **冗餘訊息**：範例載入時觸發數十次註冊。
 *   **解法**：引入 `hatUpdateTimer` (150ms)，等 Workspace 穩定後才重新編譯監聽器代碼。
+
+---
+
+# 技術細節 2026-01-20
+
+## 1. 效果器時序與重複建立問題
+*   **背景**：`sb_setup_effect` 既用於初始化（帽子積木掃描註解），也用於執行期更新（線性流程或 `updateFilter`）。
+*   **修正 A (線性)**：新增 `addEffectToChain(config)`。Generator 產生執行碼，使連續積木能疊加效果器。
+*   **修正 B (重置恢復)**：點擊「執行」會觸發 `resetAudioEngineState`。實作 `forceRebuildHatEffects()`，在 Reset 後立即掃描工作區帽子積木並補回效果器節點。
+*   **修正 C (事件過濾)**：在事件監聽器 `Function` 中使用 Regex 濾除 `addEffectToChain` 的執行碼，避免事件每次觸發都產生新的音訊節點。
+
+## 2. ADSR 視覺預覽與引擎狀態衝突
+*   **問題**：點選 ADSR 積木預覽會覆蓋 `audioEngine.currentADSR`，導致後續切換樂器或發聲時參數被污染。
+*   **解法**：
+    1. 拆分 `updateADSR` 為 `updateADSR` (全域) 與 `updateADSRUI` (純繪圖)。
+    2. Blockly 選取事件僅呼叫 `updateADSRUI`。
+    3. `playCurrentInstrumentNote` 內部加入 `syncAdsrToUI()` 呼叫，確保發聲時 UI 自動跳回真實參數。
+
+## 3. Serial Port 占用與連線狀態
+*   **報錯**：`InvalidStateError: The port is already closed.`。
+*   **成因**：`disconnectSerial` 在連線失敗的情境下重複呼叫關閉。
+*   **解法**：在 `connectSerial` 的 `catch` 區塊加入 cleanup，並在 `disconnectSerial` 增加 `try-catch` 忽略已關閉狀態，確保 `serialPort` 變數能確實歸零為 `null`。
+
+## 4. 參數容錯 (safeNum)
+*   **坑點**：參數使用變數名時，傳入 `new Tone.Filter("filterFreq")` 導致崩潰。
+*   **修正**：所有建構子參數封裝 `safeNum(val, def)`，若 `Number(val)` 為 `NaN` 則回傳預設值。這確保了 Filter 節點能先「占位」成功，等待後續 `updateFilter` 傳入正確數值。

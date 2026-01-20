@@ -106,59 +106,56 @@ let adsrUpdateTimer = null;
 function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
-    // --- ADSR UI Synchronization (Debounced to prevent render issues during copy/paste) ---
-    if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
-        event.type === BlocklyModule.Events.BLOCK_CREATE || 
-        event.type === BlocklyModule.Events.BLOCK_DELETE ||
-        event.type === BlocklyModule.Events.SELECTED) {
+    // --- ADSR UI Synchronization ---
+    // Only update if the user explicitly interacts with an ADSR block
+    if ((event.type === BlocklyModule.Events.SELECTED && event.newElementId) || 
+        (event.type === BlocklyModule.Events.BLOCK_CHANGE && event.element === 'field')) {
         
-        if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
-        adsrUpdateTimer = setTimeout(() => {
-            // 強制重繪所有積木，解決複製貼上時 Shadow Block 塌陷的問題
-            // workspace.resize() 不夠力，必須直接呼叫 block.render()
-            if (workspace) {
-                const allBlocks = workspace.getAllBlocks(false);
-                for (const block of allBlocks) {
-                    if (block.rendered) {
-                        block.render();
-                    }
-                }
-            }
+        const blockId = event.blockId || event.newElementId;
+        const block = workspace.getBlockById(blockId);
 
-            let targetBlock = null;
-            if (event.type === BlocklyModule.Events.SELECTED && event.newElementId) {
-                const block = workspace.getBlockById(event.newElementId);
-                if (block && block.type === 'sb_set_adsr') targetBlock = block;
-            } 
-            else if (event.blockId && workspace.getBlockById(event.blockId)?.type === 'sb_set_adsr') {
-                targetBlock = workspace.getBlockById(event.blockId);
-            }
-
-            if (targetBlock) {
+        if (block && block.type === 'sb_set_adsr') {
+            if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
+            adsrUpdateTimer = setTimeout(() => {
                 const getNum = (name, def) => {
-                    const val = targetBlock.getFieldValue(name);
+                    const val = block.getFieldValue(name);
                     return (val === null || val === "" || isNaN(val)) ? def : Number(val);
                 };
-                audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
-            } else if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
-                const remainingAdsr = workspace.getBlocksByType('sb_set_adsr', false);
-                if (remainingAdsr.length > 0) {
-                    const block = remainingAdsr[0];
-                    const getNum = (name, def) => {
-                        const val = block.getFieldValue(name);
-                        return (val === null || val === "" || isNaN(val)) ? def : Number(val);
-                    };
-                    audioEngine.updateADSR(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
-                } else {
-                    audioEngine.updateADSR(0.01, 0.1, 0.5, 1.0);
+                // Preview only: do not change audioEngine.currentADSR
+                audioEngine.updateADSRUI(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
+            }, 50);
+        } else if (event.type === BlocklyModule.Events.SELECTED && (!block || block.type !== 'sb_set_adsr')) {
+            // If user selects something else (or nothing), sync UI back to current instrument
+            // This allows keyboard switching to update the graph correctly
+            if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
+            setTimeout(() => {
+                audioEngine.syncAdsrToUI(); 
+            }, 50);
+        }
+    }
+
+    if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
+         // If an ADSR block is deleted, revert to default or current instrument
+         audioEngine.syncAdsrToUI();
+    }
+
+    // --- Force Redraw on Change (Fixes Shadow Block collapse) ---
+    if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
+        event.type === BlocklyModule.Events.BLOCK_CREATE) {
+         // ... (existing redraw logic) ...
+         if (workspace) {
+            const allBlocks = workspace.getAllBlocks(false);
+            for (const block of allBlocks) {
+                if (block.rendered) {
+                    block.render();
                 }
             }
-        }, 50); // Wait 50ms for render to settle
+        }
     }
 
     if (event.isUiEvent && event.type !== BlocklyModule.Events.SELECTED) return; 
 
-    // --- Hat Block Registration (Debounced to prevent log spam and improve performance) ---
+    // --- Hat Block Registration ---
     if (hatUpdateTimer) clearTimeout(hatUpdateTimer);
     hatUpdateTimer = setTimeout(() => {
         updateAllHatBlocks();
@@ -328,9 +325,31 @@ function registerListenerForBlock(block) {
     const rawCode = javascriptGenerator.statementToCode(block, 'DO');
     javascriptGenerator.finish('');
     
-    // --- 關鍵修正：過濾掉 /* EFFECT_CONFIG:... */ 註解 ---
+    // --- 關鍵修正：先提取 EFFECT_CONFIG 註解來建立效果鏈，再將其從程式碼中移除 ---
+    // 這確保了即使效果器積木放在事件內部，也能在監聽器註冊時初始化效果器實例 (雖然參數可能是 NaN/變數名)
+    // 後續的 updateFilter 等執行碼會負責在運行時更新正確的數值
+    const configMatches = rawCode.match(/\/\* EFFECT_CONFIG:(.*?) \*\//g);
+    if (configMatches) {
+        try {
+            const configs = configMatches.map(comment => {
+                const jsonStr = comment.match(/EFFECT_CONFIG:(.*?) \*\//)[1];
+                return JSON.parse(jsonStr);
+            });
+            // 重建效果鏈
+            audioEngine.rebuildEffectChain(configs);
+        } catch (e) {
+            console.warn("Failed to parse effect config from event block:", e);
+        }
+    }
+
+    // --- 移除註解，避免干擾執行 ---
     // 這些註解是給 rebuildEffectChain 看的，放在監聽器 Function 內只會增加語法解析錯誤的風險
-    const code = rawCode.replace(/\/\* EFFECT_CONFIG:.*? \*\//g, "").trim();
+    let code = rawCode.replace(/\/\* EFFECT_CONFIG:.*? \*\//g, "").trim();
+    
+    // --- 關鍵修正：移除 addEffectToChain 呼叫 ---
+    // 在事件處理器中，我們不希望重複建立效果器 (這已由 forceRebuildHatEffects 完成)
+    // 我們只希望執行 updateFilter 等即時更新邏輯
+    code = code.replace(/window\.audioEngine\.addEffectToChain\(.*?\);\n?/g, "").trim();
 
     if (!code) return;
     const variableId = block.getFieldValue('DATA');
@@ -506,6 +525,38 @@ export async function initBlocklyManager() {
     }
 }
 
+function forceRebuildHatEffects() {
+    if (!workspace) return;
+    
+    // Scan all Hat blocks
+    const serialHats = workspace.getBlocksByType('sb_serial_data_received', false);
+    const midiHats = workspace.getBlocksByType('sb_midi_note_received', false);
+    const allCurrentHats = [...serialHats, ...midiHats];
+    
+    // For each Hat, extract EFFECT_CONFIG and rebuild chain
+    // Since rebuildEffectChain overwrites previous chain, only the last block with effects will win.
+    // This is consistent with current architecture.
+    allCurrentHats.forEach(block => {
+        javascriptGenerator.init(workspace);
+        const rawCode = javascriptGenerator.statementToCode(block, 'DO');
+        javascriptGenerator.finish('');
+        
+        const configMatches = rawCode.match(/\/\* EFFECT_CONFIG:(.*?) \*\//g);
+        if (configMatches) {
+            try {
+                const configs = configMatches.map(comment => {
+                    const jsonStr = comment.match(/EFFECT_CONFIG:(.*?) \*\//)[1];
+                    return JSON.parse(jsonStr);
+                });
+                audioEngine.rebuildEffectChain(configs);
+                // console.log("Restored effects for block:", block.id);
+            } catch (e) {
+                console.warn("Failed to restore effects:", e);
+            }
+        }
+    });
+}
+
 /**
  * Generates code from the Blockly workspace.
  */
@@ -524,6 +575,7 @@ export async function getBlocksCode() {
     }
     
     audioEngine.resetAudioEngineState();
+    forceRebuildHatEffects(); // <--- Restore effects after reset
     
     try {
         // --- 關鍵：在產生前一刻套用非同步覆寫 ---

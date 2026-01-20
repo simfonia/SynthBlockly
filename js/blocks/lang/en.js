@@ -267,6 +267,7 @@ export const MSG_EN = {
 
     // --- Log Messages ---
     'LOG_AUDIO_STARTED': 'Audio Engine started',
+    'LOG_AUDIO_NOT_ENABLED': 'Audio not enabled. Click page to start.',
     'LOG_AUDIO_START_FAIL': 'Engine start failed: %1',
     'LOG_JAZZKIT_LOADED': 'Jazz Kit (Sampler) loaded.',
     'LOG_SFX_LOADING': 'Loading SFX: %1',
@@ -410,6 +411,9 @@ export const MSG_EN = {
     'LOG_SERIAL_ERR': 'Serial error: %1',
     'LOG_SERIAL_PORT_BUSY': 'Serial port is busy or could not be opened.',
     'LOG_SERIAL_DISCONNECTED': 'Serial connection disconnected.',
+    'LOG_SERIAL_OPENED': 'Serial connection opened.',
+    'LOG_SERIAL_READ_ERR': 'Serial read error: %1',
+    'LOG_SERIAL_NOT_SUPPORTED': 'Web Serial API not supported.',
     'SB_PLAY_CHORD_BY_NAME_MESSAGE': 'Play Chord %1 Duration %2 Velocity %3',
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': 'Plays a defined chord by its name.',
     'SB_COMMENT_MESSAGE': 'Comment: %1',
@@ -424,4 +428,8 @@ export const MSG_EN = {
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': 'Use a pre-defined chord name (e.g., CM7) to play.',
     'SB_PLAY_CHORD_NOTES_MESSAGE': 'Play direct note list %1 duration %2 velocity %3',
     'SB_PLAY_CHORD_NOTES_TOOLTIP': 'Directly enter a list of notes (e.g., C4,E4,G4) to play, no definition needed.',
+    
+    // TOOLS
+    'SB_CONSOLE_LOG_MESSAGE': 'Log %1',
+    'SB_CONSOLE_LOG_TOOLTIP': 'Logs a message to the debug panel.',
 };

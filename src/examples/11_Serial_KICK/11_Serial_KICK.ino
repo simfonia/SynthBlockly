@@ -1,18 +1,13 @@
-// --- SynthBlockly Wah-Wah & Kick Trigger ---
+// --- SynthBlockly Kick Trigger ---
 
 // 連接腳位設定
-const int buttonPin = 2; // 按鈕接到 D2
-const int ldrPin = A0;   // LDR 的類比輸出接到 A0
+const int buttonPin = 4; // 按鈕接到 D4
 
 // 按鈕狀態與防抖動變數
 int buttonState = HIGH;         // 按鈕的當前穩定狀態
 int lastButtonState = HIGH;     // 按鈕的上一個讀取狀態
 unsigned long lastDebounceTime = 0; // 最後一次抖動時間
 unsigned long debounceDelay = 50;   // 防抖動延遲
-
-// LDR 發送間隔變數
-unsigned long lastLdrTime = 0;
-unsigned long ldrInterval = 50; // 每 50 毫秒發送一次 LDR 數值
 
 void setup() {
   Serial.begin(9600);
@@ -41,14 +36,4 @@ void loop() {
     }
   }
   lastButtonState = reading; // 更新上一次的讀取狀態
-
-
-  // --- LDR 處理 ---
-  // 每隔一段時間發送 LDR 數值
-  if (millis() - lastLdrTime >= ldrInterval) {
-    lastLdrTime = millis();
-    int ldrValue = analogRead(ldrPin);
-    Serial.print("LDR:"); // 發送 "LDR:" 前綴
-    Serial.println(ldrValue);
-  }
 }

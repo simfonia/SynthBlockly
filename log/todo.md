@@ -54,6 +54,8 @@
         - [x] 整合 ADSR 參數調整。
 
 - [x] **動態效果器管理與效果鏈重構 (Dynamic Effect Management and Chain Refactoring)**
+    - [x] 支援多個效果器疊加 (透過 `addEffectToChain` 與 `forceRebuildHatEffects`)。
+    - [x] 修復線性流程與事件驅動流程的效果器相容性。
 - [x] **自訂取樣器**:可以用自訂的wav檔創建樂器音色
 - [x] **實現 ADSR 包絡的視覺化**
 - [x] **日誌系統多語系化與區塊化**
@@ -69,3 +71,13 @@
 - [x] **修復刪除積木自動捲動問題**: 透過非同步事件處理 (Debounce) 優化。
 - [x] **範例清單排序與標題優化**: 實作自然排序與自動序號顯示。
 - [x] **整合說明文件入口網頁**: 實作自動掃描 `public/docs/` 功能與 Toolbar Help 按鈕。
+- [x] **序列埠與效果器穩定化**: 
+    - 補齊語系檔缺失 (`LOG_SERIAL_OPENED` 等)。
+    - 修復 `updateFilter` 缺失與 LDR 數值映射。
+    - 新增 `sb_console_log` 積木輔助除錯。
+
+## 待辦事項 (Future V2.0)
+- [ ] **目標音源效果器 (Targeted Effects)**: 為 `sb_setup_effect` 增加「指定目標音源 (Target Instrument)」參數，實現分軌混音。
+- [ ] **動態效果器管理**: 提供 `sb_clear_effects` 或類似機制，讓使用者能更精確控制效果器的生命週期。
+- [ ] **和弦清單擴充**: 讓 `sb_play_melody` 直接支援解析和弦名稱字串。
+- [ ] **自訂波形進階功能**: 實作從數學表示式定義波形。

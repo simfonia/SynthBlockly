@@ -34,8 +34,12 @@ async function disconnectSerial() {
     if (serialPort) {
         try {
             await serialPort.close();
+        } catch (e) { 
+            // Ignore 'The port is already closed' error
+            console.warn("Serial close warning:", e); 
+        } finally {
             serialPort = null;
-        } catch (e) { console.error("Error closing serial port:", e); }
+        }
     }
     updateSerialButton(false);
     logKey('LOG_SERIAL_DISCONNECTED');
@@ -74,8 +78,17 @@ async function connectSerial() {
         serialReader = serialPort.readable.getReader();
         readSerialLoop();
     } catch (e) {
+        // Reset port on failure to avoid "port is already closed" on next click
+        if (serialPort) {
+             // Try to close if it was partially opened, though usually not needed if open() failed
+             try { await serialPort.close(); } catch(err) {}
+             serialPort = null;
+        }
+
         if (e.name === 'NetworkError') {
             logKey('LOG_SERIAL_PORT_BUSY', 'error');
+        } else if (e.name === 'NotFoundError') {
+             // User cancelled the dialog
         } else {
             logKey('LOG_SERIAL_ERR', 'error', e.message || e);
         }

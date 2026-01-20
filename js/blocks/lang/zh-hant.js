@@ -267,6 +267,7 @@ export const MSG_ZH_HANT = {
     'LOG_UI_TRANS_UPDATED': 'UI 翻譯已更新。',
     'LOG_UI_INIT': 'UI 管理器已初始化（翻譯與按鈕效果）。',
     'LOG_AUDIO_STARTED': '音訊引擎已啟動',
+    'LOG_AUDIO_NOT_ENABLED': '音訊引擎未啟動。請點擊畫面以啟動。',
     'LOG_AUDIO_START_FAIL': '音訊引擎啟動失敗: %1',
     'LOG_JAZZKIT_LOADED': '爵士鼓 (Sampler) 樣本已載入。',
     'LOG_SFX_LOADING': '正在載入音效檔案: %1',
@@ -413,6 +414,9 @@ export const MSG_ZH_HANT = {
     'LOG_SERIAL_ERR': '序列埠錯誤: %1',
     'LOG_SERIAL_PORT_BUSY': '序列埠已被佔用或無法開啟。',
     'LOG_SERIAL_DISCONNECTED': '序列埠連線已中斷。',
+    'LOG_SERIAL_OPENED': '序列埠連線已開啟。',
+    'LOG_SERIAL_READ_ERR': '序列埠讀取錯誤: %1',
+    'LOG_SERIAL_NOT_SUPPORTED': '此瀏覽器不支援 Web Serial API。',
     'SB_PLAY_CHORD_BY_NAME_MESSAGE': '播放和弦 %1 時值 %2 力度 %3',
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': '播放指定名稱的已定義和弦。',
     'SB_COMMENT_MESSAGE': '註解: %1',
@@ -427,4 +431,8 @@ export const MSG_ZH_HANT = {
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': '輸入預先定義好的和弦名稱（如 CM7）來演奏。',
     'SB_PLAY_CHORD_NOTES_MESSAGE': '直接演奏音符清單 %1 時值 %2 力度 %3',
     'SB_PLAY_CHORD_NOTES_TOOLTIP': '直接輸入音符列表（如 C4,E4,G4）來演奏和弦，無需事先定義。',
+
+    // TOOLS
+    'SB_CONSOLE_LOG_MESSAGE': '顯示到訊息區 %1',
+    'SB_CONSOLE_LOG_TOOLTIP': '將訊息輸出至除錯面板。',
 };

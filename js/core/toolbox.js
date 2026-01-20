@@ -126,6 +126,7 @@ export const TOOLBOX_XML_STRING = `
     <category name="%{BKY_MSG_FUNCTIONS_CATEGORY}" colour="%{BKY_FUNCTIONS_HUE}" custom="PROCEDURE"></category>
     <category name="%{BKY_MSG_TOOLS_CATEGORY}" colour="%{BKY_TOOLS_HUE}">
         <block type="sb_comment"></block>
+        <block type="sb_console_log"></block>
     </category>
     <sep></sep>
     

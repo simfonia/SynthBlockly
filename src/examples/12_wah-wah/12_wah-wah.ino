@@ -1,7 +1,7 @@
 // --- SynthBlockly Wah-Wah & Kick Trigger ---
 
 // 連接腳位設定
-const int buttonPin = 2; // 按鈕接到 D2
+const int buttonPin = 4; // 按鈕接到 D4
 const int ldrPin = A0;   // LDR 的類比輸出接到 A0
 
 // 按鈕狀態與防抖動變數

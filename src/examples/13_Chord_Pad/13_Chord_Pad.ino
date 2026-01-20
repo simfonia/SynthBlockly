@@ -1,5 +1,5 @@
 /*
- * SynthBlockly - 11_Chord_Pad (16-Key Standard Mode)
+ * SynthBlockly - Chord_Pad (16-Key Standard Mode)
  * 
  * 讀取 TTP229 16 個按鍵狀態，並透過 Serial 發送 KEY:1 ~ KEY:16。
  * 

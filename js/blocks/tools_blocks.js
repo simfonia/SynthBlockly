@@ -26,4 +26,24 @@ export function registerBlocks() {
             });
         }
     };
+
+    // Console Log Block
+    Blockly.Blocks['sb_console_log'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_CONSOLE_LOG_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "MSG"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_TOOLS_HUE}",
+                "tooltip": "%{BKY_SB_CONSOLE_LOG_TOOLTIP}",
+                "helpUrl": ""
+            });
+        }
+    };
 }

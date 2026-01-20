@@ -3,10 +3,8 @@
     <variable id="%O$8`4%3bnA}gAPggU#:">serial_data</variable>
     <variable id="clean_data">clean_data</variable>
   </variables>
-
-  <!-- 教學註解 -->
   <block type="sb_comment" id="chord_pad_guide" x="10" y="10">
-    <field name="COMMENT">【範例 13：TTP229 觸控和弦板】&amp;#10;&amp;#10;此範例示範如何將觸控按鍵轉化為豐富的和弦演奏：&amp;#10;1. 建立音色：建立一個具有長延音 (R=1.2) 的 Piano 音色。&amp;#10;2. 定義和弦庫：預先定義從 C 到 Bdim 的所有常用階度和弦。&amp;#10;3. 訊息解析：監聽來自 Arduino 的按鍵字串（如 "KEY:1"）。&amp;#10;4. 邏輯對應：當收到不同的 KEY 編號時，觸發對應的爵士和弦。&amp;#10;&amp;#10;您可以配合 TTP229 觸控板，輕鬆地用單根手指彈奏出專業的鋼琴伴奏！</field>
+    <field name="COMMENT">【TTP229 觸控和弦板】&amp;#10;&amp;#10;此範例示範如何將觸控按鍵轉化為豐富的和弦演奏：&amp;#10;1. 建立音色：建立一個具有長延音 (R=1.2) 的 Piano 音色。&amp;#10;2. 定義和弦庫：預先定義從 C 到 Bdim 的所有常用階度和弦。&amp;#10;3. 訊息解析：監聽來自 Arduino 的按鍵字串（如 "KEY:1"）。&amp;#10;4. 邏輯對應：當收到不同的 KEY 編號時，觸發對應的爵士和弦。&amp;#10;&amp;#10;您可以配合 TTP229 觸控板，輕鬆地用單根手指彈奏出專業的鋼琴伴奏！</field>
     <next>
       <block type="sb_create_synth_instrument" id="wy)1J8fTnMP+rY:#wzJh">
         <field name="NAME">Piano</field>
@@ -19,23 +17,52 @@
             <field name="S">0.3</field>
             <field name="R">1.2</field>
             <next>
-              <!-- 定義和弦清單 -->
-              <block type="sb_define_chord" id="c_c"><field name="NAME">C</field><field name="NOTES_STRING">C3,E3,G3</field><next>
-              <block type="sb_define_chord" id="c_dm"><field name="NAME">Dm</field><field name="NOTES_STRING">D3,F3,A3</field><next>
-              <block type="sb_define_chord" id="c_em"><field name="NAME">Em</field><field name="NOTES_STRING">E3,G3,B3</field><next>
-              <block type="sb_define_chord" id="c_f"><field name="NAME">F</field><field name="NOTES_STRING">F3,A3,C4</field><next>
-              <block type="sb_define_chord" id="c_g"><field name="NAME">G</field><field name="NOTES_STRING">G3,B3,D4</field><next>
-              <block type="sb_define_chord" id="c_am"><field name="NAME">Am</field><field name="NOTES_STRING">A3,C4,E4</field><next>
-              <block type="sb_define_chord" id="c_bdim"><field name="NAME">Bdim</field><field name="NOTES_STRING">B3,D4,F4</field></block>
-              </next></block></next></block></next></block></next></block></next></block></next></block>
+              <block type="sb_define_chord" id="c_c">
+                <field name="NAME">C</field>
+                <field name="NOTES_STRING">C3,E3,G3</field>
+                <next>
+                  <block type="sb_define_chord" id="c_dm">
+                    <field name="NAME">Dm</field>
+                    <field name="NOTES_STRING">D3,F3,A3</field>
+                    <next>
+                      <block type="sb_define_chord" id="c_em">
+                        <field name="NAME">Em</field>
+                        <field name="NOTES_STRING">E3,G3,B3</field>
+                        <next>
+                          <block type="sb_define_chord" id="c_f">
+                            <field name="NAME">F</field>
+                            <field name="NOTES_STRING">F3,A3,C4</field>
+                            <next>
+                              <block type="sb_define_chord" id="c_g">
+                                <field name="NAME">G</field>
+                                <field name="NOTES_STRING">G3,B3,D4</field>
+                                <next>
+                                  <block type="sb_define_chord" id="c_am">
+                                    <field name="NAME">Am</field>
+                                    <field name="NOTES_STRING">A3,C4,E4</field>
+                                    <next>
+                                      <block type="sb_define_chord" id="c_bdim">
+                                        <field name="NAME">Bdim</field>
+                                        <field name="NOTES_STRING">B3,D4,F4</field>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
             </next>
           </block>
         </next>
       </block>
     </next>
   </block>
-
-  <!-- 序列埠事件監聽 (帽子積木) -->
   <block type="sb_serial_data_received" id="fPnuDi;?sA6r-Irb6~GA" x="10" y="450">
     <field name="DATA" id="%O$8`4%3bnA}gAPggU#:">serial_data</field>
     <statement name="DO">
@@ -45,7 +72,7 @@
           <block type="text_trim" id="39EAP]~0(A9!r~IX%06U">
             <field name="MODE">BOTH</field>
             <value name="TEXT">
-              <block type="variables_get">
+              <block type="variables_get" id="xGa%o@ByV9)-Ms%%~Mlw">
                 <field name="VAR" id="%O$8`4%3bnA}gAPggU#:">serial_data</field>
               </block>
             </value>
@@ -57,72 +84,184 @@
             <value name="IF0">
               <block type="logic_compare" id="Jpm8UcQa0Z6C4}Qs]q|d">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:1</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id=":vPwS|[Y8}FI/-OQ_TN5">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="{#^J#HC=8}+V0(WRq|G}">
+                    <field name="TEXT">KEY:1</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO0">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">C</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id="tp*~o{$S*Z#lGJVmRr;j">
+                <field name="CHORD_NAME">C</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="s,|oS8rRXeB%}magFAQx">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
             <value name="IF1">
-              <block type="logic_compare">
+              <block type="logic_compare" id="mI[k!N;fG#)X[IN.Gh;a">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:2</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="#X3pv%?_J$~YH]*Uq$-Y">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="lCih}m_msR|C9:U`NW64">
+                    <field name="TEXT">KEY:2</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO1">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">Dm</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id="e+e|8Znw%#|{O+tV#guJ">
+                <field name="CHORD_NAME">Dm</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="KIVd+#5oq/B7dlp{h%$V">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
             <value name="IF2">
-              <block type="logic_compare">
+              <block type="logic_compare" id="o+pjlcV6t6Hz$o4++Y7l">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:3</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="|N@lZd5yTv4tWWUM?zG_">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="]{JHYR0IXE].*smbX}-P">
+                    <field name="TEXT">KEY:3</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO2">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">Em</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id="+}S%3T8Iv#nLeVz-XNZ]">
+                <field name="CHORD_NAME">Em</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="/m@U}o+i[!o~3g`CKLt0">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
             <value name="IF3">
-              <block type="logic_compare">
+              <block type="logic_compare" id="|-j@Bb;~y*B(4Kq``UjV">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:4</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="l=]V1b.p{k2,ZX%FgL+o">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="(i[(zkd;wKC6ZPFq^Li7">
+                    <field name="TEXT">KEY:4</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO3">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">F</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id=":a,FiT00QNw0zGC.,#nk">
+                <field name="CHORD_NAME">F</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="shf3u;,BYvDcgmRU5^)5">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
             <value name="IF4">
-              <block type="logic_compare">
+              <block type="logic_compare" id="DfD$6^y(jcQ(,fmkT:Zd">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:5</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="%j5HmA~IQ-oU7n#UC).*">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="hF16}:xmh$g1K5Fo`t.v">
+                    <field name="TEXT">KEY:5</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO4">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">G</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id="cNdz8^8[_?qByYY=9ti9">
+                <field name="CHORD_NAME">G</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="+B1A9%PUEH$.a?2q71IA">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
             <value name="IF5">
-              <block type="logic_compare">
+              <block type="logic_compare" id="7dA$R.Ik8,Ln!I5$gTKp">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:6</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="z4bt],+.l?)YAv6siu@e">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="]+93^cm;SqhmE18=f4Sf">
+                    <field name="TEXT">KEY:6</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO5">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">Am</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id="$8+KqpZm5o)_.@hKc@,E">
+                <field name="CHORD_NAME">Am</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="~`b*Cr8wWV{p$*RHBVz4">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
             <value name="IF6">
-              <block type="logic_compare">
+              <block type="logic_compare" id="M1iHSlS}U*yW(Vpx:-;A">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:7</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="I9(njnqnd#H;a*FJp`bj">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="N1kH62vSXJv{@4ML.WEx">
+                    <field name="TEXT">KEY:7</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO6">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">Bdim</field><field name="DUR">4n</field><value name="VELOCITY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+              <block type="sb_play_chord_by_name" id="uEgt1RNnQj4d[h$rl;ni">
+                <field name="CHORD_NAME">Bdim</field>
+                <field name="DUR">4n</field>
+                <value name="VELOCITY">
+                  <shadow type="math_number" id="`/g?uJT-nie7|.dMl#E?">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
             </statement>
           </block>
         </next>

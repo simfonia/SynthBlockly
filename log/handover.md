@@ -53,3 +53,32 @@
 音序器已支援底線 `_` 與視覺分隔符 `|`。
 若遇到語法錯誤，請檢查 `applyAsyncProcedureOverrides` 函式。
 下一個目標是檢查其餘範例的音樂性流暢度，或依據使用者需求新增更多硬體整合案例。
+
+---
+
+# 任務交接 2026-01-20
+
+## 當前進度
+1. **效果器系統重構 (核心突破)**：
+   - 解決了「多個效果器積木無法疊加」的問題。現在主流程中的效果器會透過 `addEffectToChain` 依序加入。
+   - 解決了「執行程式 (Run) 後事件效果器消失」的問題。現在系統重置後會透過 `forceRebuildHatEffects` 自動補回帽子積木定義的效果器。
+   - 修復了 `updateFilter` 缺失與實例匹配邏輯，支援 Wah-wah 效果。
+2. **ADSR 視覺化與發聲同步**：
+   - 實現了「所見即所聽」：點選積木僅作 UI 預覽而不改變全域狀態；一旦按下 PC Key 彈奏，圖表會自動跳轉回該樂器的真實 ADSR。
+3. **範例 12 & 14 優化**：
+   - 範例 12 加入 Constrain 與邏輯反轉，操控更直覺。
+   - 範例 14 由 Bitmask 重構為單鍵字串比對，與範例 13 保持一致。
+4. **系統健全化**：
+   - 補齊語系檔缺失 (`LOG_SERIAL_OPENED` 等)。
+   - 新增「顯示到訊息區 (Log)」除錯積木。
+   - 修復了 Serial 連線狀態異常導致的 `InvalidStateError`。
+
+## 下一步工作建議
+1. **V2.0 架構規劃**：導入「定義區 (Definition)」與「執行區 (Execution)」分離的設計，徹底根治初始化與執行時機的混亂。
+2. **目標音源效果器**：讓 `sb_setup_effect` 支援指定單一音源而非全域套用。
+3. **文件同步**：繼續更新教材說明，強調目前效果器的全域性質。
+
+## 關鍵技術細節 (Prompt for next me)
+- **效果器註冊機制**：帽子積木內的 `sb_setup_effect` 透過 `/* EFFECT_CONFIG:... */` 註解標記。在註冊 Listener 時會掃描並執行 `rebuildEffectChain`；在 Listener 執行期則會濾除建立指令以防重複產生節點。
+- **ADSR 狀態分離**：若要單純更新 UI 圖表而不改動 `audioEngine.currentADSR`，請呼叫 `audioEngine.updateADSRUI()`。
+- **自動同步**：`audioEngine` 的發聲函式（如 `playCurrentInstrumentNote`）現在會主動呼叫 `syncAdsrToUI()` 確保視覺對齊。

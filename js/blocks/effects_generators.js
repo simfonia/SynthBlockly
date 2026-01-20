@@ -103,21 +103,30 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             params: params
         };
 
-        // 1. 註解格式供初始化效果鏈
+        // 1. 註解格式供初始化效果鏈 (給 blocklyManager 掃描用)
         const configComment = `/* EFFECT_CONFIG:${JSON.stringify(config)} */`;
 
-        // 2. 簡化即時更新代碼 (避免複雜語法在 new Function 中報錯)
+        // 2. 執行碼：將效果器加入鏈中 (給主程式執行用)
+        // 注意：這裡使用 JSON.stringify 寫死參數，對於變數輸入 (如 frequency block) 會有問題
+        // 理想狀況是 params 內的值若是代碼字串應保持原樣，但這裡 params 已被解析為數值或字串
+        // 對於 Filter Freq 若是變數，上面的 getNumericValue 會回傳變數名嗎？
+        // 檢查 getNumericValue: 它回傳 G.valueToCode (字串) 或 defaultValue
+        // 所以 params.frequency 可能是 "filterFreq" 字串
+        // JSON.stringify 會把它變成 "\"filterFreq\""，這樣傳給 addEffectToChain 後
+        // safeNum 會判斷 NaN 並使用預設值。這對於初始化是 OK 的。
+        // 後續的即時更新會由 liveUpdateCode 處理。
+        
+        const execCode = `window.audioEngine.addEffectToChain(${JSON.stringify(config)});\n`;
+
+        // 3. 即時更新代碼 (給事件迴圈用)
         let liveUpdateCode = "";
         if (effectType === 'filter') {
             const freq = G.valueToCode(block, 'FILTER_FREQ', G.ORDER_ATOMIC) || '20000';
             const qValue = G.valueToCode(block, 'FILTER_Q', G.ORDER_ATOMIC) || '1';
-            liveUpdateCode = `window.audioEngine.updateFilter(${freq}, ${qValue});`;
-        } else {
-            // 其他效果暫不實作即時更新，避免頻繁 rebuild 造成卡頓
-            liveUpdateCode = "";
+            liveUpdateCode = `window.audioEngine.updateFilter(${freq}, ${qValue});\n`;
         }
 
-        return configComment + liveUpdateCode + '\n';
+        return configComment + execCode + liveUpdateCode;
     }.bind(G);
     try { if (Gproto) Gproto['sb_setup_effect'] = G['sb_setup_effect']; } catch (e) { }
     try { if (GeneratorProto) GeneratorProto['sb_setup_effect'] = G['sb_setup_effect']; } catch (e) { }

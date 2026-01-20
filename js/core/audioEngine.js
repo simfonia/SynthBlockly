@@ -101,6 +101,10 @@ export const audioEngine = {
 
     updateADSR: function(a, d, s, r) {
         this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
+        this.updateADSRUI(a, d, s, r);
+    },
+
+    updateADSRUI: function(a, d, s, r) {
         updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
     },
 
@@ -113,27 +117,101 @@ export const audioEngine = {
             effectsConfig.forEach(config => {
                 if (!config || !config.type) return;
                 let instance; const p = config.params || {};
+                
+                // Helper to ensure numeric params have safe defaults if they come in as variable strings
+                const safeNum = (val, def) => {
+                    const n = Number(val);
+                    return isNaN(n) ? def : n;
+                };
+
                 switch (config.type) {
-                    case 'distortion': instance = new Tone.Distortion(p); break;
-                    case 'reverb': instance = new Tone.Reverb(p.decay); break;
-                    case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), p.feedback); break;
-                    case 'filter': instance = new Tone.Filter(p.frequency, p.type || 'lowpass'); break;
+                    case 'distortion': instance = new Tone.Distortion(safeNum(p.distortion, 0)); break;
+                    case 'reverb': instance = new Tone.Reverb(safeNum(p.decay, 1.5)); break;
+                    case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), safeNum(p.feedback, 0.25)); break;
+                    case 'filter': instance = new Tone.Filter(safeNum(p.frequency, 1000), p.type || 'lowpass'); break;
                     case 'compressor': instance = new Tone.Compressor(p); break;
-                    case 'limiter': instance = new Tone.Limiter(p.threshold); break;
-                    case 'bitCrusher': instance = new Tone.BitCrusher(p.bits); break;
-                    case 'chorus': instance = new Tone.Chorus(p.frequency, p.delayTime, p.depth).start(); break;
-                    case 'phaser': instance = new Tone.Phaser(p.frequency, p.octaves, p.baseFrequency); break;
-                    case 'autoPanner': instance = new Tone.AutoPanner(p.frequency, p.depth).start(); break;
-                    case 'tremolo': instance = new Tone.Tremolo(p.frequency, p.depth).start(); break;
+                    case 'limiter': instance = new Tone.Limiter(safeNum(p.threshold, -6)); break;
+                    case 'bitCrusher': instance = new Tone.BitCrusher(safeNum(p.bits, 4)); break;
+                    case 'chorus': instance = new Tone.Chorus(safeNum(p.frequency, 1.5), safeNum(p.delayTime, 3.5), safeNum(p.depth, 0.7)).start(); break;
+                    case 'phaser': instance = new Tone.Phaser(safeNum(p.frequency, 15), safeNum(p.octaves, 3), safeNum(p.baseFrequency, 350)); break;
+                    case 'autoPanner': instance = new Tone.AutoPanner(safeNum(p.frequency, 1), safeNum(p.depth, 1)).start(); break;
+                    case 'tremolo': instance = new Tone.Tremolo(safeNum(p.frequency, 10), safeNum(p.depth, 0.5)).start(); break;
                 }
                 if (instance) {
-                    if (p.wet !== undefined && instance.wet) instance.wet.value = p.wet;
+                    if (p.wet !== undefined && instance.wet) instance.wet.value = safeNum(p.wet, 1);
                     this._activeEffects.push(instance);
                 }
             });
         } catch (e) { console.error(e); }
+        
         const chain = [...this._activeEffects, analyser];
         all.forEach(i => { if (i && i.chain) i.chain(...chain); });
+    },
+
+    updateFilter: function(freq, q) {
+        // Find the first active filter and update it
+        const filter = this._activeEffects.find(e => {
+            return (e instanceof Tone.Filter) || (e.name === 'Filter') || (e.toString && e.toString().includes('Filter'));
+        });
+
+        if (filter) {
+            if (freq !== undefined && freq !== null && !isNaN(freq)) {
+                // Smooth ramp to prevent clicking, but keep it snappy
+                const safeFreq = Math.max(10, Math.min(20000, Number(freq)));
+                // Check if frequency is a signal
+                if (filter.frequency && filter.frequency.rampTo) {
+                    filter.frequency.rampTo(safeFreq, 0.05);
+                } else {
+                     filter.frequency = safeFreq; // Fallback
+                }
+            }
+            if (q !== undefined && q !== null && !isNaN(q)) {
+                 if (filter.Q && filter.Q.value !== undefined) {
+                     filter.Q.value = Math.max(0, Number(q));
+                 }
+            }
+        }
+    },
+
+    addEffectToChain: function(config) {
+        if (!config || !config.type) return;
+        
+        // Helper to ensure numeric params have safe defaults
+        const safeNum = (val, def) => {
+            const n = Number(val);
+            return isNaN(n) ? def : n;
+        };
+
+        let instance; const p = config.params || {};
+        try {
+            switch (config.type) {
+                case 'distortion': instance = new Tone.Distortion(safeNum(p.distortion, 0)); break;
+                case 'reverb': instance = new Tone.Reverb(safeNum(p.decay, 1.5)); break;
+                case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), safeNum(p.feedback, 0.25)); break;
+                case 'filter': instance = new Tone.Filter(safeNum(p.frequency, 1000), p.type || 'lowpass'); break;
+                case 'compressor': instance = new Tone.Compressor(p); break;
+                case 'limiter': instance = new Tone.Limiter(safeNum(p.threshold, -6)); break;
+                case 'bitCrusher': instance = new Tone.BitCrusher(safeNum(p.bits, 4)); break;
+                case 'chorus': instance = new Tone.Chorus(safeNum(p.frequency, 1.5), safeNum(p.delayTime, 3.5), safeNum(p.depth, 0.7)).start(); break;
+                case 'phaser': instance = new Tone.Phaser(safeNum(p.frequency, 15), safeNum(p.octaves, 3), safeNum(p.baseFrequency, 350)); break;
+                case 'autoPanner': instance = new Tone.AutoPanner(safeNum(p.frequency, 1), safeNum(p.depth, 1)).start(); break;
+                case 'tremolo': instance = new Tone.Tremolo(safeNum(p.frequency, 10), safeNum(p.depth, 0.5)).start(); break;
+            }
+            if (instance) {
+                if (p.wet !== undefined && instance.wet) instance.wet.value = safeNum(p.wet, 1);
+                this._activeEffects.push(instance);
+                
+                // Re-chain everything
+                const all = [synth, drum, hh, snare, click, jazzKit, ...Object.values(this.instruments)];
+                const chain = [...this._activeEffects, analyser];
+                all.forEach(i => { if (i && i.disconnect) i.disconnect(); });
+                all.forEach(i => { if (i && i.chain) i.chain(...chain); });
+                
+                // console.log("Added effect:", config.type, "Total:", this._activeEffects.length);
+            }
+        } catch (e) {
+            console.error("Error adding effect:", e);
+        }
     },
 
     createInstrument: function(name, type) {
@@ -286,6 +364,9 @@ export const audioEngine = {
     },
 
     playCurrentInstrumentNote: function(note, dur, time, velocity) {
+        // If we were previewing a block, sync back to real instrument state before playing
+        if (time === undefined) this.syncAdsrToUI();
+
         const t = (time !== undefined) ? time : Tone.now() + 0.1;
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
         const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
@@ -300,6 +381,7 @@ export const audioEngine = {
     },
 
     playCurrentInstrumentNoteAttack: function(note, velocity) {
+        this.syncAdsrToUI();
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
         const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
         if (instr && instr.triggerAttack) {

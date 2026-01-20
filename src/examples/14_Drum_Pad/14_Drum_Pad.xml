@@ -6,7 +6,7 @@
 
   <!-- 教學註解 -->
   <block type="sb_comment" id="drum_pad_guide" x="10" y="10">
-    <field name="COMMENT">【範例 14：多點觸控電子鼓墊】&amp;#10;&amp;#10;此範例展示如何處理「多鍵同時觸發」的高級技巧：&amp;#10;1. 建立樂器：預設使用 Piano (PolySynth)。&amp;#10;2. 位元遮罩 (Bitmask)：TTP229 設為 16 鍵模式後，會送出像 "KEYS:5" 這種包含多鍵資訊的訊息。&amp;#10;3. 檢查按鍵積木：利用「檢查資料...中按鍵 N 是否按下？」來過濾出哪些鍵被觸發。&amp;#10;4. 同步發聲：不同於範例 13，這種寫法支援同時按下多個鍵並發出多個聲音。&amp;#10;&amp;#10;請連接 Arduino 後，嘗試同時拍打多個觸控位，體驗電子鼓墊的反應！</field>
+    <field name="COMMENT">【電子鼓墊 (單鍵模式)】&amp;#10;&amp;#10;此範例示範如何將 Arduino 的按鍵訊號（如 'KEY:1'）對應到不同的鼓聲或和弦：&amp;#10;1. 建立樂器：使用 Piano 與 JazzKit。&amp;#10;2. 訊息解析：監聽 'KEY:1' ~ 'KEY:4'。&amp;#10;3. 觸發聲音：&amp;#10;   - KEY:1 -&gt; 大鼓 (Kick)&amp;#10;   - KEY:2 -&gt; 拍手 (Handclap)&amp;#10;   - KEY:3 -&gt; C 和弦&amp;#10;   - KEY:4 -&gt; F 和弦</field>
     <next>
       <block type="sb_create_synth_instrument" id="sWKNmc2qwf||mWjz+G;U">
         <field name="NAME">Piano</field>
@@ -54,59 +54,56 @@
           </block>
         </value>
         <next>
-          <!-- 檢查按鍵 1: 大鼓 -->
-          <block type="controls_if" id="check_k1">
+          <!-- 判斷 KEY:1 ~ KEY:4 -->
+          <block type="controls_if" id="key_logic">
+            <mutation elseif="3"></mutation>
+            <!-- IF 0: KEY:1 -->
             <value name="IF0">
-              <block type="sb_serial_check_key_mask">
-                <field name="KEY">1</field>
-                <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+              <block type="logic_compare" id="cmp_k1">
+                <field name="OP">EQ</field>
+                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                <value name="B"><block type="text"><field name="TEXT">KEY:1</field></block></value>
               </block>
             </value>
             <statement name="DO0">
               <block type="jazzkit_play_drum"><field name="DRUM_TYPE">C1</field></block>
             </statement>
-            <next>
-              <!-- 檢查按鍵 2: 拍手 -->
-              <block type="controls_if" id="check_k2">
-                <value name="IF0">
-                  <block type="sb_serial_check_key_mask">
-                    <field name="KEY">2</field>
-                    <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                  </block>
-                </value>
-                <statement name="DO0">
-                  <block type="jazzkit_play_drum"><field name="DRUM_TYPE">D#1</field></block>
-                </statement>
-                <next>
-                  <!-- 檢查按鍵 3: 和弦 C -->
-                  <block type="controls_if" id="check_k3">
-                    <value name="IF0">
-                      <block type="sb_serial_check_key_mask">
-                        <field name="KEY">3</field>
-                        <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                      </block>
-                    </value>
-                    <statement name="DO0">
-                      <block type="sb_play_chord_by_name"><field name="CHORD_NAME">C</field><field name="DUR">8n</field></block>
-                    </statement>
-                    <next>
-                      <!-- 檢查按鍵 4: 和弦 F -->
-                      <block type="controls_if" id="check_k4">
-                        <value name="IF0">
-                          <block type="sb_serial_check_key_mask">
-                            <field name="KEY">4</field>
-                            <value name="DATA"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                          </block>
-                        </value>
-                        <statement name="DO0">
-                          <block type="sb_play_chord_by_name"><field name="CHORD_NAME">F</field><field name="DUR">8n</field></block>
-                        </statement>
-                      </block>
-                    </next>
-                  </block>
-                </next>
+            
+            <!-- IF 1: KEY:2 -->
+            <value name="IF1">
+              <block type="logic_compare" id="cmp_k2">
+                <field name="OP">EQ</field>
+                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                <value name="B"><block type="text"><field name="TEXT">KEY:2</field></block></value>
               </block>
-            </next>
+            </value>
+            <statement name="DO1">
+              <block type="jazzkit_play_drum"><field name="DRUM_TYPE">D#1</field></block>
+            </statement>
+
+            <!-- IF 2: KEY:3 -->
+            <value name="IF2">
+              <block type="logic_compare" id="cmp_k3">
+                <field name="OP">EQ</field>
+                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                <value name="B"><block type="text"><field name="TEXT">KEY:3</field></block></value>
+              </block>
+            </value>
+            <statement name="DO2">
+              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">C</field><field name="DUR">8n</field></block>
+            </statement>
+
+            <!-- IF 3: KEY:4 -->
+            <value name="IF3">
+              <block type="logic_compare" id="cmp_k4">
+                <field name="OP">EQ</field>
+                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
+                <value name="B"><block type="text"><field name="TEXT">KEY:4</field></block></value>
+              </block>
+            </value>
+            <statement name="DO3">
+              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">F</field><field name="DUR">8n</field></block>
+            </statement>
           </block>
         </next>
       </block>
