@@ -78,7 +78,7 @@ export const audioEngine = {
     get synth() { return synth; }, get drum() { return drum; }, get hh() { return hh; },
     get snare() { return snare; }, get click() { return click; }, get jazzKit() { return jazzKit; },
     
-    effects: {}, _activeEffects: [], activeSFXPlayers: [],
+    effects: {}, _activeEffects: [], instrumentEffects: {}, activeSFXPlayers: [],
     instruments: {}, layeredInstruments: {},
     currentInstrumentName: 'DefaultSynth',
     currentSemitoneOffset: 0,
@@ -108,49 +108,114 @@ export const audioEngine = {
         updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
     },
 
+    _createEffectInstance: function(config) {
+        if (!config || !config.type) return null;
+        let instance = null; 
+        const p = config.params || {};
+        
+        const safeNum = (val, def) => {
+            const n = Number(val);
+            return isNaN(n) ? def : n;
+        };
+
+        try {
+            switch (config.type) {
+                case 'distortion': instance = new Tone.Distortion(safeNum(p.distortion, 0)); break;
+                case 'reverb': instance = new Tone.Reverb(safeNum(p.decay, 1.5)); break;
+                case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), safeNum(p.feedback, 0.25)); break;
+                case 'filter': instance = new Tone.Filter(safeNum(p.frequency, 1000), p.type || 'lowpass'); break;
+                case 'compressor': instance = new Tone.Compressor(p); break;
+                case 'limiter': instance = new Tone.Limiter(safeNum(p.threshold, -6)); break;
+                case 'bitCrusher': instance = new Tone.BitCrusher(safeNum(p.bits, 4)); break;
+                case 'chorus': instance = new Tone.Chorus(safeNum(p.frequency, 1.5), safeNum(p.delayTime, 3.5), safeNum(p.depth, 0.7)).start(); break;
+                case 'phaser': instance = new Tone.Phaser(safeNum(p.frequency, 15), safeNum(p.octaves, 3), safeNum(p.baseFrequency, 350)); break;
+                case 'autoPanner': instance = new Tone.AutoPanner(safeNum(p.frequency, 1), safeNum(p.depth, 1)).start(); break;
+                case 'tremolo': instance = new Tone.Tremolo(safeNum(p.frequency, 10), safeNum(p.depth, 0.5)).start(); break;
+            }
+            if (instance) {
+                if (p.wet !== undefined && instance.wet) instance.wet.value = safeNum(p.wet, 1);
+            }
+        } catch (e) {
+            console.error("Effect creation error:", e);
+        }
+        return instance;
+    },
+
+    _reconnectAll: function() {
+        const masterChain = [...this._activeEffects, analyser];
+        
+        // Core (Hidden) Instruments -> Master
+        [drum, hh, snare, click, jazzKit].forEach(i => {
+             if (i) { 
+                 if (i.disconnect) i.disconnect(); 
+                 if (i.chain) i.chain(...masterChain); 
+             }
+        });
+
+        // Registered Instruments (includes DefaultSynth)
+        for (const [name, instr] of Object.entries(this.instruments)) {
+             if (!instr) continue;
+             if (instr.disconnect) instr.disconnect();
+             
+             const localEffects = this.instrumentEffects[name] || [];
+             // Chain: Instr -> Local Effects -> Master Chain
+             if (instr.chain) instr.chain(...localEffects, ...masterChain);
+        }
+    },
+
     rebuildEffectChain: function(effectsConfig = []) {
+        // Dispose global effects
         this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); });
         this._activeEffects = [];
-        const all = [synth, drum, hh, snare, click, jazzKit, ...Object.values(this.instruments)];
-        all.forEach(i => { if (i && i.disconnect) i.disconnect(); });
+        
+        // Dispose local effects
+        Object.values(this.instrumentEffects || {}).forEach(chain => {
+             chain.forEach(e => { if (e && e.dispose) e.dispose(); });
+        });
+        this.instrumentEffects = {}; 
+
         try {
             effectsConfig.forEach(config => {
-                if (!config || !config.type) return;
-                let instance; const p = config.params || {};
-                
-                // Helper to ensure numeric params have safe defaults if they come in as variable strings
-                const safeNum = (val, def) => {
-                    const n = Number(val);
-                    return isNaN(n) ? def : n;
-                };
-
-                switch (config.type) {
-                    case 'distortion': instance = new Tone.Distortion(safeNum(p.distortion, 0)); break;
-                    case 'reverb': instance = new Tone.Reverb(safeNum(p.decay, 1.5)); break;
-                    case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), safeNum(p.feedback, 0.25)); break;
-                    case 'filter': instance = new Tone.Filter(safeNum(p.frequency, 1000), p.type || 'lowpass'); break;
-                    case 'compressor': instance = new Tone.Compressor(p); break;
-                    case 'limiter': instance = new Tone.Limiter(safeNum(p.threshold, -6)); break;
-                    case 'bitCrusher': instance = new Tone.BitCrusher(safeNum(p.bits, 4)); break;
-                    case 'chorus': instance = new Tone.Chorus(safeNum(p.frequency, 1.5), safeNum(p.delayTime, 3.5), safeNum(p.depth, 0.7)).start(); break;
-                    case 'phaser': instance = new Tone.Phaser(safeNum(p.frequency, 15), safeNum(p.octaves, 3), safeNum(p.baseFrequency, 350)); break;
-                    case 'autoPanner': instance = new Tone.AutoPanner(safeNum(p.frequency, 1), safeNum(p.depth, 1)).start(); break;
-                    case 'tremolo': instance = new Tone.Tremolo(safeNum(p.frequency, 10), safeNum(p.depth, 0.5)).start(); break;
-                }
+                const instance = this._createEffectInstance(config);
                 if (instance) {
-                    if (p.wet !== undefined && instance.wet) instance.wet.value = safeNum(p.wet, 1);
-                    this._activeEffects.push(instance);
+                    const target = config.target || 'Master';
+                    const cleanTarget = String(target).replace(/^['"]|['"]$/g, '');
+
+                    if (cleanTarget === 'Master') {
+                        this._activeEffects.push(instance);
+                    } else {
+                        if (!this.instrumentEffects[cleanTarget]) this.instrumentEffects[cleanTarget] = [];
+                        this.instrumentEffects[cleanTarget].push(instance);
+                    }
                 }
             });
         } catch (e) { console.error(e); }
         
-        const chain = [...this._activeEffects, analyser];
-        all.forEach(i => { if (i && i.chain) i.chain(...chain); });
+        this._reconnectAll();
     },
 
-    updateFilter: function(freq, q) {
+    updateFilter: function(targetName, freq, q) {
+        // Handle overload: updateFilter(freq, q) -> target='Master'
+        if (typeof targetName === 'number' && (typeof freq === 'number' || freq === undefined)) {
+            q = freq;
+            freq = targetName;
+            targetName = 'Master';
+        }
+
+        const cleanTarget = String(targetName || 'Master').replace(/^['"]|['"]$/g, '');
+
+        // Find chain
+        let chain;
+        if (cleanTarget === 'Master') {
+            chain = this._activeEffects;
+        } else {
+            chain = this.instrumentEffects[cleanTarget];
+        }
+
+        if (!chain) return;
+
         // Find the first active filter and update it
-        const filter = this._activeEffects.find(e => {
+        const filter = chain.find(e => {
             return (e instanceof Tone.Filter) || (e.name === 'Filter') || (e.toString && e.toString().includes('Filter'));
         });
 
@@ -176,41 +241,21 @@ export const audioEngine = {
     addEffectToChain: function(config) {
         if (!config || !config.type) return;
         
-        // Helper to ensure numeric params have safe defaults
-        const safeNum = (val, def) => {
-            const n = Number(val);
-            return isNaN(n) ? def : n;
-        };
+        const instance = this._createEffectInstance(config);
 
-        let instance; const p = config.params || {};
-        try {
-            switch (config.type) {
-                case 'distortion': instance = new Tone.Distortion(safeNum(p.distortion, 0)); break;
-                case 'reverb': instance = new Tone.Reverb(safeNum(p.decay, 1.5)); break;
-                case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), safeNum(p.feedback, 0.25)); break;
-                case 'filter': instance = new Tone.Filter(safeNum(p.frequency, 1000), p.type || 'lowpass'); break;
-                case 'compressor': instance = new Tone.Compressor(p); break;
-                case 'limiter': instance = new Tone.Limiter(safeNum(p.threshold, -6)); break;
-                case 'bitCrusher': instance = new Tone.BitCrusher(safeNum(p.bits, 4)); break;
-                case 'chorus': instance = new Tone.Chorus(safeNum(p.frequency, 1.5), safeNum(p.delayTime, 3.5), safeNum(p.depth, 0.7)).start(); break;
-                case 'phaser': instance = new Tone.Phaser(safeNum(p.frequency, 15), safeNum(p.octaves, 3), safeNum(p.baseFrequency, 350)); break;
-                case 'autoPanner': instance = new Tone.AutoPanner(safeNum(p.frequency, 1), safeNum(p.depth, 1)).start(); break;
-                case 'tremolo': instance = new Tone.Tremolo(safeNum(p.frequency, 10), safeNum(p.depth, 0.5)).start(); break;
-            }
-            if (instance) {
-                if (p.wet !== undefined && instance.wet) instance.wet.value = safeNum(p.wet, 1);
+        if (instance) {
+            const target = config.target || 'Master';
+            const cleanTarget = String(target).replace(/^['"]|['"]$/g, '');
+
+            if (cleanTarget === 'Master') {
                 this._activeEffects.push(instance);
-                
-                // Re-chain everything
-                const all = [synth, drum, hh, snare, click, jazzKit, ...Object.values(this.instruments)];
-                const chain = [...this._activeEffects, analyser];
-                all.forEach(i => { if (i && i.disconnect) i.disconnect(); });
-                all.forEach(i => { if (i && i.chain) i.chain(...chain); });
-                
-                // console.log("Added effect:", config.type, "Total:", this._activeEffects.length);
+            } else {
+                if (!this.instrumentEffects[cleanTarget]) this.instrumentEffects[cleanTarget] = [];
+                this.instrumentEffects[cleanTarget].push(instance);
             }
-        } catch (e) {
-            console.error("Error adding effect:", e);
+                
+            // Re-chain everything
+            this._reconnectAll();
         }
     },
 
@@ -599,8 +644,18 @@ export const audioEngine = {
         this.currentInstrumentName = 'DefaultSynth';
         this.instruments['DefaultSynth'] = synth;
         this.chords = {}; this.keyboardChordMap = {}; this.midiChordMap = {}; this.clearPressedKeys();
+        
+        // Clear Global Effects
         this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); }); 
-        this._activeEffects = []; this.currentSemitoneOffset = 0;
+        this._activeEffects = [];
+        
+        // Clear Instrument Effects
+        Object.values(this.instrumentEffects || {}).forEach(chain => {
+             chain.forEach(e => { if (e && e.dispose) e.dispose(); });
+        });
+        this.instrumentEffects = {};
+
+        this.currentSemitoneOffset = 0;
         logKey('LOG_ENGINE_RESET_DONE');
     },
 

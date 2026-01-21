@@ -185,7 +185,7 @@ export const MSG_ZH_HANT = {
     'SB_SCHEDULE_AT_OFFSET_TOOLTIP': '在循環區間內的精確時間點安排發聲動作。',
 
     // EFFECTS
-    'SB_SETUP_EFFECT_MESSAGE': '掛載 %1 效果器',
+    'SB_SETUP_EFFECT_MESSAGE': '為音源 %1 掛載 %2 效果器',
     'SB_SETUP_EFFECT_TOOLTIP': '為音源添加專業後製效果。按右鍵選擇「說明」查看各參數意義。',
     'SB_EFFECT_DISTORTION_TYPE_FIELD': '失真 (Distortion)',
     'SB_EFFECT_REVERB_TYPE_FIELD': '混響 (Reverb)',

@@ -193,7 +193,7 @@ export const MSG_EN = {
     'SB_SCHEDULE_AT_OFFSET_MESSAGE': 'At offset %1 do %2',
 
     // EFFECTS
-    'SB_SETUP_EFFECT_MESSAGE': 'Set %1 effect',
+    'SB_SETUP_EFFECT_MESSAGE': 'Set %2 effect for %1',
     'SB_SETUP_EFFECT_TOOLTIP': 'Add professional post-processing effects. Right-click for Help.',
     'SB_EFFECT_DISTORTION_TYPE_FIELD': 'Distortion',
     'SB_EFFECT_REVERB_TYPE_FIELD': 'Reverb',

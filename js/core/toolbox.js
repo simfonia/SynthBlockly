@@ -138,6 +138,7 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_create_layered_instrument"></block>
         <block type="sb_create_sampler_instrument"></block>
         <block type="sb_select_current_instrument"></block>
+        <block type="sb_instrument_selector"></block>
         <block type="sb_set_adsr"></block>
         <block type="sb_set_instrument_vibrato">
             <value name="DETUNE_VALUE">

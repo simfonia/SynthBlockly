@@ -137,6 +137,15 @@ if (window.blocklyLoops) {
     try { if (JSConstructorProto) JSConstructorProto['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
     try { G.forBlock['sb_transport_count_in'] = G['sb_transport_count_in']; } catch (e) { }
 
+    G['sb_instrument_selector'] = function (block) {
+        var name = block.getFieldValue('NAME');
+        return [`'${name}'`, G.ORDER_ATOMIC];
+    }.bind(G);
+    try { if (Gproto) Gproto['sb_instrument_selector'] = G['sb_instrument_selector']; } catch (e) { }
+    try { if (GeneratorProto) GeneratorProto['sb_instrument_selector'] = G['sb_instrument_selector']; } catch (e) { }
+    try { if (JSConstructorProto) JSConstructorProto['sb_instrument_selector'] = G['sb_instrument_selector']; } catch (e) { }
+    try { G.forBlock['sb_instrument_selector'] = G['sb_instrument_selector']; } catch (e) { }
+
     G['sb_rhythm_source_selector'] = function (block) {
         var type = block.getFieldValue('TYPE');
         var customType = block.getFieldValue('CUSTOM_TYPE');

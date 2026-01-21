@@ -48,7 +48,15 @@ export function registerGenerators(Blockly, javascriptGenerator) {
             }
             return value;
         };
+        
+        // Get Target Instrument Name (Code Expression)
+        let targetName = G.valueToCode(block, 'TARGET', G.ORDER_ATOMIC) || '"Master"';
 
+        // Prepare static target string for comment (Static Analysis)
+        let staticTarget = 'Master';
+        if (targetName.startsWith("'") || targetName.startsWith('"')) {
+            staticTarget = targetName.substring(1, targetName.length - 1);
+        }
 
         // Collect parameters based on effect type
         if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner', 'bitCrusher', 'tremolo'].includes(effectType)) {
@@ -100,30 +108,24 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
         const config = {
             type: effectType,
-            params: params
+            params: params,
+            target: staticTarget
         };
 
         // 1. 註解格式供初始化效果鏈 (給 blocklyManager 掃描用)
         const configComment = `/* EFFECT_CONFIG:${JSON.stringify(config)} */`;
 
         // 2. 執行碼：將效果器加入鏈中 (給主程式執行用)
-        // 注意：這裡使用 JSON.stringify 寫死參數，對於變數輸入 (如 frequency block) 會有問題
-        // 理想狀況是 params 內的值若是代碼字串應保持原樣，但這裡 params 已被解析為數值或字串
-        // 對於 Filter Freq 若是變數，上面的 getNumericValue 會回傳變數名嗎？
-        // 檢查 getNumericValue: 它回傳 G.valueToCode (字串) 或 defaultValue
-        // 所以 params.frequency 可能是 "filterFreq" 字串
-        // JSON.stringify 會把它變成 "\"filterFreq\""，這樣傳給 addEffectToChain 後
-        // safeNum 會判斷 NaN 並使用預設值。這對於初始化是 OK 的。
-        // 後續的即時更新會由 liveUpdateCode 處理。
-        
-        const execCode = `window.audioEngine.addEffectToChain(${JSON.stringify(config)});\n`;
+        // 使用 Object.assign 將執行期的 targetName 覆蓋進去，確保支援變數
+        const execCode = `window.audioEngine.addEffectToChain(Object.assign(${JSON.stringify(config)}, { target: ${targetName} }));\n`;
 
         // 3. 即時更新代碼 (給事件迴圈用)
         let liveUpdateCode = "";
         if (effectType === 'filter') {
             const freq = G.valueToCode(block, 'FILTER_FREQ', G.ORDER_ATOMIC) || '20000';
             const qValue = G.valueToCode(block, 'FILTER_Q', G.ORDER_ATOMIC) || '1';
-            liveUpdateCode = `window.audioEngine.updateFilter(${freq}, ${qValue});\n`;
+            // 傳遞 targetName (執行期表達式)
+            liveUpdateCode = `window.audioEngine.updateFilter(${targetName}, ${freq}, ${qValue});\n`;
         }
 
         return configComment + execCode + liveUpdateCode;

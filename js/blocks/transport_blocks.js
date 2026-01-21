@@ -186,6 +186,72 @@ export function registerBlocks() {
         }
     };
 
+    // 新增：通用音源選擇器 (Instrument Selector)
+    Blockly.Blocks['sb_instrument_selector'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(function() {
+                    const options = [['Master', 'Master']];
+                    
+                    try {
+                        let workspace = null;
+                        if (typeof this.getSourceBlock === 'function') {
+                            const block = this.getSourceBlock();
+                            if (block) workspace = block.workspace;
+                        } else if (this.sourceBlock_) {
+                            workspace = this.sourceBlock_.workspace;
+                        }
+
+                        if (workspace) {
+                            const targetBlockTypes = [
+                                'sb_create_synth_instrument',
+                                'sb_create_harmonic_synth',
+                                'sb_create_additive_synth',
+                                'sb_create_layered_instrument',
+                                'sb_create_sampler_instrument'
+                            ];
+
+                            targetBlockTypes.forEach(type => {
+                                const blocks = workspace.getBlocksByType(type, false);
+                                blocks.forEach(block => {
+                                    const name = block.getFieldValue('NAME');
+                                    if (name) {
+                                        // Avoid duplicates if 'Master' was somehow named 'Master' or duplicate names exist
+                                        if (!options.some(opt => opt[1] === name)) {
+                                            options.push([name, name]);
+                                        }
+                                    }
+                                });
+                            });
+                        }
+
+                        // IMPORTANT: Validate current value to prevent "unavailable option" errors
+                        // This logic ensures that if a block was saved with a value that hasn't been scanned yet
+                        // (e.g. during load order), it remains valid temporarily.
+                        const currentValue = this.getValue();
+                        if (currentValue && !options.some(opt => opt[1] === currentValue)) {
+                            options.push([currentValue, currentValue]);
+                        }
+                        
+                        // Sort, but keep Master at the top
+                        const masterOpt = options.shift(); // Remove Master
+                        options.sort((a, b) => a[0].localeCompare(b[0]));
+                        options.unshift(masterOpt); // Add Master back
+
+                        return options;
+
+                    } catch (e) {
+                        console.warn("Error in sb_instrument_selector dropdown:", e);
+                        return [['Master', 'Master']];
+                    }
+                }), "NAME");
+
+            this.setOutput(true, "String");
+            this.setColour(Blockly.Msg['TOOLS_HUE'] || "#777777");
+            this.setTooltip("選擇一個已建立的音源或 Master。");
+        }
+    };
+
     // 步進音序器 來源選擇器 (Shadow Block)
     Blockly.Blocks['sb_rhythm_source_selector'] = {
         init: function () {
@@ -203,25 +269,15 @@ export function registerBlocks() {
                 .appendField(new Blockly.FieldDropdown(function() {
                     let options = [];
                     try {
-                        // Safely get workspace
                         let workspace = null;
-                        // Use standard API getSourceBlock() if available
                         if (typeof this.getSourceBlock === 'function') {
                             const block = this.getSourceBlock();
                             if (block) workspace = block.workspace;
                         } else if (this.sourceBlock_) {
-                            // Fallback for older Blockly versions or specific states
                             workspace = this.sourceBlock_.workspace;
                         }
                         
-                        // Default fallback
                         const fallback = [["MyInstrument", "MyInstrument"]];
-
-                        // IMPORTANT: Add the current value to prevents errors
-                        const currentValue = this.getValue();
-                        if (currentValue && currentValue !== 'MyInstrument') {
-                            options.push([currentValue, currentValue]);
-                        }
 
                         if (workspace) {
                             const targetBlockTypes = [
@@ -236,7 +292,6 @@ export function registerBlocks() {
                                 const blocks = workspace.getBlocksByType(type, false);
                                 blocks.forEach(block => {
                                     const name = block.getFieldValue('NAME');
-                                    // Avoid duplicates
                                     if (name && !options.some(opt => opt[1] === name)) {
                                         options.push([name, name]);
                                     }
@@ -246,12 +301,17 @@ export function registerBlocks() {
                         
                         options.sort((a, b) => a[0].localeCompare(b[0]));
                         
+                        // FIX: Ensure current value is in the list
+                        const currentValue = this.getValue();
+                        if (currentValue && !options.some(opt => opt[1] === currentValue)) {
+                            options.push([currentValue, currentValue]);
+                        }
+
                         if (options.length === 0) return fallback;
                         return options;
 
                     } catch (e) {
-                        console.warn("Error in instrument dropdown generator:", e);
-                        // Ensure we always return a valid option list to prevent render crash
+                        console.warn("Error in sb_rhythm_source_selector dropdown:", e);
                         return [["MyInstrument", "MyInstrument"]];
                     }
                 }), "CUSTOM_TYPE");

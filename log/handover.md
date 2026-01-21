@@ -81,4 +81,26 @@
 ## 關鍵技術細節 (Prompt for next me)
 - **效果器註冊機制**：帽子積木內的 `sb_setup_effect` 透過 `/* EFFECT_CONFIG:... */` 註解標記。在註冊 Listener 時會掃描並執行 `rebuildEffectChain`；在 Listener 執行期則會濾除建立指令以防重複產生節點。
 - **ADSR 狀態分離**：若要單純更新 UI 圖表而不改動 `audioEngine.currentADSR`，請呼叫 `audioEngine.updateADSRUI()`。
-- **自動同步**：`audioEngine` 的發聲函式（如 `playCurrentInstrumentNote`）現在會主動呼叫 `syncAdsrToUI()` 確保視覺對齊。
+- **自動同步**：`audioEngine` 的發聲函式（如 `playCurrentInstrumentNote`）現在會主動呼叫 `syncAdsrToUI()` 確保視覺對對齊。
+
+---
+
+# 任務交接 2026-01-21
+
+## 當前進度
+1. **分軌混音架構實作完成**：
+   - `audioEngine.js` 已支援 `instrumentEffects` 路由，效果器可指定掛載於單一音源或 Master。
+   - 解決了多軌訊號串接邏輯：`Instrument -> Local Effects -> Master Effects -> Master`。
+2. **動態音源選擇器與 UI 優化**：
+   - 新增 `sb_instrument_selector` 積木，自動掃描工作區 5 種樂器建立積木的名稱。
+   - 修復了 `sb_rhythm_source_selector` 在專案載入時的 `unavailable option` 報錯 Bug。
+   - `sb_setup_effect` 的 `TARGET` 參數現在預設帶有動態下拉選單。
+
+## 下一步工作建議
+1. **V2.0 架構規劃**：導入「定義區 (Definition)」與「執行區 (Execution)」分離的設計，徹底根治初始化與執行時機的混亂。
+2. **分軌音量控制**：利用現有的路由架構，實作針對單一音源的音量與靜音控制積木。
+
+## 關鍵技術細節 (Prompt for next me)
+- **動態選單安全機制**：在下拉選單 Generator 中透過 `this.getValue()` 檢查並注入當前值，防止載入報錯。
+- **音訊路由**：專屬效果器儲存在 `audioEngine.instrumentEffects[name]` 陣列中，透過 `_reconnectAll()` 進行即時斷線與重連。
+- **向下相容**：`updateFilter` 支援 `(freq, q)` 舊格式，自動將目標導向 `Master`。

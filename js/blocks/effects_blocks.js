@@ -15,6 +15,11 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_SETUP_EFFECT_MESSAGE}",
                 "args0": [
                     {
+                        "type": "input_value",
+                        "name": "TARGET",
+                        "check": "String"
+                    },
+                    {
                         "type": "field_dropdown",
                         "name": "EFFECT_TYPE",
                         "options": [
@@ -38,6 +43,15 @@ export function registerBlocks() {
                 "colour": "%{BKY_EFFECTS_HUE}",
                 "tooltip": "%{BKY_SB_SETUP_EFFECT_TOOLTIP}"
             });
+
+            // Set default shadow for TARGET input (Master)
+            if (!this.getInput('TARGET').connection.targetConnection) {
+                // We construct the shadow DOM manually
+                const shadowDom = Blockly.utils.xml.textToDom(
+                    '<shadow type="sb_instrument_selector"><field name="NAME">Master</field></shadow>'
+                );
+                this.getInput('TARGET').connection.setShadowDom(shadowDom);
+            }
 
             this.setHelpUrl(getHelpUrl('effect_readme'));
 

@@ -77,7 +77,7 @@
     - 新增 `sb_console_log` 積木輔助除錯。
 
 ## 待辦事項 (Future V2.0)
-- [ ] **目標音源效果器 (Targeted Effects)**: 為 `sb_setup_effect` 增加「指定目標音源 (Target Instrument)」參數，實現分軌混音。
+- [x] **目標音源效果器 (Targeted Effects)**: 為 `sb_setup_effect` 增加「指定目標音源 (Target Instrument)」參數，實現分軌混音。
 - [ ] **動態效果器管理**: 提供 `sb_clear_effects` 或類似機制，讓使用者能更精確控制效果器的生命週期。
 - [ ] **和弦清單擴充**: 讓 `sb_play_melody` 直接支援解析和弦名稱字串。
 - [ ] **自訂波形進階功能**: 實作從數學表示式定義波形。

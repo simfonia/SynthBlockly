@@ -27,13 +27,13 @@
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
-      - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈。
+      - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈 (支援分軌路由 instrumentEffects)。
       - `blocklyManager.js`: Blockly 工作區管理與即時程式碼執行。
       - `exampleManager.js`: 範例專案掃描器。
       - `helpUtils.js`: 統一 HelpUrl 生成工具 (語系/路徑)。
       - `midiEngine.js`: MIDI 訊號接收與轉發。
       - `serialEngine.js`: 序列埠通訊。
-      - `toolbox.js`: 工具箱 XML 定義。
+      - `toolbox.js`: 工具箱 XML 定義 (已新增音源選擇器)。
     - `plugins/`: 第三方積木外掛。
       - `field-multilineinput.js`: 多行輸入欄位 (已重構為 ESM 格式)。
     - `ui/`: 介面組件。
@@ -47,7 +47,9 @@
       - `uiManager.js`: UI 翻譯。
     - `blocks/`: 積木與產生器定義。
       - `index.js`: 積木註冊入口點。
+      - `effects_blocks.js` / `_generators.js`: 效果器相關積木 (支援 TARGET 目標選擇)。
       - `instruments_blocks.js` / `_generators.js`: 音源建立、控制與演奏積木。
+      - `transport_blocks.js` / `_generators.js`: 傳輸、音序器、循環控制及動態音源選擇器 (修復選單載入 Bug)。
       - `serial_blocks.js` / `_generators.js`: 序列埠相關積木。
       - `tools_blocks.js` / `_generators.js`: 註解與輔助工具積木 (NEW)。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。

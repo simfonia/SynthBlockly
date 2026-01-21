@@ -76,3 +76,36 @@
 ## 4. 參數容錯 (safeNum)
 *   **坑點**：參數使用變數名時，傳入 `new Tone.Filter("filterFreq")` 導致崩潰。
 *   **修正**：所有建構子參數封裝 `safeNum(val, def)`，若 `Number(val)` 為 `NaN` 則回傳預設值。這確保了 Filter 節點能先「占位」成功，等待後續 `updateFilter` 傳入正確數值。
+
+---
+
+# 技術細節 2026-01-21
+
+## 1. 分軌效果器路由 (Multi-track Routing)
+*   **挑戰**：原本所有樂器都直連 Master，如何讓特定樂器流經獨立效果器而不影響其他軌？
+*   **解決方案**：
+    1.  建立 `instrumentEffects` 字典，Key 為樂器名稱，Value 為效果器陣列。
+    2.  實作 `_reconnectAll()`：
+        - 先將所有樂器 `disconnect()`。
+        - 樂器連至自己的 `Local Effects`。
+        - `Local Effects` 連至全域 `Master Effects`。
+        - `Master Effects` 連至 `Analyser` 與輸出。
+*   **坑點**：在 `rebuildEffectChain` 或 `addEffectToChain` 時，必須先 dispose 舊有的局部效果器，否則會造成記憶體洩漏與聲音重疊。
+
+## 2. 動態下拉選單載入報錯 (Unavailable Option Error)
+*   **現象**：載入 XML 時，Blockly 報錯 `Cannot set the dropdown's value to an unavailable option`。
+*   **成因**：Blockly 恢復欄位值的順序可能早於工作區積木掃描完成。當 Dropdown 被要求設為 `MyPiano` 時，動態產生器回傳的 options 裡還沒有 `MyPiano`。
+*   **解法**：
+    ```javascript
+    const currentValue = this.getValue();
+    if (currentValue && !options.some(opt => opt[1] === currentValue)) {
+        options.push([currentValue, currentValue]);
+    }
+    ```
+    在產生的那一刻，強制將「當前值」塞進合法選項清單中。這確保了載入階段的安全性，且不影響稍後點開選單時的正確性。
+
+## 3. 效果器參數的變數支援
+*   **問題**：`sb_setup_effect` 的參數如果接「變數積木」，在 `audioEngine.addEffectToChain` 中會因為 `JSON.stringify` 導致變數名變成字串而失效。
+*   **修正**：修改 Generator，使用 `Object.assign` 動態合併靜態配置與執行期的變數表達式。
+    - 靜態註解：`/* EFFECT_CONFIG:{...} */` 用於初始化。
+    - 執行碼：`addEffectToChain(Object.assign(config, { target: variableName }))` 確保支援變數目標。
