@@ -30,12 +30,12 @@
 ---
 
 ## 任務清單
-- [ ] **V2.1 容器化架構重構 (Definition Containers)**
-    - [ ] 實作 `sb_instrument_container` 與 `sb_master_container` 帽子積木。
-    - [ ] 實現積木「上下文偵測」邏輯（在容器外則 Disable，在容器內隱藏名稱欄位）。
-    - [ ] 重構產生器，支援從容器 context 自動提取樂器名稱。
-    - [ ] 優化 `blocklyManager.js` 以支援掃描容器內的定義碼。
-    - [ ] 實作預設工作區模板（DefaultSynth & Master 容器）。
+- [x] **V2.1 容器化架構重構 (Definition Containers)**
+    - [x] 實作 `sb_instrument_container` 與 `sb_master_container` 帽子積木。
+    - [x] 實現積木「上下文偵測」邏輯（在容器外則 Disable，在容器內隱藏名稱欄位）。
+    - [x] 重構產生器，支援從容器 context 自動提取樂器名稱。
+    - [x] 優化 `blocklyManager.js` 以支援掃描容器內的定義碼。
+    - [x] 實作預設工作區模板（DefaultSynth & Master 容器）。
 - [x] **專案遷移至 Vite**: 將整個專案從傳統 script 引入方式重構為使用 Vite 進行建置與開發。
 - [x] **程式碼模組化**: 根據新規範將所有 JavaScript 程式碼拆分為獨立的 ES 模組，存放於 `js/core`, `js/ui`, `js/blocks` 等資料夾中。
 - [x] **重構事件處理架構**：將 `sb_serial_data_received` 和 `sb_midi_note_received` 兩個帽子積木重構為即時事件驅動模式。
@@ -87,6 +87,6 @@
 - [x] **V2.0架構重構 (Definition vs Execution)**: 實現定義類積木與執行類積木分離，確保系統初始化順序正確。
 - [x] **分軌 Channel 管理與音量控制**: 實作 `Tone.Channel` 路由，新增靜音 (Mute) 與獨奏 (Solo) 積木。
 - [ ] **動態效果器管理**: 提供 `sb_clear_effects` 或類似機制，讓使用者能更精確控制效果器的生命週期。
-- [ ] **和弦清單擴充**: 讓 `sb_play_melody` 直接支援解析和弦名稱字串。
+- [x] **和弦清單擴充**: 讓 `sb_play_melody` 直接支援解析和弦名稱字串。
 - [ ] **自訂波形進階功能**: 實作從數學表示式定義波形。
  

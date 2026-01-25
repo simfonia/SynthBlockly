@@ -17,7 +17,7 @@
 </head>
 <body>
     <h1>旋律清單編寫指南</h1>
-    <p>「演奏旋律清單」積木使用一種簡化的文字格式來代表 Tone.js 的音樂時值。這讓你能像寫程式碼一樣快速編寫複雜的節奏。</p>
+    <p>「演奏旋律清單」積木使用一種簡化的文字格式。它不僅能演奏單一音符，也支援<strong>直接使用您自訂的和弦名稱</strong>。這讓你能像寫簡譜一樣快速編排複雜的旋律與伴奏。</p>
 
     <div class="type-box">
         <h2>1. 時值代碼對照表 (Duration Codes)</h2>
@@ -101,19 +101,25 @@
 
     <div class="type-box">
         <h2>4. 完整格式與範例</h2>
-        <p>單一音符格式：<code>[音高][八度][時值][修飾符]</code></p>
+        <p>標記格式：<code>[主體][時值][修飾符]</code></p>
+        <ul>
+            <li><strong>主體</strong>：可以是「單一音符 (如 C4)」或「自訂和弦名稱 (如 Dm7)」。</li>
+            <li><strong>時值</strong>：W, H, Q, E, S, T。</li>
+        </ul>
+
         <div class="example">
-範例 1 (基本):
-C4Q E4Q G4H
-(Do 1拍, Mi 1拍, Sol 2拍)
+範例 1 (混合旋律與和弦):
+C4Q D4E E4E CM7H
+(Do四分, Re八分, Mi八分, 接著彈奏 CM7 和弦二分)
 
-範例 2 (包含休止符):
-C4Q RQ E4Q RQ
-(Do 1拍, 休息 1拍, Mi 1拍, 休息 1拍)
+範例 2 (純和弦進行):
+Dm7H G7H CM7W
+(典型的 II-V-I 進行)</div>
 
-範例 3 (附點與複雜節奏):
-C4Q. D4E E4Q_T E4Q_T E4Q_T
-(附點四分, 八分, 連續三個三連音)</div>
+        <div class="important">
+            <p><strong>⚠️ 命名衝突警示</strong></p>
+            <p>若您定義的和弦名稱剛好與音符格式相同（例如將和弦命名為 <code>C4</code>），系統會<strong>優先將其判定為單音音符</strong>。為了避免衝突，建議和弦命名時包含類型資訊，例如使用 <code>Cmaj7</code> 而非 <code>C4</code>。</p>
+        </div>
     </div>
 </body>
 </html>

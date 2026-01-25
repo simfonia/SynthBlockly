@@ -135,8 +135,8 @@ export const MSG_EN = {
     'SB_PLAY_NOTE_AND_WAIT_TOOLTIP': 'Plays a note and waits for its duration before continuing. Right-click for Help.',
     'SB_PLAY_DRUM_MESSAGE_WITH_VELOCITY': 'Play Electronic Drum (Synth) %1 Velocity %2',
     'SB_PLAY_DRUM_TOOLTIP': 'Trigger a synth-based drum sound.',
-    'SB_PLAY_MELODY_MESSAGE': 'Play melody list: %1',
-    'SB_PLAY_MELODY_TOOLTIP': 'Enter melody (e.g., C4Q, D4H, RE). Supports spaces/commas. Use R for rests. Right-click for Help.',
+    'SB_PLAY_MELODY_MESSAGE': 'Play Melody List: %1',
+    'SB_PLAY_MELODY_TOOLTIP': 'Enter a sequence of notes or chords (e.g., C4Q, Dm7H, RE). Supports custom chord names. Use R for rests. Durations: W=Whole, H=Half, Q=Quarter, E=Eighth, S=16th, T=32nd. Supports dots (.) and triplets (_T). Right-click for Help.',
 
         // SAMPLERS
 

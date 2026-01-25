@@ -11,51 +11,47 @@
     - `docs/`: 積木說明文件 (HTML 格式，支援中英雙語)。
       - `examples_readme_*.html`: 範例專案使用說明與開發規範。
       - `performance_readme_*.html`: 演奏音符積木說明。
-      - `step_sequencer_readme_*.html`: 步進音序器使用指南 (NEW)。
-      - `transport_readme_*.html`: 小節偏移排程指南 (NEW)。
+      - `step_sequencer_readme_*.html`: 步進音序器使用指南。
+      - `transport_readme_*.html`: 小節偏移排程指南。
+      - `melody_readme_*.html`: 旋律清單編寫指南 (已新增和弦名稱支援說明)。
     - `locales/`: Blockly 核心語言包 (JSON)。
     - `samples/`: 音訊樣本庫（包含爵士鼓、小提琴與特殊音效 SFX）。
-    - `src/`: 原始碼目錄。
-      - `examples/`: 範例專案庫。
-        - `*.xml`: 純軟體範例 (01-09)。
-        - `10-1_Functions...xml`: 函式模組化編曲。
-        - `10-2_Sequencer...xml`: 音序器編曲技巧。
-        - `11_Serial_KICK/`: Arduino 觸發大鼓範例。
-        - `12_wah-wah/`: Arduino 光敏電阻動態效果範例。
-        - `13_Chord_Pad/`: TTP229 和弦觸發板範例。
-        - `14_Drum_Pad/`: TTP229 觸控打擊墊範例。
+  - `src/`: 原始碼與資料。
+    - `examples/`: **(V2.1) 範例專案庫**。
+      - `*.xml`: 純軟體範例 (01-09, 15)。
+      - `10-1_Functions...xml`: 函式模組化編曲。
+      - `10-2_Sequencer...xml`: 音序器編曲技巧。
+      - `11_Serial_KICK/`: Arduino 觸發大鼓範例。
+      - `12_wah-wah/`: Arduino 光敏電阻動態效果範例。
+      - `13_Chord_Pad/`: TTP229 和弦觸發板範例。
+      - `14_Drum_Pad/`: TTP229 觸控打擊墊範例。
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
-      - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈 (支援分軌路由 instrumentEffects)。
-      - `blocklyManager.js`: Blockly 工作區管理與即時程式碼執行。
-      - `exampleManager.js`: 範例專案掃描器。
+      - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈 (新增和弦字串解析邏輯)。
+      - `blocklyManager.js`: Blockly 工作區管理、即時程式碼執行與全域容器約束掃描。
       - `helpUtils.js`: 統一 HelpUrl 生成工具 (語系/路徑)。
       - `midiEngine.js`: MIDI 訊號接收與轉發。
       - `serialEngine.js`: 序列埠通訊。
-      - `toolbox.js`: 工具箱 XML 定義 (已新增音源選擇器)。
-    - `plugins/`: 第三方積木外掛。
-      - `field-multilineinput.js`: 多行輸入欄位 (已重構為 ESM 格式)。
+      - `toolbox.js`: 工具箱 XML 定義 (V2.1 容器化配置)。
     - `ui/`: 介面組件。
       - `adsrVisualizer.js`: ADSR 包絡線視覺化。
-      - `spectrumVisualizer.js`: 即時頻譜圖視覺化。
       - `visualizer.js`: 即時示波器 (p5.js)。
       - `buttons.js`: 工具列按鈕邏輯。
       - `exampleModal.js`: 範例選單 UI。
       - `logger.js`: 多語系日誌系統。
-      - `keyboardController.js`: PC 鍵盤演奏與快捷鍵控制。
-      - `uiManager.js`: UI 翻譯。
+      - `keyboardController.js`: PC 鍵盤演奏與樂器切換邏輯。
     - `blocks/`: 積木與產生器定義。
-      - `index.js`: 積木註冊入口點。
-      - `effects_blocks.js` / `_generators.js`: 效果器相關積木 (支援 TARGET 目標選擇)。
-      - `instruments_blocks.js` / `_generators.js`: 音源建立、音量、顫音、靜音與獨奏控制積木。
-      - `melody_blocks.js` / `_generators.js`: 演奏旋律與目前音源選定積木 (NEW)。
-      - `transport_blocks.js` / `_generators.js`: 傳輸、音序器、循環控制及動態音源選擇器。
-      - `serial_blocks.js` / `_generators.js`: 序列埠相關積木。
-      - `tools_blocks.js` / `_generators.js`: 註解與輔助工具積木 (NEW)。
+      - `instruments_blocks.js`: **(核心) 樂器定義容器、合成器與音源控制、動態來源選擇器**。
+      - `instruments_generators.js`: 支援 getContainerTarget() 的產生器。
+      - `effects_blocks.js` / `_generators.js`: 效果器積木 (支援容器局部/全域作用)。
+      - `sampler_blocks.js`: 取樣器積木 (含 Mutator 與自訂樣本 URL 支援)。
+      - `instruments_custom_wave_blocks.js`: 諧波與加法合成自訂波形積木。
+      - `transport_blocks.js` / `_generators.js`: 傳輸控制、音序器及循環邏輯 (已清理重複定義)。
+      - `serial_blocks.js` / `_generators.js`: 序列埠通訊積木。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。
-    - `log/`: 開發紀錄。
-      - `handover.md`: 任務交接說明。
-      - `todo.md`: 任務進度清單。
-      - `details.md`: 關鍵技術細節 (踩過的坑)。
-      - `work/`: 每日工作日誌 (YYYY-MM-DD.md)。
+  - `log/`: 開發紀錄。
+    - `handover.md`: 任務交接說明。
+    - `todo.md`: 任務進度清單。
+    - `details.md`: 關鍵技術細節 (踩過的坑)。
+    - `work/`: 每日工作日誌 (YYYY-MM-DD.md)。

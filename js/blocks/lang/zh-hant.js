@@ -138,7 +138,7 @@ export const MSG_ZH_HANT = {
     'SB_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '播放電子鼓聲 (合成音源) %1 力度 %2',
     'SB_PLAY_DRUM_TOOLTIP': '觸發基於合成技術的鼓聲 (Kick/Snare/HiHat)。',
     'SB_PLAY_MELODY_MESSAGE': '演奏旋律清單: %1',
-    'SB_PLAY_MELODY_TOOLTIP': '輸入旋律字串（如 C4Q, D4H, RE）。支援空白或逗號分隔，建議每小節換行。使用 R 代表休止符。時值：W=全, H=二分, Q=四分, E=八分, S=16, T=32。支援附點(.)與三連音(_T)。按右鍵選擇「說明」查看編寫指南。',
+    'SB_PLAY_MELODY_TOOLTIP': '輸入旋律或和弦字串（如 C4Q, Dm7H, RE）。支援自訂和弦名稱。使用 R 代表休止符。時值：W=全, H=二分, Q=四分, E=八分, S=16, T=32。支援附點(.)與三連音(_T)。按右鍵選擇「說明」查看編寫指南。',
 
     // SAMPLERS
     'JAZZKIT_PLAY_DRUM_MESSAGE_WITH_VELOCITY': '播放爵士鼓聲 (Roland TR-909 取樣音源) %1 力度 %2',

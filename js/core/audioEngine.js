@@ -719,18 +719,51 @@ export const audioEngine = {
     playMelodyString: async function(str) {
         await ensureAudioStarted();
         const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
-        const notes = str.split(',').join(' ').split('\n').join(' ').split('\r').join(' ').split(' ').filter(s => s.trim().length > 0);
-        for (const n of notes) {
+        // 分割字串，支援多種分隔符
+        const tokens = str.split(/[,\s\n\r]+/).filter(s => s.trim().length > 0);
+        
+        for (const token of tokens) {
             if (!this.isExecutionActive) break;
-            const m = n.match(/^(R)?([A-G][#b]?)?([0-8])?([WHQEST])(\.?|_T)?$/i);
-            if (m) {
-                let d = durMap[m[4].toUpperCase()] || '4n';
-                if (m[5] === '.') d += '.'; if (m[5] === '_T') d = d.replace('n', 't');
-                if (m[1]) { await new Promise(r => setTimeout(r, Tone.Time(d).toMilliseconds())); } 
-                else {
-                    this.playCurrentInstrumentNote((m[2]||"C")+(m[3]||"4"), d, undefined, 0.8);
-                    await new Promise(r => setTimeout(r, Tone.Time(d).toMilliseconds()));
+            
+            // 1. 提取結尾的時值與修飾符 ([WHQEST][.|_T]?)
+            const mDur = token.match(/([WHQEST])(\.?|_T)?$/i);
+            if (!mDur) continue; 
+            
+            const durPart = mDur[0];
+            const durCode = mDur[1].toUpperCase();
+            const modifier = mDur[2] || '';
+            let d = durMap[durCode] || '4n';
+            if (modifier === '.') d += '.'; 
+            else if (modifier === '_T') d = d.replace('n', 't');
+            
+            const ms = Tone.Time(d).toMilliseconds();
+            
+            // 2. 提取前綴（主體）
+            const prefix = token.slice(0, -durPart.length);
+            const uprefix = prefix.toUpperCase();
+
+            // 3. 執行邏輯 (按優先級)
+            if (uprefix === 'R' || prefix === '') {
+                // 情境 1: 休止符
+                await new Promise(r => setTimeout(r, ms));
+            } else {
+                // 優先判定是否為「嚴格單音」(如 C4, F#5)
+                const isStrictNote = prefix.match(/^[A-G][#b]?[0-8]$/i);
+                
+                if (isStrictNote) {
+                    this.playCurrentInstrumentNote(prefix, d, undefined, 0.8);
+                } else if (this.chords[prefix]) {
+                    // 情境 2: 判定為已定義和弦 (如 Cmaj7, Dm)
+                    this.playChordByName(prefix, d, 0.8, undefined);
+                } else {
+                    // 情境 3: 寬鬆單音 (如 C, Eb)
+                    const isLooseNote = prefix.match(/^[A-G][#b]?$/i);
+                    if (isLooseNote) {
+                        this.playCurrentInstrumentNote(prefix + "4", d, undefined, 0.8);
+                    }
                 }
+                // 等待該時值結束以進行下一個 token
+                await new Promise(r => setTimeout(r, ms));
             }
         }
     },

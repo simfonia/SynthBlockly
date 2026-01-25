@@ -128,3 +128,9 @@
 ## 4. 分軌路由架構
 * **路由鏈**：`Instrument -> Local Effects -> Tone.Channel -> Master Effects -> Analyser -> Output`。
 * **優點**：音量與 Mute/Solo 控制在效果器之後，更符合混音邏輯，且不影響樂器內部的 ADSR 狀態。
+
+## 2026-01-25 關鍵技術筆記
+- **影子積木 (Shadow Block) 穩定性**：不要在影子積木（如音序器來源）中使用 Mutation 增減欄位，否則 XML 載入會報欄位缺失。應在 init 定義好所有 field 並用 setVisible 切換。
+- **積木重複註冊 Bug**：sb_rhythm_source_selector 曾因同時存在於 instruments 與 transport 檔案中導致選單失靈。已統一由 instruments_blocks.js 定義。
+- **旋律解析優先權**：playMelodyString 採用「Rest > Strict Note (C4) > Chord (Cmaj7)」順序，確保 C4Q 不會因同名和弦而失效。
+- **Blockly 禁用狀態渲染**：單純設定 block.enabled = false 可能不會觸發即時變灰。解決方案：使用 block.setDisabledReason(true, 'reason_id') 配合 block.render()，這是目前最穩健的視覺反饋方式。

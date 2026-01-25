@@ -17,7 +17,7 @@
 </head>
 <body>
     <h1>Melody List Writing Guide</h1>
-    <p>The "Play Melody List" block uses a simplified text format to represent Tone.js musical durations. This allows you to code complex rhythms quickly.</p>
+    <p>The "Play Melody List" block uses a simplified text format. Beyond single notes, it also supports <strong>using your custom defined chord names directly</strong>. This allows you to draft complex arrangements and lead sheets quickly.</p>
 
     <div class="type-box">
         <h2>1. Duration Codes Table</h2>
@@ -101,19 +101,25 @@
 
     <div class="type-box">
         <h2>4. Full Format & Examples</h2>
-        <p>Single Note Format: <code>[Pitch][Octave][Duration][Modifier]</code></p>
+        <p>Token Format: <code>[Subject][Duration][Modifier]</code></p>
+        <ul>
+            <li><strong>Subject</strong>: Can be a "Single Note (e.g., C4)" or a "Defined Chord Name (e.g., Dm7)".</li>
+            <li><strong>Duration</strong>: W, H, Q, E, S, T.</li>
+        </ul>
+
         <div class="example">
-Example 1 (Basic):
-C4Q E4Q G4H
-(Do 1 beat, Mi 1 beat, Sol 2 beats)
+Example 1 (Mixed Melody & Chords):
+C4Q D4E E4E CM7H
+(Do quarter, Re eighth, Mi eighth, followed by CM7 chord half)
 
-Example 2 (With Rests):
-C4Q RQ E4Q RQ
-(Do 1 beat, Rest 1 beat, Mi 1 beat, Rest 1 beat)
+Example 2 (Chord Progression):
+Dm7H G7H CM7W
+(Classic II-V-I progression)</div>
 
-Example 3 (Complex):
-C4Q. D4E E4Q_T E4Q_T E4Q_T
-(Dotted Quarter, Eighth, three Triplets)</div>
+        <div class="important">
+            <p><strong>⚠️ Naming Collision Warning</strong></p>
+            <p>If you name a chord exactly like a note (e.g., naming a chord <code>C4</code>), the system will <strong>prioritize the single note</strong>. To avoid this, include type info in your chord names, such as <code>Cmaj7</code> instead of <code>C4</code>.</p>
+        </div>
     </div>
 </body>
 </html>
