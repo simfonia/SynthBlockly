@@ -559,6 +559,7 @@ function forceRebuildHatEffects() {
 
 /**
  * Generates code from the Blockly workspace.
+ * V2.0: Separates Definition blocks from Execution blocks.
  */
 export async function getBlocksCode() {
     if (!workspace) {
@@ -575,19 +576,99 @@ export async function getBlocksCode() {
     }
     
     audioEngine.resetAudioEngineState();
-    forceRebuildHatEffects(); // <--- Restore effects after reset
+    forceRebuildHatEffects(); 
     
     try {
-        // --- 關鍵：在產生前一刻套用非同步覆寫 ---
         applyAsyncProcedureOverrides(javascriptGenerator);
-
-        // 1. 初始化產生器
         javascriptGenerator.init(workspace);
         
-        // 2. 產生主程式碼
-        let mainCode = javascriptGenerator.workspaceToCode(workspace);
+        const topBlocks = workspace.getTopBlocks(true);
         
-        // 3. 提取定義與函式
+        const instrumentBlockTypes = [
+            'sb_create_synth_instrument',
+            'sb_create_harmonic_synth',
+            'sb_create_additive_synth',
+            'sb_create_sampler_instrument',
+            'sb_create_layered_instrument',
+            'sb_define_chord'
+        ];
+
+        const setupBlockTypes = [
+            'sb_setup_effect',
+            'sb_set_adsr',
+            'sb_set_instrument_volume',
+            'sb_set_instrument_vibrato',
+            'sb_set_instrument_mute',
+            'sb_set_instrument_solo',
+            'sb_rhythm_sequence'
+        ];
+
+        let instrumentCode = '';
+        let setupCode = '';
+        let executionCode = '';
+
+        topBlocks.forEach(block => {
+            // Hat blocks are handled by event listeners, ignore here
+            if (block.type === 'sb_serial_data_received' || block.type === 'sb_midi_note_received') return;
+
+            let currentBlock = block;
+            
+            // Determine category based on the top block type
+            let category = 'EXECUTION';
+            if (instrumentBlockTypes.includes(block.type)) {
+                category = 'INSTRUMENT';
+            } else if (setupBlockTypes.includes(block.type)) {
+                category = 'SETUP';
+            }
+
+            // Generate code for the entire chain starting from this top block
+            let chainCode = '';
+            while (currentBlock) {
+                // Temporarily disconnect the next block to generate code for THIS block only
+                const nextBlock = currentBlock.getNextBlock();
+                let nextConnection = null;
+                let nextTargetConnection = null;
+
+                if (nextBlock) {
+                    nextConnection = currentBlock.nextConnection;
+                    nextTargetConnection = nextBlock.previousConnection;
+                    // Safely disconnect
+                    if (nextConnection && nextTargetConnection) {
+                        try {
+                            if (BlocklyModule.Events.isEnabled()) BlocklyModule.Events.disable();
+                            nextConnection.disconnect();
+                        } finally {
+                            if (!BlocklyModule.Events.isEnabled()) BlocklyModule.Events.enable();
+                        }
+                    }
+                }
+
+                // Generate code
+                chainCode += javascriptGenerator.blockToCode(currentBlock);
+
+                // Reconnect
+                if (nextBlock && nextConnection && nextTargetConnection) {
+                    try {
+                        if (BlocklyModule.Events.isEnabled()) BlocklyModule.Events.disable();
+                        nextConnection.connect(nextTargetConnection);
+                    } finally {
+                        if (!BlocklyModule.Events.isEnabled()) BlocklyModule.Events.enable();
+                    }
+                }
+
+                currentBlock = nextBlock;
+            }
+
+            if (category === 'INSTRUMENT') {
+                instrumentCode += chainCode;
+            } else if (category === 'SETUP') {
+                setupCode += chainCode;
+            } else {
+                executionCode += chainCode;
+            }
+        });
+
+        // Extract definitions (variables, functions) from the generator
         const variableDefs = [];
         const funcDefs = [];
         const otherDefs = [];
@@ -603,10 +684,9 @@ export async function getBlocksCode() {
             }
         }
         
-        // 清除定義以重設狀態
         javascriptGenerator.definitions_ = Object.create(null);
         
-        // 4. 組裝最終程式碼
+        // Assemble final code
         let code = [
             '// Variable Declarations',
             variableDefs.join('\n'),
@@ -614,11 +694,15 @@ export async function getBlocksCode() {
             otherDefs.join('\n'),
             '// Function Definitions',
             funcDefs.join('\n\n'),
+            '// Instrument Creation',
+            instrumentCode,
+            '// Setup & Configuration',
+            setupCode,
             '// Main Execution',
-            mainCode
+            executionCode
         ].join('\n\n');
         
-        if (!code || code.trim() === '' || mainCode.trim() === '') {
+        if (!code || code.trim() === '' || (instrumentCode.trim() === '' && setupCode.trim() === '' && executionCode.trim() === '')) {
             logKey('LOG_CODE_EMPTY', 'warning');
         } else {
             logKey('LOG_CODE_GENERATED');

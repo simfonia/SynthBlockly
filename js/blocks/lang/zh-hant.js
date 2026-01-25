@@ -116,6 +116,10 @@ export const MSG_ZH_HANT = {
     'SB_SET_INSTRUMENT_VIBRATO_TOOLTIP': '設定指定音源的音高偏移效果（顫音），單位為「音分 (cents)」。',
     'SB_SET_INSTRUMENT_VOLUME_MESSAGE': '設定 %1 音量 %2',
     'SB_SET_INSTRUMENT_VOLUME_TOOLTIP': '設定指定音源的輸出音量，建議範圍 0 到 1。',
+    'SB_SET_INSTRUMENT_MUTE_MESSAGE': '設定 %1 靜音 %2',
+    'SB_SET_INSTRUMENT_MUTE_TOOLTIP': '將指定音源設為靜音。',
+    'SB_SET_INSTRUMENT_SOLO_MESSAGE': '設定 %1 獨奏 %2',
+    'SB_SET_INSTRUMENT_SOLO_TOOLTIP': '將指定音源設為獨奏（其他非獨奏音源將被靜音）。',
 
     // PERFORMANCE
     'SB_PLAY_NOTE_MESSAGE': '演奏音符 %1 時值 %2 力度 %3 (不等待)',
@@ -435,4 +439,5 @@ export const MSG_ZH_HANT = {
     // TOOLS
     'SB_CONSOLE_LOG_MESSAGE': '顯示到訊息區 %1',
     'SB_CONSOLE_LOG_TOOLTIP': '將訊息輸出至除錯面板。',
+    'LOG_CONSOLE_LOG_MSG': '%1',
 };

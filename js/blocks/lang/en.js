@@ -114,6 +114,10 @@ export const MSG_EN = {
     'SB_SET_INSTRUMENT_VIBRATO_TOOLTIP': 'Sets the pitch deviation (vibrato) in cents for the specified source.',
     'SB_SET_INSTRUMENT_VOLUME_MESSAGE': 'Set %1 Volume %2',
     'SB_SET_INSTRUMENT_VOLUME_TOOLTIP': 'Sets the output volume (0 to 1) for the specified source.',
+    'SB_SET_INSTRUMENT_MUTE_MESSAGE': 'Set %1 Mute %2',
+    'SB_SET_INSTRUMENT_MUTE_TOOLTIP': 'Mutes the specified sound source.',
+    'SB_SET_INSTRUMENT_SOLO_MESSAGE': 'Set %1 Solo %2',
+    'SB_SET_INSTRUMENT_SOLO_TOOLTIP': 'Solos the specified sound source (others will be muted).',
 
     // PERFORMANCE
     'SB_PLAY_NOTE_MESSAGE': 'Play Note %1 Duration %2 Velocity %3 (non-blocking)',
@@ -432,4 +436,5 @@ export const MSG_EN = {
     // TOOLS
     'SB_CONSOLE_LOG_MESSAGE': 'Log %1',
     'SB_CONSOLE_LOG_TOOLTIP': 'Logs a message to the debug panel.',
+    'LOG_CONSOLE_LOG_MSG': '%1',
 };

@@ -48,8 +48,9 @@
     - `blocks/`: 積木與產生器定義。
       - `index.js`: 積木註冊入口點。
       - `effects_blocks.js` / `_generators.js`: 效果器相關積木 (支援 TARGET 目標選擇)。
-      - `instruments_blocks.js` / `_generators.js`: 音源建立、控制與演奏積木。
-      - `transport_blocks.js` / `_generators.js`: 傳輸、音序器、循環控制及動態音源選擇器 (修復選單載入 Bug)。
+      - `instruments_blocks.js` / `_generators.js`: 音源建立、音量、顫音、靜音與獨奏控制積木。
+      - `melody_blocks.js` / `_generators.js`: 演奏旋律與目前音源選定積木 (NEW)。
+      - `transport_blocks.js` / `_generators.js`: 傳輸、音序器、循環控制及動態音源選擇器。
       - `serial_blocks.js` / `_generators.js`: 序列埠相關積木。
       - `tools_blocks.js` / `_generators.js`: 註解與輔助工具積木 (NEW)。
       - `lang/`: 自訂語言字串定義 (en.js, zh-hant.js)。

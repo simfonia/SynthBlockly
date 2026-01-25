@@ -218,22 +218,6 @@ if (!window.audioEngine.isExecutionActive) return;
     try { if (JSConstructorProto) JSConstructorProto['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { } 
     try { G.forBlock['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
 
-    G['sb_select_current_instrument'] = function (block) {
-        var name = G.quote_(block.getFieldValue('NAME')); // Quote the name for string literal
-        var code = `
-            (function() {
-                const targetName = ${name};
-                window.audioEngine.transitionToInstrument(targetName);
-                window.audioEngine.logKey('LOG_SWITCH_INSTR_SUCCESS', 'important', targetName);
-            })();
-        `;
-        return code;
-    }.bind(G);
-    try { if (Gproto) Gproto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { } 
-    try { if (GeneratorProto) GeneratorProto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { } 
-    try { if (JSConstructorProto) JSConstructorProto['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { } 
-    try { G.forBlock['sb_select_current_instrument'] = G['sb_select_current_instrument']; } catch (e) { }
-
     G['sb_set_instrument_vibrato'] = function (block) {
         let targetName = block.getFieldValue('TARGET') || 'ALL';
         var detuneValue = G.valueToCode(block, 'DETUNE_VALUE', G.ORDER_ATOMIC) || '0';
@@ -307,55 +291,31 @@ if (!window.audioEngine.isExecutionActive) return;
         var code = `
             (function() {
                 const target = '${targetName}';
-                const gain = Math.max(0, Math.min(1, Number(${volumeValue})));
+                // Clamp minimum gain to 0.0001 (-80dB) to avoid -Infinity issues with Tone.js mute/unmute restoration
+                const gain = Math.max(0.0001, Math.min(1, Number(${volumeValue})));
                 const engine = window.audioEngine;
                 const db = engine.Tone.gainToDb(gain);
 
-                const applyVolume = (name, instr) => {
-                    if (!instr) return;
-                    try {
-                        if (instr.volume) {
-                            instr.set({ volume: db });
-                        } else {
-                            engine.logKey('LOG_VOL_NOT_SUPPORTED', 'error', name);
-                        }
-                    } catch (e) { console.warn('Volume apply failed:', name, e); }
+                const applyVolume = (name) => {
+                    const chan = engine._getOrCreateChannel(name);
+                    if (chan && chan.volume) {
+                        chan.volume.value = db;
+                    }
                 };
 
                 if (target === 'ALL') {
-                    applyVolume('DefaultSynth', engine.synth);
-                    applyVolume('KICK', engine.drum);
-                    applyVolume('SNARE', engine.snare);
-                    applyVolume('HH', engine.hh);
-                    applyVolume('JazzKit', engine.jazzKit);
+                    // System instruments
+                    ['DefaultSynth', 'KICK', 'SNARE', 'HH', 'JAZZKIT'].forEach(applyVolume);
+                    // User instruments
                     if (engine.instruments) {
                         for (const name in engine.instruments) {
-                            applyVolume(name, engine.instruments[name]);
+                            applyVolume(name);
                         }
                     }
                     engine.logKey('LOG_VOL_SET_INSTR', 'info', 'Global (All) -> ' + Number(${volumeValue}));
                 } else {
-                    let instr = null;
-                    if (engine.instruments && engine.instruments[target]) {
-                        instr = engine.instruments[target];
-                    } else if (target === 'DefaultSynth') {
-                        instr = engine.synth;
-                    } else if (target === 'KICK') {
-                        instr = engine.drum;
-                    } else if (target === 'SNARE') {
-                        instr = engine.snare;
-                    } else if (target === 'HH') {
-                        instr = engine.hh;
-                    } else if (target === 'JAZZKIT') {
-                        instr = engine.jazzKit;
-                    }
-
-                    if (instr) {
-                        applyVolume(target, instr);
-                        engine.logKey('LOG_VOL_SET_INSTR', 'info', target + " (" + Number(${volumeValue}) + ")");
-                    } else {
-                        engine.logKey('LOG_VOL_ERR', 'error', target);
-                    }
+                    applyVolume(target);
+                    engine.logKey('LOG_VOL_SET_INSTR', 'info', target + " (" + Number(${volumeValue}) + ")");
                 }
             })();
         `;
@@ -365,6 +325,36 @@ if (!window.audioEngine.isExecutionActive) return;
     try { if (GeneratorProto) GeneratorProto['sb_set_instrument_volume'] = G['sb_set_instrument_volume']; } catch (e) { } 
     try { if (JSConstructorProto) JSConstructorProto['sb_set_instrument_volume'] = G['sb_set_instrument_volume']; } catch (e) { } 
     try { G.forBlock['sb_set_instrument_volume'] = G['sb_set_instrument_volume']; } catch (e) { }
+
+    G['sb_set_instrument_mute'] = function (block) {
+        const target = block.getFieldValue('TARGET') || 'DefaultSynth';
+        const mute = block.getFieldValue('MUTE') === 'TRUE';
+        return `
+            (function() {
+                const chan = window.audioEngine._getOrCreateChannel('${target}');
+                if (chan) {
+                    chan.mute = ${mute};
+                    window.audioEngine.logKey('LOG_CONSOLE_LOG_MSG', 'info', 'Mute ${target}: ${mute}');
+                }
+            })();
+        \n`;
+    }.bind(G);
+    try { G.forBlock['sb_set_instrument_mute'] = G['sb_set_instrument_mute']; } catch (e) { }
+
+    G['sb_set_instrument_solo'] = function (block) {
+        const target = block.getFieldValue('TARGET') || 'DefaultSynth';
+        const solo = block.getFieldValue('SOLO') === 'TRUE';
+        return `
+            (function() {
+                const chan = window.audioEngine._getOrCreateChannel('${target}');
+                if (chan) {
+                    chan.solo = ${solo};
+                    window.audioEngine.logKey('LOG_CONSOLE_LOG_MSG', 'info', 'Solo ${target}: ${solo}');
+                }
+            })();
+        \n`;
+    }.bind(G);
+    try { G.forBlock['sb_set_instrument_solo'] = G['sb_set_instrument_solo']; } catch (e) { }
 
         G['sb_create_layered_instrument'] = function (block) {
 

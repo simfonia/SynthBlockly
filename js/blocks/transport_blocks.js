@@ -3,6 +3,41 @@
 import * as Blockly from 'blockly';
 import { getHelpUrl } from '../core/helpUtils.js';
 
+class FieldDropdownLenient extends Blockly.FieldDropdown {
+    constructor(menuGenerator, validator) {
+        super(menuGenerator, validator);
+    }
+    
+    doClassValidation_(newValue) {
+        if (typeof newValue !== 'string') return null;
+        return newValue;
+    }
+
+    getOptions(opt_useCache) {
+        // We call super.getOptions, but we know the generator might return an empty list 
+        // or a fallback list if the workspace isn't ready.
+        const options = super.getOptions(opt_useCache);
+        
+        // Ensure the current value is always present in the list
+        const val = this.getValue();
+        if (val && typeof val === 'string') {
+            const exists = options.some(opt => opt[1] === val);
+            if (!exists) {
+                // If it's a valid string value, add it.
+                // This handles forward references in XML loading.
+                options.push([val, val]);
+            }
+        }
+        
+        // Final fallback to prevent empty dropdown errors if even getValue() is null
+        if (options.length === 0) {
+             return [['MyInstrument', 'MyInstrument']];
+        }
+        
+        return options;
+    }
+}
+
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
         console.error('Blockly not available');
@@ -190,7 +225,7 @@ export function registerBlocks() {
     Blockly.Blocks['sb_instrument_selector'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField(new Blockly.FieldDropdown(function() {
+                .appendField(new FieldDropdownLenient(function() {
                     const options = [['Master', 'Master']];
                     
                     try {
@@ -216,7 +251,6 @@ export function registerBlocks() {
                                 blocks.forEach(block => {
                                     const name = block.getFieldValue('NAME');
                                     if (name) {
-                                        // Avoid duplicates if 'Master' was somehow named 'Master' or duplicate names exist
                                         if (!options.some(opt => opt[1] === name)) {
                                             options.push([name, name]);
                                         }
@@ -224,19 +258,11 @@ export function registerBlocks() {
                                 });
                             });
                         }
-
-                        // IMPORTANT: Validate current value to prevent "unavailable option" errors
-                        // This logic ensures that if a block was saved with a value that hasn't been scanned yet
-                        // (e.g. during load order), it remains valid temporarily.
-                        const currentValue = this.getValue();
-                        if (currentValue && !options.some(opt => opt[1] === currentValue)) {
-                            options.push([currentValue, currentValue]);
-                        }
                         
-                        // Sort, but keep Master at the top
-                        const masterOpt = options.shift(); // Remove Master
+                        // Sort
+                        const masterOpt = options.shift();
                         options.sort((a, b) => a[0].localeCompare(b[0]));
-                        options.unshift(masterOpt); // Add Master back
+                        options.unshift(masterOpt);
 
                         return options;
 
@@ -264,57 +290,99 @@ export function registerBlocks() {
                     ["自訂樂器...", "CUSTOM"]
                 ]), "TYPE");
 
-            this.appendDummyInput('CUSTOM_ROW')
-                .appendField("↳")
-                .appendField(new Blockly.FieldDropdown(function() {
-                    let options = [];
-                    try {
-                        let workspace = null;
-                        if (typeof this.getSourceBlock === 'function') {
-                            const block = this.getSourceBlock();
-                            if (block) workspace = block.workspace;
-                        } else if (this.sourceBlock_) {
-                            workspace = this.sourceBlock_.workspace;
-                        }
+                                    this.appendDummyInput('CUSTOM_ROW')
+
+                                        .appendField("↳")
+
+                                        .appendField(new FieldDropdownLenient(function() {
+
+                                            let options = [];
+
+                                            try {
+
+                                                let workspace = null;
+
+                                                if (typeof this.getSourceBlock === 'function') {
+
+                                                    const block = this.getSourceBlock();
+
+                                                    if (block) workspace = block.workspace;
+
+                                                } else if (this.sourceBlock_) {
+
+                                                    workspace = this.sourceBlock_.workspace;
+
+                                                }
+
+                                                
+
+                                                if (workspace) {
+
+                                                    const targetBlockTypes = [
+
+                                                        'sb_create_synth_instrument',
+
+                                                        'sb_create_harmonic_synth',
+
+                                                        'sb_create_additive_synth',
+
+                                                        'sb_create_layered_instrument',
+
+                                                        'sb_create_sampler_instrument'
+
+                                                    ];
+
                         
-                        const fallback = [["MyInstrument", "MyInstrument"]];
 
-                        if (workspace) {
-                            const targetBlockTypes = [
-                                'sb_create_synth_instrument',
-                                'sb_create_harmonic_synth',
-                                'sb_create_additive_synth',
-                                'sb_create_layered_instrument',
-                                'sb_create_sampler_instrument'
-                            ];
+                                                    targetBlockTypes.forEach(type => {
 
-                            targetBlockTypes.forEach(type => {
-                                const blocks = workspace.getBlocksByType(type, false);
-                                blocks.forEach(block => {
-                                    const name = block.getFieldValue('NAME');
-                                    if (name && !options.some(opt => opt[1] === name)) {
-                                        options.push([name, name]);
-                                    }
-                                });
-                            });
-                        }
+                                                        const blocks = workspace.getBlocksByType(type, false);
+
+                                                        blocks.forEach(block => {
+
+                                                            const name = block.getFieldValue('NAME');
+
+                                                            if (name && !options.some(opt => opt[1] === name)) {
+
+                                                                options.push([name, name]);
+
+                                                            }
+
+                                                        });
+
+                                                    });
+
+                                                }
+
+                                                
+
+                                                options.sort((a, b) => a[0].localeCompare(b[0]));
+
+                                                
+
+                                                // If no instruments found, provide a default so the dropdown isn't empty
+
+                                                if (options.length === 0) {
+
+                                                    options.push(["MyInstrument", "MyInstrument"]);
+
+                                                }
+
+                                                
+
+                                                return options;
+
                         
-                        options.sort((a, b) => a[0].localeCompare(b[0]));
-                        
-                        // FIX: Ensure current value is in the list
-                        const currentValue = this.getValue();
-                        if (currentValue && !options.some(opt => opt[1] === currentValue)) {
-                            options.push([currentValue, currentValue]);
-                        }
 
-                        if (options.length === 0) return fallback;
-                        return options;
+                                            } catch (e) {
 
-                    } catch (e) {
-                        console.warn("Error in sb_rhythm_source_selector dropdown:", e);
-                        return [["MyInstrument", "MyInstrument"]];
-                    }
-                }), "CUSTOM_TYPE");
+                                                console.warn("Error in sb_rhythm_source_selector dropdown:", e);
+
+                                                return [["MyInstrument", "MyInstrument"]];
+
+                                            }
+
+                                        }), "CUSTOM_TYPE");
 
             this.setOutput(true, "String");
             this.setColour(Blockly.Msg['TRANSPORT_HUE'] || "#16A085");
@@ -370,7 +438,7 @@ export function registerBlocks() {
         }
     };
 
-    // 步進音序器積木 (含 Mutation 與舊版相容支援)
+    // 步進音序器積木
     Blockly.Blocks['sb_rhythm_sequence'] = {
         init: function () {
             this.appendValueInput('SOURCE')

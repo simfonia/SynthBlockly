@@ -79,7 +79,7 @@ export const audioEngine = {
     get snare() { return snare; }, get click() { return click; }, get jazzKit() { return jazzKit; },
     
     effects: {}, _activeEffects: [], instrumentEffects: {}, activeSFXPlayers: [],
-    instruments: {}, layeredInstruments: {},
+    instruments: {}, layeredInstruments: {}, channels: {},
     currentInstrumentName: 'DefaultSynth',
     currentSemitoneOffset: 0,
     pressedKeys: new Map(), chords: {}, keyboardChordMap: {}, midiChordMap: {},
@@ -108,6 +108,35 @@ export const audioEngine = {
         updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
     },
 
+    _getOrCreateChannel: function(name) {
+        if (!this.channels[name]) {
+            // Channel handles volume, mute, solo, and pan.
+            // Initially connect to analyser (which eventually goes to Master)
+            this.channels[name] = new Tone.Channel().connect(this.analyser);
+        }
+        return this.channels[name];
+    },
+
+    _connectInstrumentToChain: function(name, instr) {
+        if (!instr) return;
+        
+        // 1. Get Local Effects
+        const localEffects = this.instrumentEffects[name] || [];
+        
+        // 2. Get/Create Channel
+        const chan = this._getOrCreateChannel(name);
+        
+        // 3. Chain: Instr -> Local Effects -> Channel
+        if (instr.disconnect) instr.disconnect();
+        if (instr.chain) instr.chain(...localEffects, chan);
+        
+        // 4. Chain: Channel -> Master Effects -> Analyser
+        // Note: Channel might already be connected, but we ensure it matches current global state
+        const masterChain = [...this._activeEffects, this.analyser];
+        if (chan.disconnect) chan.disconnect();
+        chan.chain(...masterChain);
+    },
+
     _createEffectInstance: function(config) {
         if (!config || !config.type) return null;
         let instance = null; 
@@ -122,7 +151,10 @@ export const audioEngine = {
             switch (config.type) {
                 case 'distortion': instance = new Tone.Distortion(safeNum(p.distortion, 0)); break;
                 case 'reverb': instance = new Tone.Reverb(safeNum(p.decay, 1.5)); break;
-                case 'feedbackDelay': instance = new Tone.FeedbackDelay(Tone.Time(p.delayTime || '8n').toSeconds(), safeNum(p.feedback, 0.25)); break;
+                case 'feedbackDelay': 
+                    const dt = Tone.Time(p.delayTime || '8n').toSeconds();
+                    instance = new Tone.FeedbackDelay(isNaN(dt) ? 0.25 : dt, safeNum(p.feedback, 0.25)); 
+                    break;
                 case 'filter': instance = new Tone.Filter(safeNum(p.frequency, 1000), p.type || 'lowpass'); break;
                 case 'compressor': instance = new Tone.Compressor(p); break;
                 case 'limiter': instance = new Tone.Limiter(safeNum(p.threshold, -6)); break;
@@ -148,18 +180,26 @@ export const audioEngine = {
         [drum, hh, snare, click, jazzKit].forEach(i => {
              if (i) { 
                  if (i.disconnect) i.disconnect(); 
+                 // Note: We could add channels for core instruments too, but DefaultSynth covers most user needs.
                  if (i.chain) i.chain(...masterChain); 
              }
         });
 
         // Registered Instruments (includes DefaultSynth)
         for (const [name, instr] of Object.entries(this.instruments)) {
-             if (!instr) continue;
+             if (!instr || instr.type === 'Layered') continue;
              if (instr.disconnect) instr.disconnect();
              
              const localEffects = this.instrumentEffects[name] || [];
-             // Chain: Instr -> Local Effects -> Master Chain
-             if (instr.chain) instr.chain(...localEffects, ...masterChain);
+             const chan = this._getOrCreateChannel(name);
+             
+             // Chain: Instr -> Local Effects -> Channel -> Master Chain
+             if (instr.chain) {
+                 instr.chain(...localEffects, chan);
+                 // Channel connects to Master Chain
+                 chan.disconnect();
+                 chan.chain(...masterChain);
+             }
         }
     },
 
@@ -288,8 +328,8 @@ export const audioEngine = {
                 }
             } catch(e) {}
             
-            i.chain(...this._activeEffects, analyser); 
-            this.instruments[name] = i; 
+            this.instruments[name] = i;
+            this._connectInstrumentToChain(name, i);
         }
     },
 
@@ -297,8 +337,8 @@ export const audioEngine = {
         if (this.instruments[name]) this.instruments[name].dispose();
         const s = new Tone.Sampler({ urls, baseUrl, onload: () => logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name) });
         if (settings) s.set(settings);
-        s.chain(...this._activeEffects, analyser);
         this.instruments[name] = s;
+        this._connectInstrumentToChain(name, s);
     },
 
     createLayeredInstrument: function(name, childNames) {
@@ -314,8 +354,8 @@ export const audioEngine = {
                 oscillator: { type: 'custom', partials: validPartials },
                 envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' }
             });
-            synth.chain(...this._activeEffects, analyser);
             this.instruments[name] = synth;
+            this._connectInstrumentToChain(name, synth);
             logKey('LOG_CUSTOM_WAVE_CREATED', 'info', name, validPartials.join(', '));
         } catch (e) {
             logKey('LOG_INSTR_CREATE_FAIL', 'error', name, e.message);
@@ -375,8 +415,8 @@ export const audioEngine = {
         try {
             const synth = new Tone.PolySynth(AdditiveVoice, { maxPolyphony: 16 });
             synth.set({ envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' } });
-            synth.chain(...this._activeEffects, analyser);
             this.instruments[name] = synth;
+            this._connectInstrumentToChain(name, synth);
             logKey('LOG_ADDITIVE_CREATED', 'info', name);
         } catch (e) {
             logKey('LOG_ADDITIVE_CREATE_FAIL', 'error', name, e.message);
@@ -641,6 +681,13 @@ export const audioEngine = {
         this.currentADSR = { ...DEFAULT_ADSR };
         createCoreInstruments(); 
         for (const name in this.instruments) { if (this.instruments[name] && this.instruments[name].dispose) this.instruments[name].dispose(); delete this.instruments[name]; } 
+        
+        // Clear Channels
+        for (const name in this.channels) {
+            if (this.channels[name] && this.channels[name].dispose) this.channels[name].dispose();
+            delete this.channels[name];
+        }
+
         this.currentInstrumentName = 'DefaultSynth';
         this.instruments['DefaultSynth'] = synth;
         this.chords = {}; this.keyboardChordMap = {}; this.midiChordMap = {}; this.clearPressedKeys();

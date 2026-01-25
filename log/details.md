@@ -109,3 +109,22 @@
 *   **修正**：修改 Generator，使用 `Object.assign` 動態合併靜態配置與執行期的變數表達式。
     - 靜態註解：`/* EFFECT_CONFIG:{...} */` 用於初始化。
     - 執行碼：`addEffectToChain(Object.assign(config, { target: variableName }))` 確保支援變數目標。
+# 技術細節 2026-01-24
+
+## 1. V2.0 優先權產生碼 (Priority-based Code Gen)
+* **問題**：使用者在 XML 中隨意擺放積木（如樂器建立放在底部），導致執行時 `playNote` 找不到樂器。
+* **解法**：在 `blocklyManager.js` 的 `getBlocksCode` 中分類掃描 Top Blocks。
+* **關鍵**：在遍歷鏈結時，必須暫時使用 `nextConnection.disconnect()` 與 `Blockly.Events.disable()`，否則 `blockToCode` 會因為遞迴而產生重複代碼。
+
+## 2. 下拉選單前向參考 (FieldDropdownLenient)
+* **現象**：XML 載入時，若樂器名稱 `MyLead` 尚未被索引，Dropdown 會顯示預設的 `DefaultSynth`。
+* **解法**：覆寫 `doClassValidation_` 取消選項檢查，並覆寫 `getOptions` 將 `this.getValue()` 強制補入選項陣列中。
+* **坑點**：Generator 函式不可回傳空陣列，否則 Blockly 會拋出致命錯誤。必須在 Generator 或 `getOptions` 最後加上 fallback 選項。
+
+## 3. Tone.js 靜音恢復 Bug (-80dB Hack)
+* **現象**：當 `Channel.volume.value` 設為 `-Infinity` (Gain=0) 時，切換 `mute = true/false` 會導致音量無法恢復。
+* **解法**：在音量產生器中將最小值限制在 `0.0001` (-80dB)，避免進入 `-Infinity` 狀態。
+
+## 4. 分軌路由架構
+* **路由鏈**：`Instrument -> Local Effects -> Tone.Channel -> Master Effects -> Analyser -> Output`。
+* **優點**：音量與 Mute/Solo 控制在效果器之後，更符合混音邏輯，且不影響樂器內部的 ADSR 狀態。

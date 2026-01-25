@@ -137,7 +137,6 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_create_additive_synth"></block>
         <block type="sb_create_layered_instrument"></block>
         <block type="sb_create_sampler_instrument"></block>
-        <block type="sb_select_current_instrument"></block>
         <block type="sb_instrument_selector"></block>
         <block type="sb_set_adsr"></block>
         <block type="sb_set_instrument_vibrato">
@@ -150,9 +149,12 @@ export const TOOLBOX_XML_STRING = `
                 <shadow type="math_number"><field name="NUM">0.8</field></shadow>
             </value>
         </block>
+        <block type="sb_set_instrument_mute"></block>
+        <block type="sb_set_instrument_solo"></block>
     </category>
 
     <category name="%{BKY_MSG_PERFORMANCE_CATEGORY}" colour="%{BKY_PERFORMANCE_HUE}">
+        <block type="sb_select_current_instrument"></block>
         <block type="sb_play_note">
             <value name="NOTE">
                 <shadow type="text"><field name="TEXT">C4</field></shadow>

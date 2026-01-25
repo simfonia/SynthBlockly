@@ -104,3 +104,25 @@
 - **動態選單安全機制**：在下拉選單 Generator 中透過 `this.getValue()` 檢查並注入當前值，防止載入報錯。
 - **音訊路由**：專屬效果器儲存在 `audioEngine.instrumentEffects[name]` 陣列中，透過 `_reconnectAll()` 進行即時斷線與重連。
 - **向下相容**：`updateFilter` 支援 `(freq, q)` 舊格式，自動將目標導向 `Master`。
+
+# 任務交接 2026-01-24
+
+## 當前進度
+1. **核心架構升級 (V2.0)**：實作了優先權產生碼邏輯。現在頂層積木會依「樂器建立 (Priority 1) -> 系統設定/音序排程 (Priority 2) -> 主要執行程式碼 (Priority 3)」的順序生成。這徹底解決了 XML 載入順序與執行時機的相依性問題。
+2. **混音台與分軌系統**：
+   - 每個樂器現在都經由獨立的 `Tone.Channel` 輸出。
+   - 新增了靜音 (Mute) 與獨奏 (Solo) 積木。
+   - 修改了音量控制產生器，解決了音量為 0 時取消靜音失效的 Bug。
+3. **UI 與載入穩定性**：
+   - 實作了 `FieldDropdownLenient` 類別，允許下拉選單接受「目前尚未定義」的值，解決了 XML 載入時前向參考導致的顯示瑕疵。
+   - 步進音序器的「自訂樂器」清單已恢復為自動下拉選單模式。
+4. **模組化重構**：
+   - `sb_select_current_instrument` 已改為紅色並搬移至 `melody_blocks.js` 與 `melody_generators.js`。
+5. **範例更新**：
+   - 完成 `15_Mixer_Demo.xml`，完美展示了分軌控制與 V2.0 提升功能。
+
+## 下一步工作建議
+1. **動態效果器管理**：提供 `sb_clear_effects` 積木，讓使用者能精確清除特定音軌或 Master 的效果器鏈。
+2. **和弦清單擴充**：讓 `sb_play_melody` 的字串解析直接支援和弦名稱。
+3. **性能監控**：隨著 Channel 與效果器增多，觀察行動裝置上的 Web Audio 效能。
+
