@@ -9,8 +9,20 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
     if (!G.forBlock) G.forBlock = {};
 
+    /**
+     * Helper to find the nearest container's instrument name.
+     */
+    function getContainerTarget(block) {
+        let p = block.getSurroundParent();
+        while (p) {
+            if (p.type === 'sb_instrument_container') return p.getFieldValue('NAME') || 'MyInstrument';
+            p = p.getSurroundParent();
+        }
+        return 'DefaultSynth';
+    }
+
     G['sb_create_sampler_instrument'] = function (block) {
-        const name = G.quote_(block.getFieldValue('NAME'));
+        const name = G.quote_(getContainerTarget(block));
         const samplerType = block.getFieldValue('SAMPLER_TYPE');
         const violinSampleMap = `JSON.parse('{"G3":"G3.wav","A3":"A3.wav","B3":"B3.wav","D4":"D4.wav","Gb4":"Gb4.wav","A4":"A4.wav","C5":"C5.wav","E5":"E5.wav","G5":"G5.wav","B5":"B5.wav","D6":"D6.wav"}')`;
         // const violinSampleMap = `JSON.parse('{"C5":"C5.wav"}')`;

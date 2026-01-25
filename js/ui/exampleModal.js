@@ -222,8 +222,8 @@ async function loadExample(example) {
             // 1. 下載 XML
             const xmlText = await fetchTextContent(example.xmlUrl);
             
-            // 2. 重置並載入
-            resetWorkspaceAndAudio();
+            // 2. 重置並載入 (V2.1: skipTemplate = true)
+            resetWorkspaceAndAudio(true);
             const xml = Blockly.utils.xml.textToDom(xmlText);
             Blockly.Xml.domToWorkspace(xml, Blockly.getMainWorkspace());
             logKey('LOG_XML_LOADED', 'info', example.name);

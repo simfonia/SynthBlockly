@@ -3,106 +3,142 @@
     <variable id="ha,_*1.4{#wE5_3p{f1)">serial_data</variable>
     <variable id="clean_data">clean_data</variable>
   </variables>
-
-  <!-- 教學註解 -->
-  <block type="sb_comment" id="drum_pad_guide" x="10" y="10">
-    <field name="COMMENT">【電子鼓墊 (單鍵模式)】&amp;#10;&amp;#10;此範例示範如何將 Arduino 的按鍵訊號（如 'KEY:1'）對應到不同的鼓聲或和弦：&amp;#10;1. 建立樂器：使用 Piano 與 JazzKit。&amp;#10;2. 訊息解析：監聽 'KEY:1' ~ 'KEY:4'。&amp;#10;3. 觸發聲音：&amp;#10;   - KEY:1 -&gt; 大鼓 (Kick)&amp;#10;   - KEY:2 -&gt; 拍手 (Handclap)&amp;#10;   - KEY:3 -&gt; C 和弦&amp;#10;   - KEY:4 -&gt; F 和弦</field>
-    <next>
-      <block type="sb_create_synth_instrument" id="sWKNmc2qwf||mWjz+G;U">
-        <field name="NAME">Piano</field>
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">【電子鼓墊 (單鍵模式)】&amp;#10;&amp;#10;此範例將 Arduino 的按鍵訊號對應到鼓聲或和弦：&amp;#10;1. KEY:1 -&gt; 大鼓 (Kick)&amp;#10;2. KEY:2 -&gt; 拍手 (Handclap)&amp;#10;3. KEY:3 -&gt; C 和弦&amp;#10;4. KEY:4 -&gt; F 和弦&amp;#10;&amp;#10;利用帽子積木監聽，無需點擊執行即可測試！</field>
+  </block>
+  <block type="sb_instrument_container" id="c_piano" x="10" y="230">
+    <field name="NAME">Piano</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="|.z6AL#705Pt[;tDQOM0">
         <field name="TYPE">PolySynth</field>
         <next>
-          <block type="sb_select_current_instrument" id="TWI,s^0H,L)~cj2N4aq-">
-            <field name="NAME">Piano</field>
-            <next>
-              <block type="sb_set_adsr" id="=b@9tbW!U}|{FxW8oQX[">
-                <field name="TARGET">Piano</field>
-                <field name="A">0.01</field>
-                <field name="D">0.3</field>
-                <field name="S">0.4</field>
-                <field name="R">1</field>
-                <next>
-                  <!-- 定義常用和弦 -->
-                  <block type="sb_define_chord" id="c_c"><field name="NAME">C</field><field name="NOTES_STRING">C4,E4,G4</field><next>
-                  <block type="sb_define_chord" id="c_f"><field name="NAME">F</field><field name="NOTES_STRING">F4,A4,C5</field><next>
-                  <block type="sb_define_chord" id="c_g"><field name="NAME">G</field><field name="NOTES_STRING">G3,B3,D4</field><next>
-                  <block type="sb_define_chord" id="c_am"><field name="NAME">Am</field><field name="NOTES_STRING">A3,C4,E4</field></block>
-                  </next></block></next></block></next></block>
-                </next>
-              </block>
-            </next>
+          <block type="sb_container_adsr" id="A#(P9a{B=VoQvi~m/Q08">
+            <field name="A">0.01</field>
+            <field name="D">0.3</field>
+            <field name="S">0.4</field>
+            <field name="R">1</field>
           </block>
         </next>
       </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_drums" x="10" y="350">
+    <field name="NAME">JazzKit</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="]it99R_c)b_Mn3Yu`A,z">
+        <field name="SAMPLER_TYPE">DEFAULT</field>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_define_chord" id="c_c" x="10" y="450">
+    <field name="NAME">C</field>
+    <field name="NOTES_STRING">C4,E4,G4</field>
+    <next>
+      <block type="sb_define_chord" id="c_f">
+        <field name="NAME">F</field>
+        <field name="NOTES_STRING">F4,A4,C5</field>
+      </block>
     </next>
   </block>
-
-  <!-- 序列埠事件監聽 (帽子積木) -->
-  <block type="sb_serial_data_received" id="BO(JO;Ykbe#Izmj8Io.C" x="10" y="450">
+  <block type="sb_serial_data_received" id="serial_in" x="10" y="530">
     <field name="DATA" id="ha,_*1.4{#wE5_3p{f1)">serial_data</field>
     <statement name="DO">
-      <block type="variables_set" id="O7IRn1MwUx~$j4eF?%2;">
+      <block type="variables_set" id="wn2sA%YU;xbCT~W3aG5L">
         <field name="VAR" id="clean_data">clean_data</field>
         <value name="VALUE">
-          <block type="text_trim" id="+bNa;_Uqd8LfbC_*I_Xm">
+          <block type="text_trim" id="p${{;O(_0UkNu%~=i=#C">
             <field name="MODE">BOTH</field>
             <value name="TEXT">
-              <block type="variables_get">
+              <block type="variables_get" id="p36++Ts`u9oe[8Z0Ll0$">
                 <field name="VAR" id="ha,_*1.4{#wE5_3p{f1)">serial_data</field>
               </block>
             </value>
           </block>
         </value>
         <next>
-          <!-- 判斷 KEY:1 ~ KEY:4 -->
           <block type="controls_if" id="key_logic">
             <mutation elseif="3"></mutation>
-            <!-- IF 0: KEY:1 -->
             <value name="IF0">
-              <block type="logic_compare" id="cmp_k1">
+              <block type="logic_compare" id="kIF?.I6K(jo59:*5hHq0">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:1</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="y=FvXY0gkJrhoLmhVne~">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="Wk=oUO9OpPu6Xw*=+b%u">
+                    <field name="TEXT">KEY:1</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO0">
-              <block type="jazzkit_play_drum"><field name="DRUM_TYPE">C1</field></block>
+              <block type="jazzkit_play_drum" id="M8}F}:ZkKGp}o$@wDu$`">
+                <field name="DRUM_TYPE">C1</field>
+              </block>
             </statement>
-            
-            <!-- IF 1: KEY:2 -->
             <value name="IF1">
-              <block type="logic_compare" id="cmp_k2">
+              <block type="logic_compare" id="~#l@8l25QeT%_.e9wrA3">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:2</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="!3}8A1KiHa+$QdYQs##,">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="*4H@5+ak5d$M!=Ls0N/P">
+                    <field name="TEXT">KEY:2</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO1">
-              <block type="jazzkit_play_drum"><field name="DRUM_TYPE">D#1</field></block>
+              <block type="jazzkit_play_drum" id="#z6BxJNk~~^_:)u^KR(E">
+                <field name="DRUM_TYPE">D#1</field>
+              </block>
             </statement>
-
-            <!-- IF 2: KEY:3 -->
             <value name="IF2">
-              <block type="logic_compare" id="cmp_k3">
+              <block type="logic_compare" id="F0%PB;t`VwNT1Yx}$#%?">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:3</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="x|mvw5oci^a;#]9)OUQj">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="5y[M,nY[,xZSZ}Ek$U@k">
+                    <field name="TEXT">KEY:3</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO2">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">C</field><field name="DUR">8n</field></block>
+              <block type="sb_play_chord_by_name" id="m376{ZXRp;%:N_-KMgN#">
+                <field name="CHORD_NAME">C</field>
+                <field name="DUR">8n</field>
+              </block>
             </statement>
-
-            <!-- IF 3: KEY:4 -->
             <value name="IF3">
-              <block type="logic_compare" id="cmp_k4">
+              <block type="logic_compare" id="{_Z4)n:n;Bzl|q==kSxv">
                 <field name="OP">EQ</field>
-                <value name="A"><block type="variables_get"><field name="VAR" id="clean_data">clean_data</field></block></value>
-                <value name="B"><block type="text"><field name="TEXT">KEY:4</field></block></value>
+                <value name="A">
+                  <block type="variables_get" id="Deq2e]EQ~~/$G@Pp($v4">
+                    <field name="VAR" id="clean_data">clean_data</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="Fx%u|H:kBYx]CDG8d,vf">
+                    <field name="TEXT">KEY:4</field>
+                  </block>
+                </value>
               </block>
             </value>
             <statement name="DO3">
-              <block type="sb_play_chord_by_name"><field name="CHORD_NAME">F</field><field name="DUR">8n</field></block>
+              <block type="sb_play_chord_by_name" id="T8#%imt(4[%b?JLHGGy.">
+                <field name="CHORD_NAME">F</field>
+                <field name="DUR">8n</field>
+              </block>
             </statement>
           </block>
         </next>

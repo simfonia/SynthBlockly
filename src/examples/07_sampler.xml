@@ -1,57 +1,73 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="sb_comment" id="sampler_guide" x="10" y="10">
-    <field name="COMMENT">此範例展示如何使用「真實樂器錄音」來演奏（取樣合成）。&amp;#10;&amp;#10;1. 什麼是取樣 (Sampler)？&amp;#10;不同於之前的範例是用數學波形「合成」聲音，取樣器是直接播放真實樂器錄好的音檔。&amp;#10;這樣可以得到最真實的鋼琴、小提琴等音色。&amp;#10;&amp;#10;2. 小提琴的兩種技巧：&amp;#10;- 持續音 (Sustain)：傳統的拉弦，聲音悠長。&amp;#10;- 撥奏 (Pizzicato)：用手指撥弦，聲音短促。&amp;#10;&amp;#10;3. 注意事項：&amp;#10;取樣器需要從網路下載音檔，點擊「執行程式」後可能需要等幾秒鐘（日誌會提示載入成功）才能發聲。&amp;#10;&amp;#10;執行後，您可以嘗試將「選定音源」積木改為小提琴，體驗真實的拉弦質感！&amp;#10;您也可以用左右方向鍵切換音色。&amp;#10;&amp;#10;想了解如何自訂取樣器，請在積木上按右鍵/說明。</field>
-    <next>
-      <block type="sb_create_sampler_instrument" id="e?nW;)c;rcf?)W-s1V6K">
-        <field name="NAME">Piano</field>
+  <block type="sb_instrument_container" id="cont_piano" x="10" y="10">
+    <field name="NAME">Piano</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="s1">
         <field name="SAMPLER_TYPE">DEFAULT</field>
         <next>
-          <block type="sb_set_adsr" id="e]EN3K4}SNmrpo=Be~!k">
-            <field name="TARGET">Piano</field>
+          <block type="sb_container_adsr" id="CP8CmVMgWn]X5k,X@q8+">
             <field name="A">0.01</field>
             <field name="D">0.1</field>
             <field name="S">0.5</field>
             <field name="R">0.5</field>
-            <next>
-              <block type="sb_create_sampler_instrument" id="M:Xr@{au*L++-`K?naN~">
-                <field name="NAME">Violin_arco</field>
-                <field name="SAMPLER_TYPE">VIOLIN_SUSTAIN</field>
-                <next>
-                  <block type="sb_set_adsr" id=")}d`)Uy?OtU75%cs]0~w">
-                    <field name="TARGET">Violin_arco</field>
-                    <field name="A">0.5</field>
-                    <field name="D">0</field>
-                    <field name="S">1</field>
-                    <field name="R">0.8</field>
-                    <next>
-                      <block type="sb_create_sampler_instrument" id="bHgy4N#Fs(Ce/*W/+!d-">
-                        <field name="NAME">Violin_pizz</field>
-                        <field name="SAMPLER_TYPE">VIOLIN_PIZZ</field>
-                        <next>
-                          <block type="sb_set_adsr" id="VJcQazt4clKbM(Y4^w0v">
-                            <field name="TARGET">Violin_pizz</field>
-                            <field name="A">0.01</field>
-                            <field name="D">0.1</field>
-                            <field name="S">0.2</field>
-                            <field name="R">0.2</field>
-                            <next>
-                              <block type="sb_select_current_instrument" id="T?hGqTiH1p+swv7=xW%Y">
-                                <field name="NAME">Piano</field>
-                                <next>
-                                  <block type="sb_toggle_pc_keyboard_midi" id="J]22G49dctjWed5o#?~t">
-                                    <field name="ACTION">ON</field>
-                                  </block>
-                                </next>
-                              </block>
-                            </next>
-                          </block>
-                        </next>
-                      </block>
-                    </next>
-                  </block>
-                </next>
-              </block>
-            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="cont_violin_arco" x="10" y="130">
+    <field name="NAME">Violin_arco</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="s2">
+        <field name="SAMPLER_TYPE">VIOLIN_SUSTAIN</field>
+        <next>
+          <block type="sb_container_adsr" id="L%pAVuJP(2m@S]:+$`5M">
+            <field name="A">0.5</field>
+            <field name="D">0</field>
+            <field name="S">1</field>
+            <field name="R">0.8</field>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="cont_violin_pizz" x="10" y="250">
+    <field name="NAME">Violin_pizz</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="s3">
+        <field name="SAMPLER_TYPE">VIOLIN_PIZZ</field>
+        <next>
+          <block type="sb_container_adsr" id="Zi(Z7DykOSAoPGbgdQQl">
+            <field name="A">0.01</field>
+            <field name="D">0.1</field>
+            <field name="S">0.2</field>
+            <field name="R">0.2</field>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="370">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="master_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="tgMlK!GM2)WynlqPyb#b">
+            <field name="NUM">-1</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_comment" id="guide" x="10" y="490">
+    <field name="COMMENT">此範例展示如何使用「真實樂器錄音」來演奏（取樣合成）。&amp;#10;&amp;#10;1. 什麼是取樣 (Sampler)？取樣器是直接播放真實樂器錄好的音檔。&amp;#10;2. 小提琴技巧：&amp;#10;- 持續音 (Sustain)：傳統拉弦，悠長。&amp;#10;- 撥奏 (Pizzicato)：手指撥弦，短促。&amp;#10;&amp;#10;執行後，您可以點擊選定音源積木或用左右方向鍵切換！</field>
+    <next>
+      <block type="sb_select_current_instrument" id="X?,b_RdyGOSZ{Gy,T@#E">
+        <field name="NAME">Piano</field>
+        <next>
+          <block type="sb_toggle_pc_keyboard_midi" id="*EcQ^q{byY2W$^znpk0x">
+            <field name="ACTION">ON</field>
           </block>
         </next>
       </block>

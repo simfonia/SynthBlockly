@@ -1,0 +1,492 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">【Bossa Nova AABAB 曲式】&amp;#10;&amp;#10;此範例展示利用函式構建精準的樂曲結構。&amp;#10;1. A 段：4 小節循環 (Dm7-G7-CM7-A7)。&amp;#10;2. B 段：2 小節終止式。&amp;#10;3. 曲式安排：主程式呼叫 A -&gt; A -&gt; B -&gt; A -&gt; B。&amp;#10;&amp;#10;技巧：在呼叫函式後加上「等待 Nm」，可確保段落間的舖路機完美銜接。</field>
+  </block>
+  <block type="sb_instrument_container" id="c_piano" x="10" y="210">
+    <field name="NAME">Piano</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="q4p{SN6Fpctw@;leVSUB">
+        <field name="SAMPLER_TYPE">DEFAULT</field>
+        <next>
+          <block type="sb_container_volume" id="k.pcLzo$SR6{@/HCPD[D">
+            <value name="VOLUME_VALUE">
+              <shadow type="math_number" id="%9t.a07nk!D045`dgA:t">
+                <field name="NUM">0.5</field>
+              </shadow>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_clap" x="10" y="350">
+    <field name="NAME">JazzClap</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="If{~+%/LEnDV?$!-jFei">
+        <field name="SAMPLER_TYPE">JK_CLAP</field>
+        <next>
+          <block type="sb_container_volume" id="Z[EG8kkt]2U$]x)+P],?">
+            <value name="VOLUME_VALUE">
+              <shadow type="math_number" id="7i9.[V-*bTw;QSO=B/].">
+                <field name="NUM">0.5</field>
+              </shadow>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_kick" x="10" y="490">
+    <field name="NAME">JazzKick</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="kKn1I;;`iBDYvXVRTG[E">
+        <field name="SAMPLER_TYPE">JK_KICK</field>
+        <next>
+          <block type="sb_container_volume" id="::pj%HdDMPx4UZelusDn">
+            <value name="VOLUME_VALUE">
+              <shadow type="math_number" id=":{%L;jbMS!e,I-FC1L?Y">
+                <field name="NUM">0.8</field>
+              </shadow>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_hh" x="10" y="630">
+    <field name="NAME">JazzHH</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="?ulQ~Wtx6$@*VInDX}CW">
+        <field name="SAMPLER_TYPE">JK_HH</field>
+        <next>
+          <block type="sb_container_volume" id="9rW_rM)erbTm@YgH1-?n">
+            <value name="VOLUME_VALUE">
+              <shadow type="math_number" id="bbpm8,]V(*+ZQ|},WIRT">
+                <field name="NUM">0.1</field>
+              </shadow>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_bass" x="10" y="770">
+    <field name="NAME">Bass</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="JYk?aksAeH?~Dk3WtCrS">
+        <field name="TYPE">PolySynth</field>
+        <next>
+          <block type="sb_container_adsr" id="{Dj@#uq)rgFyH!B%i%x/">
+            <field name="A">0.05</field>
+            <field name="D">0.3</field>
+            <field name="S">0.8</field>
+            <field name="R">0.3</field>
+            <next>
+              <block type="sb_container_volume" id="G)-]7_BUMyQ~+bG]w.`u">
+                <value name="VOLUME_VALUE">
+                  <shadow type="math_number" id="aJmOKpL4m5*?4M0]3I$/">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_define_chord" id="fJ5WYBp|i3`TDbO;n~)x" x="10" y="930">
+    <field name="NAME">Dm7</field>
+    <field name="NOTES_STRING">D4,F4,A4,C5</field>
+    <next>
+      <block type="sb_define_chord" id="?1U?~r2P[m4G]X9T}}!.">
+        <field name="NAME">G7</field>
+        <field name="NOTES_STRING">G3,B3,D4,F4</field>
+        <next>
+          <block type="sb_define_chord" id="oUJhJfuTudunBs5TW1@#">
+            <field name="NAME">CM7</field>
+            <field name="NOTES_STRING">C4,E4,G4,B4</field>
+            <next>
+              <block type="sb_define_chord" id=";9{?ldHH2=2gpJYJ28_l">
+                <field name="NAME">A7</field>
+                <field name="NOTES_STRING">A3,C#4,E4,G4</field>
+                <next>
+                  <block type="sb_define_chord" id="B/hmfExz(8{oTVyC,4n_">
+                    <field name="NAME">C_End</field>
+                    <field name="NOTES_STRING">C3,G3,C4,E4,G4,B4</field>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+  <block type="procedures_defnoreturn" id="func_a" x="10" y="1090">
+    <field name="NAME">演奏 A 段</field>
+    <comment pinned="false" h="80" w="160">描述此函式...</comment>
+    <statement name="STACK">
+      <block type="sb_rhythm_sequence" id="vY]t2C,hv57#w2FI0Sw1">
+        <field name="IS_CHORD">FALSE</field>
+        <field name="SEQUENCE">x--- --x- --x- x---</field>
+        <value name="SOURCE">
+          <shadow type="sb_rhythm_source_selector" id="KvopbAMPf]GB8kpJP9Yn">
+            <mutation is_custom="true"></mutation>
+            <field name="TYPE">CUSTOM</field>
+            <field name="CUSTOM_TYPE">JazzClap</field>
+          </shadow>
+        </value>
+        <value name="MEASURE">
+          <shadow type="math_number" id="ciK9-dlDMBLZ[U#GevGn">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <next>
+          <block type="sb_rhythm_sequence" id="CL_{5J{Rv_e++XfAZXP1">
+            <field name="IS_CHORD">TRUE</field>
+            <field name="SEQUENCE">Dm7--- Dm7--- --Dm7- --Dm7-</field>
+            <value name="SOURCE">
+              <shadow type="sb_rhythm_source_selector" id="N2$vf|1*DJdh5CZsrwr?">
+                <mutation is_custom="true"></mutation>
+                <field name="TYPE">CUSTOM</field>
+                <field name="CUSTOM_TYPE">Piano</field>
+              </shadow>
+            </value>
+            <value name="MEASURE">
+              <shadow type="math_number" id="TkB1bDH!4gq?(NU0aimx">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+            <next>
+              <block type="sb_rhythm_sequence" id="jk3C?Q^{V+9cfC@x`*k[">
+                <field name="IS_CHORD">FALSE</field>
+                <field name="SEQUENCE">D2--- ---- A2--- ----</field>
+                <value name="SOURCE">
+                  <shadow type="sb_rhythm_source_selector" id="P`bdXtYf%(_RrV3`x:v!">
+                    <mutation is_custom="true"></mutation>
+                    <field name="TYPE">CUSTOM</field>
+                    <field name="CUSTOM_TYPE">Bass</field>
+                  </shadow>
+                </value>
+                <value name="MEASURE">
+                  <shadow type="math_number" id="#)BC7D67:_rQ8Y+}o$Ip">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+                <next>
+                  <block type="sb_rhythm_sequence" id="26JJv-ti(@Te-q}1pn?E">
+                    <field name="IS_CHORD">FALSE</field>
+                    <field name="SEQUENCE">x--- --x- --x- x---</field>
+                    <value name="SOURCE">
+                      <shadow type="sb_rhythm_source_selector" id="XawOzrrW9gPS=|g4ZRtM">
+                        <mutation is_custom="true"></mutation>
+                        <field name="TYPE">CUSTOM</field>
+                        <field name="CUSTOM_TYPE">JazzKick</field>
+                      </shadow>
+                    </value>
+                    <value name="MEASURE">
+                      <shadow type="math_number" id="9@t:Sw3W%b[Hj!M;tq_f">
+                        <field name="NUM">2</field>
+                      </shadow>
+                    </value>
+                    <next>
+                      <block type="sb_rhythm_sequence" id="]rZ_fnVSgE=wX:A|,QNi">
+                        <field name="IS_CHORD">TRUE</field>
+                        <field name="SEQUENCE">--G7- --G7- ---- G7---</field>
+                        <value name="SOURCE">
+                          <shadow type="sb_rhythm_source_selector" id="/v!B1q!Fgp{TAZn:I7dU">
+                            <mutation is_custom="true"></mutation>
+                            <field name="TYPE">CUSTOM</field>
+                            <field name="CUSTOM_TYPE">Piano</field>
+                          </shadow>
+                        </value>
+                        <value name="MEASURE">
+                          <shadow type="math_number" id="/AW?U~Jc]:Y*iUSR!kQQ">
+                            <field name="NUM">2</field>
+                          </shadow>
+                        </value>
+                        <next>
+                          <block type="sb_rhythm_sequence" id="MQMu;/do$%tmzJ1O#Lq1">
+                            <field name="IS_CHORD">FALSE</field>
+                            <field name="SEQUENCE">G1--- ---- D2--- ----</field>
+                            <value name="SOURCE">
+                              <shadow type="sb_rhythm_source_selector" id="eHu6Y7I;CBdr%;-,JI$3">
+                                <mutation is_custom="true"></mutation>
+                                <field name="TYPE">CUSTOM</field>
+                                <field name="CUSTOM_TYPE">Bass</field>
+                              </shadow>
+                            </value>
+                            <value name="MEASURE">
+                              <shadow type="math_number" id=";-00T$GKdzVo|O5;:z@4">
+                                <field name="NUM">2</field>
+                              </shadow>
+                            </value>
+                            <next>
+                              <block type="sb_rhythm_sequence" id=")%hQ#H~uU:Mhxnt},G$x">
+                                <field name="IS_CHORD">FALSE</field>
+                                <field name="SEQUENCE">x--- --x- --x- x---</field>
+                                <value name="SOURCE">
+                                  <shadow type="sb_rhythm_source_selector" id="mmLPU5p:hABrp:sEU0^Z">
+                                    <mutation is_custom="true"></mutation>
+                                    <field name="TYPE">CUSTOM</field>
+                                    <field name="CUSTOM_TYPE">JazzClap</field>
+                                  </shadow>
+                                </value>
+                                <value name="MEASURE">
+                                  <shadow type="math_number" id="sN7-ti^Q$TVXN[Z7NpFL">
+                                    <field name="NUM">3</field>
+                                  </shadow>
+                                </value>
+                                <next>
+                                  <block type="sb_rhythm_sequence" id="NW%?m!%^e4#N@GDYlki?">
+                                    <field name="IS_CHORD">TRUE</field>
+                                    <field name="SEQUENCE">CM7--- CM7--- --CM7- --CM7-</field>
+                                    <value name="SOURCE">
+                                      <shadow type="sb_rhythm_source_selector" id="|jj;TCZrw3]5~!6^6-l}">
+                                        <mutation is_custom="true"></mutation>
+                                        <field name="TYPE">CUSTOM</field>
+                                        <field name="CUSTOM_TYPE">Piano</field>
+                                      </shadow>
+                                    </value>
+                                    <value name="MEASURE">
+                                      <shadow type="math_number" id=":bd4X$x]^8xqXdvc+;2^">
+                                        <field name="NUM">3</field>
+                                      </shadow>
+                                    </value>
+                                    <next>
+                                      <block type="sb_rhythm_sequence" id="XekUQPW[^?t%%6Kz=0k{">
+                                        <field name="IS_CHORD">FALSE</field>
+                                        <field name="SEQUENCE">C2--- ---- G2--- ----</field>
+                                        <value name="SOURCE">
+                                          <shadow type="sb_rhythm_source_selector" id="N?jlhsyiQPV^RtsxvhFu">
+                                            <mutation is_custom="true"></mutation>
+                                            <field name="TYPE">CUSTOM</field>
+                                            <field name="CUSTOM_TYPE">Bass</field>
+                                          </shadow>
+                                        </value>
+                                        <value name="MEASURE">
+                                          <shadow type="math_number" id="ZCF4?!0EbH5LJ+zKPo%3">
+                                            <field name="NUM">3</field>
+                                          </shadow>
+                                        </value>
+                                        <next>
+                                          <block type="sb_rhythm_sequence" id="XrEm@}`L1SX99bT5}un#">
+                                            <field name="IS_CHORD">FALSE</field>
+                                            <field name="SEQUENCE">x--- --x- --x- x---</field>
+                                            <value name="SOURCE">
+                                              <shadow type="sb_rhythm_source_selector" id="iE;%zik7-D*0n,@wVFNL">
+                                                <mutation is_custom="true"></mutation>
+                                                <field name="TYPE">CUSTOM</field>
+                                                <field name="CUSTOM_TYPE">JazzKick</field>
+                                              </shadow>
+                                            </value>
+                                            <value name="MEASURE">
+                                              <shadow type="math_number" id="mjNCVC0dzmL)#rpfoXNi">
+                                                <field name="NUM">4</field>
+                                              </shadow>
+                                            </value>
+                                            <next>
+                                              <block type="sb_rhythm_sequence" id="1zC|rXKTm@8fylEtD1!#">
+                                                <field name="IS_CHORD">TRUE</field>
+                                                <field name="SEQUENCE">--A7- --A7- ---- A7---</field>
+                                                <value name="SOURCE">
+                                                  <shadow type="sb_rhythm_source_selector" id="|XCu;UxDt+h2$%jSC-nz">
+                                                    <mutation is_custom="true"></mutation>
+                                                    <field name="TYPE">CUSTOM</field>
+                                                    <field name="CUSTOM_TYPE">Piano</field>
+                                                  </shadow>
+                                                </value>
+                                                <value name="MEASURE">
+                                                  <shadow type="math_number" id="cQ4]gG0@!+^BJAOIBc70">
+                                                    <field name="NUM">4</field>
+                                                  </shadow>
+                                                </value>
+                                                <next>
+                                                  <block type="sb_rhythm_sequence" id=";.1^b76U^sS.t(SF`K6W">
+                                                    <field name="IS_CHORD">FALSE</field>
+                                                    <field name="SEQUENCE">A1--- ---- E2--- ----</field>
+                                                    <value name="SOURCE">
+                                                      <shadow type="sb_rhythm_source_selector" id="(n4/eJrR2}CVY;;*iMaL">
+                                                        <mutation is_custom="true"></mutation>
+                                                        <field name="TYPE">CUSTOM</field>
+                                                        <field name="CUSTOM_TYPE">Bass</field>
+                                                      </shadow>
+                                                    </value>
+                                                    <value name="MEASURE">
+                                                      <shadow type="math_number" id="|Agd9H7dE{%l/7:d]l}N">
+                                                        <field name="NUM">4</field>
+                                                      </shadow>
+                                                    </value>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="procedures_defnoreturn" id="func_b" x="10" y="1930">
+    <field name="NAME">演奏 B 段</field>
+    <comment pinned="false" h="80" w="160">描述此函式...</comment>
+    <statement name="STACK">
+      <block type="sb_rhythm_sequence" id="Wv3u`+Vp1XRG!i$bFPVp">
+        <field name="IS_CHORD">TRUE</field>
+        <field name="SEQUENCE">Dm7--- ---- G7--- ----</field>
+        <value name="SOURCE">
+          <shadow type="sb_rhythm_source_selector" id="CfLxM,wB8JGuYf`vD%gy">
+            <mutation is_custom="true"></mutation>
+            <field name="TYPE">CUSTOM</field>
+            <field name="CUSTOM_TYPE">Piano</field>
+          </shadow>
+        </value>
+        <value name="MEASURE">
+          <shadow type="math_number" id="6H!#:{|?cixqBx}/XIpe">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <next>
+          <block type="sb_rhythm_sequence" id="Al+x#6Ktap@Y$!]lP!V=">
+            <field name="IS_CHORD">FALSE</field>
+            <field name="SEQUENCE">D2--- ---- G1--- ----</field>
+            <value name="SOURCE">
+              <shadow type="sb_rhythm_source_selector" id="Sq.(*G[i=vC-6_6[kS;k">
+                <mutation is_custom="true"></mutation>
+                <field name="TYPE">CUSTOM</field>
+                <field name="CUSTOM_TYPE">Bass</field>
+              </shadow>
+            </value>
+            <value name="MEASURE">
+              <shadow type="math_number" id="gj~b`ywjE=r/Zpa2,`w[">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+            <next>
+              <block type="sb_rhythm_sequence" id="DXnY?pfQU5ISM:O0~hGU">
+                <field name="IS_CHORD">TRUE</field>
+                <field name="SEQUENCE">C_End--- ---- ---- ----</field>
+                <value name="SOURCE">
+                  <shadow type="sb_rhythm_source_selector" id=":7V{%S@9U]VO}I1Q|pb7">
+                    <mutation is_custom="true"></mutation>
+                    <field name="TYPE">CUSTOM</field>
+                    <field name="CUSTOM_TYPE">Piano</field>
+                  </shadow>
+                </value>
+                <value name="MEASURE">
+                  <shadow type="math_number" id="DIYdrAq-n()JLHNO1o+y">
+                    <field name="NUM">2</field>
+                  </shadow>
+                </value>
+                <next>
+                  <block type="sb_rhythm_sequence" id="1C/$L}S)O;r(/-)T94bK">
+                    <field name="IS_CHORD">FALSE</field>
+                    <field name="SEQUENCE">C2--- ---- ---- ----</field>
+                    <value name="SOURCE">
+                      <shadow type="sb_rhythm_source_selector" id="$587|Dv[w8vVGhe4!T_)">
+                        <mutation is_custom="true"></mutation>
+                        <field name="TYPE">CUSTOM</field>
+                        <field name="CUSTOM_TYPE">Bass</field>
+                      </shadow>
+                    </value>
+                    <value name="MEASURE">
+                      <shadow type="math_number" id="_4#I~gJN6wP(tz)fj)F^">
+                        <field name="NUM">2</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_toggle_pc_keyboard_midi" id="(0VQtHA%*~,D2x{i;Kw`" x="10" y="2250">
+    <field name="ACTION">ON</field>
+    <next>
+      <block type="sb_transport_set_bpm" id="Re5f_Cp6WWqIyJD-YfAY">
+        <field name="BPM">105</field>
+        <next>
+          <block type="sb_transport_start_stop" id="aHFphvlRUm*?|7-Zw{i^">
+            <field name="ACTION">START</field>
+            <next>
+              <block type="sb_transport_count_in" id="aqi7/zBS%)ZsS~BpQ98d">
+                <field name="MEASURES">1</field>
+                <field name="BEATS">4</field>
+                <field name="BEAT_VALUE">4</field>
+                <value name="VOLUME">
+                  <shadow type="math_number" id="]ZZ|5@P(*O50DF2%XY{,">
+                    <field name="NUM">0.3</field>
+                  </shadow>
+                </value>
+                <next>
+                  <block type="procedures_callnoreturn" id=".ZCGv7f|j1v0W,jW;Ueh">
+                    <mutation name="演奏 A 段"></mutation>
+                    <next>
+                      <block type="sb_wait_musical" id="5{jt!WDh+MIq4HFBwJ:K">
+                        <field name="DURATION">4m</field>
+                        <next>
+                          <block type="procedures_callnoreturn" id="K?u.v^=FkFtaOXga#FW}">
+                            <mutation name="演奏 A 段"></mutation>
+                            <next>
+                              <block type="sb_wait_musical" id=":gEQi{2IihB*yicdle7|">
+                                <field name="DURATION">4m</field>
+                                <next>
+                                  <block type="procedures_callnoreturn" id="b[z)^T157ivl%qY9s`f%">
+                                    <mutation name="演奏 B 段"></mutation>
+                                    <next>
+                                      <block type="sb_wait_musical" id="f_z5hDCX;2{girt,t~7Q">
+                                        <field name="DURATION">2m</field>
+                                        <next>
+                                          <block type="procedures_callnoreturn" id="+-{GM~Jz=s#)co%lZ^77">
+                                            <mutation name="演奏 A 段"></mutation>
+                                            <next>
+                                              <block type="sb_wait_musical" id="zA8CYz:DHI2{gEEm?o?`">
+                                                <field name="DURATION">4m</field>
+                                                <next>
+                                                  <block type="procedures_callnoreturn" id="ruLTkXzLr|*?z^Wm*4!Y">
+                                                    <mutation name="演奏 B 段"></mutation>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

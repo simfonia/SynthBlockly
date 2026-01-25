@@ -75,12 +75,10 @@ export const audioEngine = {
     Tone: Tone,
     analyser: analyser,
     fftAnalyser: fftAnalyser,
-    get synth() { return synth; }, get drum() { return drum; }, get hh() { return hh; },
-    get snare() { return snare; }, get click() { return click; }, get jazzKit() { return jazzKit; },
     
     effects: {}, _activeEffects: [], instrumentEffects: {}, activeSFXPlayers: [],
-    instruments: {}, layeredInstruments: {}, channels: {},
-    currentInstrumentName: 'DefaultSynth',
+    instruments: {}, layeredInstruments: {}, channels: {}, instrumentSettings: {},
+    currentInstrumentName: null,
     currentSemitoneOffset: 0,
     pressedKeys: new Map(), chords: {}, keyboardChordMap: {}, midiChordMap: {},
     midiPressedNotes: new Map(), midiPlayingNotes: new Map(), backgroundNoise: null,
@@ -100,12 +98,17 @@ export const audioEngine = {
     },
 
     updateADSR: function(a, d, s, r) {
-        this.currentADSR = { attack: a, decay: d, sustain: s, release: r };
+        const settings = { attack: a, decay: d, sustain: s, release: r };
+        this.currentADSR = { ...settings };
+        if (this.currentInstrumentName) {
+            this.instrumentSettings[this.currentInstrumentName] = { ...settings };
+        }
         this.updateADSRUI(a, d, s, r);
     },
 
     updateADSRUI: function(a, d, s, r) {
-        updateAdsrGraph(a, d, s, r, this.currentInstrumentName.toLowerCase().includes('sampler'));
+        const isSampler = this.currentInstrumentName && this.currentInstrumentName.toLowerCase().includes('sampler');
+        updateAdsrGraph(a, d, s, r, isSampler);
     },
 
     _getOrCreateChannel: function(name) {
@@ -178,14 +181,10 @@ export const audioEngine = {
         
         // Core (Hidden) Instruments -> Master
         [drum, hh, snare, click, jazzKit].forEach(i => {
-             if (i) { 
-                 if (i.disconnect) i.disconnect(); 
-                 // Note: We could add channels for core instruments too, but DefaultSynth covers most user needs.
-                 if (i.chain) i.chain(...masterChain); 
-             }
+             if (i && i.chain) { i.disconnect(); i.chain(...masterChain); }
         });
 
-        // Registered Instruments (includes DefaultSynth)
+        // Registered Instruments
         for (const [name, instr] of Object.entries(this.instruments)) {
              if (!instr || instr.type === 'Layered') continue;
              if (instr.disconnect) instr.disconnect();
@@ -193,10 +192,8 @@ export const audioEngine = {
              const localEffects = this.instrumentEffects[name] || [];
              const chan = this._getOrCreateChannel(name);
              
-             // Chain: Instr -> Local Effects -> Channel -> Master Chain
              if (instr.chain) {
                  instr.chain(...localEffects, chan);
-                 // Channel connects to Master Chain
                  chan.disconnect();
                  chan.chain(...masterChain);
              }
@@ -329,6 +326,11 @@ export const audioEngine = {
             } catch(e) {}
             
             this.instruments[name] = i;
+            this.instrumentSettings[name] = { ...this.currentADSR };
+            if (!this.currentInstrumentName) {
+                this.currentInstrumentName = name;
+                this.syncAdsrToUI();
+            }
             this._connectInstrumentToChain(name, i);
         }
     },
@@ -338,6 +340,11 @@ export const audioEngine = {
         const s = new Tone.Sampler({ urls, baseUrl, onload: () => logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name) });
         if (settings) s.set(settings);
         this.instruments[name] = s;
+        this.instrumentSettings[name] = { ...this.currentADSR };
+        if (!this.currentInstrumentName) {
+            this.currentInstrumentName = name;
+            this.syncAdsrToUI();
+        }
         this._connectInstrumentToChain(name, s);
     },
 
@@ -355,6 +362,11 @@ export const audioEngine = {
                 envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' }
             });
             this.instruments[name] = synth;
+            this.instrumentSettings[name] = { ...this.currentADSR };
+            if (!this.currentInstrumentName) {
+                this.currentInstrumentName = name;
+                this.syncAdsrToUI();
+            }
             this._connectInstrumentToChain(name, synth);
             logKey('LOG_CUSTOM_WAVE_CREATED', 'info', name, validPartials.join(', '));
         } catch (e) {
@@ -366,13 +378,8 @@ export const audioEngine = {
         if (this.instruments[name]) this.instruments[name].dispose();
         
         const self = this;
-
-        // --- Normalization Logic ---
-        // Sum up all amplitudes to check if they exceed 1.0 (0dB)
         let totalAmp = 0;
         components.forEach(c => { totalAmp += (Number(c.amp) || 0); });
-        
-        // If total is too high, calculate a scaling factor
         const scaleFactor = totalAmp > 1.0 ? (1.0 / totalAmp) : 1.0;
 
         class AdditiveVoice extends Tone.Synth {
@@ -382,9 +389,7 @@ export const audioEngine = {
                 if (this.oscillator) { this.oscillator.stop(); this.oscillator.disconnect(); }
                 this.additiveOscillators = [];
                 components.forEach(c => {
-                    // Apply normalization scale factor to each component's amplitude
                     const normalizedAmp = (Number(c.amp) || 0) * scaleFactor;
-                    
                     const osc = new Tone.Oscillator({
                         type: c.waveform || 'sine',
                         volume: Tone.gainToDb(normalizedAmp)
@@ -393,19 +398,18 @@ export const audioEngine = {
                     osc.start();
                 });
             }
-                        triggerAttack(note, time, velocity) {
-                            const freq = Tone.Frequency(note).toFrequency();
-                            this.additiveOscillators.forEach(item => {
-                                item.osc.frequency.setValueAtTime(freq * item.ratio, time);
-                            });
-                            super.triggerAttack(note, time, velocity);
-                        }
-            
-                                    triggerRelease(time) {
-                                        // Correctly cancel ongoing Decay/Sustain transitions using .cancel()
-                                        this.envelope.cancel(time);
-                                        super.triggerRelease(time);
-                                    }            dispose() {
+            triggerAttack(note, time, velocity) {
+                const freq = Tone.Frequency(note).toFrequency();
+                this.additiveOscillators.forEach(item => {
+                    item.osc.frequency.setValueAtTime(freq * item.ratio, time);
+                });
+                super.triggerAttack(note, time, velocity);
+            }
+            triggerRelease(time) {
+                this.envelope.cancel(time);
+                super.triggerRelease(time);
+            }
+            dispose() {
                 this.additiveOscillators.forEach(item => { item.osc.stop(); item.osc.dispose(); });
                 super.dispose();
                 return this;
@@ -416,6 +420,11 @@ export const audioEngine = {
             const synth = new Tone.PolySynth(AdditiveVoice, { maxPolyphony: 16 });
             synth.set({ envelope: { ...this.currentADSR, decayCurve: 'linear', releaseCurve: 'linear' } });
             this.instruments[name] = synth;
+            this.instrumentSettings[name] = { ...this.currentADSR };
+            if (!this.currentInstrumentName) {
+                this.currentInstrumentName = name;
+                this.syncAdsrToUI();
+            }
             this._connectInstrumentToChain(name, synth);
             logKey('LOG_ADDITIVE_CREATED', 'info', name);
         } catch (e) {
@@ -424,37 +433,51 @@ export const audioEngine = {
     },
 
     transitionToInstrument: function(name) {
-        if (name !== 'DefaultSynth' && !this.instruments[name]) {
-             logKey('LOG_ERR_INSTR_NOT_FOUND', 'warning', name);
+        const cleanName = String(name).replace(/^['"]|['"]$/g, '');
+        if (!this.instruments[cleanName]) {
+             logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', cleanName);
              return;
         }
-        const old = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
-        if (old && old.releaseAll) old.releaseAll();
-        this.currentInstrumentName = name;
+        
+        // Release notes on the current instrument before switching
+        const oldInstr = this.instruments[this.currentInstrumentName];
+        if (oldInstr && oldInstr.releaseAll) oldInstr.releaseAll();
+        
+        this.currentInstrumentName = cleanName;
+        logKey('LOG_SWITCH_INSTR_SUCCESS', 'important', cleanName);
         this.syncAdsrToUI();
     },
 
     syncAdsrToUI: function() {
-        let instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
-        if (!instr) return;
-        if (instr.type === 'Layered') instr = this.instruments[instr.children[0]];
-        if (!instr) return;
-        let a=0.01, d=0.1, s=1, r=0.5;
-        try {
-            const settings = instr.get();
-            const env = settings.envelope || (settings.voice0 && settings.voice0.envelope);
-            if (env) { a=env.attack; d=env.decay; s=env.sustain; r=env.release; }
-            updateAdsrGraph(a,d,s,r, this.currentInstrumentName.toLowerCase().includes('sampler'));
-        } catch(e){}
+        // Priority 1: Current Instrument Snapshot
+        let settings = this.instrumentSettings[this.currentInstrumentName];
+        
+        // Priority 2: Try live extraction if snapshot missing
+        if (!settings) {
+            let instr = this.instruments[this.currentInstrumentName];
+            if (instr && instr.get) {
+                try {
+                    const live = instr.get();
+                    let env = live.envelope || (live.voice0 && live.voice0.envelope) || (live.voices && live.voices[0] && live.voices[0].envelope);
+                    if (env) settings = { attack: env.attack, decay: env.decay, sustain: env.sustain, release: env.release };
+                } catch(e) {}
+            }
+        }
+
+        // Priority 3: Global project default
+        if (!settings) settings = this.currentADSR;
+
+        updateAdsrGraph(settings.attack, settings.decay, settings.sustain, settings.release, 
+            this.currentInstrumentName && this.currentInstrumentName.toLowerCase().includes('sampler'));
     },
 
     playCurrentInstrumentNote: function(note, dur, time, velocity) {
-        // If we were previewing a block, sync back to real instrument state before playing
+        // Force UI sync back to real instrument state when playing (unless it's a scheduled note)
         if (time === undefined) this.syncAdsrToUI();
 
         const t = (time !== undefined) ? time : Tone.now() + 0.1;
-        const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const finalNote = this.getTransposedNote(note);
+        const instr = this.instruments[this.currentInstrumentName];
         if (instr && instr.triggerAttackRelease) {
             if (instr instanceof Tone.Sampler && !instr.loaded) return; 
             instr.triggerAttackRelease(finalNote, dur, t, velocity);
@@ -467,8 +490,8 @@ export const audioEngine = {
 
     playCurrentInstrumentNoteAttack: function(note, velocity) {
         this.syncAdsrToUI();
-        const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const finalNote = this.getTransposedNote(note);
+        const instr = this.instruments[this.currentInstrumentName];
         if (instr && instr.triggerAttack) {
             if (instr instanceof Tone.Sampler && !instr.loaded) return null; 
             instr.triggerAttack(finalNote, Tone.now(), velocity);
@@ -479,7 +502,7 @@ export const audioEngine = {
 
     playCurrentInstrumentNoteRelease: function(note, noteId) {
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const instr = this.instruments[this.currentInstrumentName];
         if (instr && instr.triggerRelease) {
             instr.triggerRelease(finalNote, Tone.now());
             triggerAdsrOff(noteId); 
@@ -488,7 +511,7 @@ export const audioEngine = {
 
     playChordByNameAttack: function(name, velocity) {
         const notes = this.chords[name];
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const instr = this.instruments[this.currentInstrumentName];
         if (notes && instr && instr.triggerAttack) {
             if (instr instanceof Tone.Sampler && !instr.loaded) return;
             instr.triggerAttack(notes.map(n => this.getTransposedNote(n)), Tone.now(), velocity);
@@ -498,7 +521,7 @@ export const audioEngine = {
 
     playChordByNameRelease: function(name) {
         const notes = this.chords[name];
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const instr = this.instruments[this.currentInstrumentName];
         if (notes && instr && instr.triggerRelease) {
             instr.triggerRelease(notes.map(n => this.getTransposedNote(n)), Tone.now());
             triggerAdsrOff();
@@ -529,101 +552,169 @@ export const audioEngine = {
         }
     },
 
-    playJazzKitNote: function(note, vel, time) {
-        if (jazzKit.loaded) {
-            const t = (time !== undefined) ? time : (Tone.now() + 0.05);
-            jazzKit.triggerAttackRelease(note, '8n', t, vel || 1);
-        }
-    },
+        playJazzKitNote: function(note, vel, time) {
 
-    playRhythmSequence: function(soundSource, steps, time, measure = 1, isChord = false) {
-        if (!steps || !Array.isArray(steps) || time === undefined) return;
-        
-        const mDur = Tone.Time('1m').toSeconds();
-        const sTime = mDur / 16;
-        const mStart = time + (measure - 1) * mDur;
+            if (jazzKit.loaded) {
 
-        // Determine the target instrument ONCE at scheduling time
-        // This solves the issue where changing currentInstrument later affects already scheduled notes
-        const targetInstr = this.instruments[soundSource] || this.instruments[this.currentInstrumentName] || synth;
+                const t = (time !== undefined) ? time : (Tone.now() + 0.05);
 
-        for (let i = 0; i < Math.min(steps.length, 16); i++) {
-            const c = steps[i]; 
-            if (c === '.' || c === '-') continue;
-            
-            // Apply 0.05s look-ahead margin
-            const t = mStart + (i * sTime) + 0.05;
-            
-            // Mode A: Chord Sequence (e.g., c="C7")
-            if (isChord) {
-                const chordNotes = this.chords[c];
-                if (chordNotes && targetInstr && targetInstr.triggerAttackRelease) {
-                    if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
-                    targetInstr.triggerAttackRelease(chordNotes.map(n => this.getTransposedNote(n)), '16n', t, 0.8);
-                }
-                continue;
+                jazzKit.triggerAttackRelease(note, '8n', t, vel || 1);
+
             }
 
-            // Mode B: Rhythm/Note Sequence
-            // Check if soundSource is actually a defined Chord Name (Legacy support or explicit chord source)
-            if (this.chords[soundSource]) {
-                 this.playChordByName(soundSource, '16n', 0.8, t); 
-                 // Note: playChordByName still uses currentInstrument, but this path is less likely used now
-                 continue;
-            }
+        },
 
-            if (c.toLowerCase() === 'x') {
-                if (soundSource === 'KICK') this.playKick(1, t);
-                else if (soundSource === 'SNARE') this.playSnare(1, t);
-                else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
-                else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
-                else {
-                    // Play default note C4 on target instrument
-                    if (targetInstr && targetInstr.triggerAttackRelease) {
-                        targetInstr.triggerAttackRelease(this.getTransposedNote('C4'), '16n', t, 0.8);
-                    }
-                }
-            } else {
-                if (['KICK','SNARE','HH','CLAP'].includes(soundSource)) {
-                    if (soundSource === 'KICK') this.playKick(1, t);
-                    else if (soundSource === 'SNARE') this.playSnare(1, t);
-                    else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
-                    else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
-                } else {
-                    // Specific Note (e.g. "C2") on target instrument
-                    if (targetInstr && targetInstr.triggerAttackRelease) {
+    
+
+        playRhythmSequence: function(soundSource, steps, time, measure = 1, isChord = false) {
+
+            if (!steps || !Array.isArray(steps) || time === undefined) return;
+
+            
+
+            const mDur = Tone.Time('1m').toSeconds();
+
+            const sTime = mDur / 16;
+
+            const mStart = time + (measure - 1) * mDur;
+
+    
+
+            // Determine the target instrument ONCE at scheduling time
+
+            const targetInstr = this.instruments[soundSource] || this.instruments[this.currentInstrumentName];
+
+    
+
+            for (let i = 0; i < Math.min(steps.length, 16); i++) {
+
+                const c = steps[i]; 
+
+                if (c === '.' || c === '-') continue;
+
+                const t = mStart + (i * sTime) + 0.05;
+
+                
+
+                if (isChord) {
+
+                    const chordNotes = this.chords[c];
+
+                    if (chordNotes && targetInstr && targetInstr.triggerAttackRelease) {
+
                         if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
-                        targetInstr.triggerAttackRelease(this.getTransposedNote(c), '16n', t, 0.8);
+
+                        targetInstr.triggerAttackRelease(chordNotes.map(n => this.getTransposedNote(n)), '16n', t, 0.8);
+
                     }
+
+                    continue;
+
                 }
+
+    
+
+                if (this.chords[soundSource]) {
+
+                     this.playChordByName(soundSource, '16n', 0.8, t); 
+
+                     continue;
+
+                }
+
+    
+
+                if (c.toLowerCase() === 'x') {
+
+                    if (soundSource === 'KICK') this.playKick(1, t);
+
+                    else if (soundSource === 'SNARE') this.playSnare(1, t);
+
+                    else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
+
+                    else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); }
+
+                    else if (targetInstr && targetInstr.triggerAttackRelease) {
+
+                        targetInstr.triggerAttackRelease(this.getTransposedNote('C4'), '16n', t, 0.8);
+
+                    }
+
+                } else {
+
+                    if (['KICK','SNARE','HH','CLAP'].includes(soundSource)) {
+
+                        if (soundSource === 'KICK') this.playKick(1, t);
+
+                        else if (soundSource === 'SNARE') this.playSnare(1, t);
+
+                        else if (soundSource === 'HH') hh.triggerAttackRelease('16n', t, 1);
+
+                        else if (soundSource === 'CLAP') { if(jazzKit.loaded) jazzKit.triggerAttackRelease('D#1', '8n', t, 1); } 
+
+                    } else if (targetInstr && targetInstr.triggerAttackRelease) {
+
+                        if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
+
+                        targetInstr.triggerAttackRelease(this.getTransposedNote(c), '16n', t, 0.8);
+
+                    }
+
+                }
+
             }
-        }
-    },
 
-    _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
-        const instr = this.instruments[name] || (name === 'DefaultSynth' ? synth : null);
-        if (instr && instr.triggerAttackRelease) {
-            if (instr instanceof Tone.Sampler && !instr.loaded) return;
-            const t = (time !== undefined) ? time : Tone.now() + 0.05;
-            instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
-        }
-    },
+        },
 
-    playSFX: async function(url, options = {}) {
-        await ensureAudioStarted();
-        const p = new Tone.Player({ url, onload: () => { if (this.isExecutionActive) p.start(); }, onstop: () => p.dispose() });
-        p.chain(...this._activeEffects, analyser);
-    },
+    
 
-    playChordByName: function(name, dur, vel, time) {
-        const notes = this.chords[name];
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
-        if (notes && instr) {
-            if (instr instanceof Tone.Sampler && !instr.loaded) return;
-            const t = (time !== undefined) ? time : Tone.now() + 0.1;
-            instr.triggerAttackRelease(notes.map(n => this.getTransposedNote(n)), dur, t, vel);
-        }
-    },
+        _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
+
+            const instr = this.instruments[name];
+
+            if (instr && instr.triggerAttackRelease) {
+
+                if (instr instanceof Tone.Sampler && !instr.loaded) return;
+
+                const t = (time !== undefined) ? time : Tone.now() + 0.05;
+
+                instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
+
+            }
+
+        },
+
+    
+
+        playSFX: async function(url, options = {}) {
+
+            await ensureAudioStarted();
+
+            const p = new Tone.Player({ url, onload: () => { if (this.isExecutionActive) p.start(); }, onstop: () => p.dispose() });
+
+            p.chain(...this._activeEffects, analyser);
+
+        },
+
+    
+
+        playChordByName: function(name, dur, vel, time) {
+
+            const notes = this.chords[name];
+
+            const instr = this.instruments[this.currentInstrumentName];
+
+            if (notes && instr) {
+
+                if (instr instanceof Tone.Sampler && !instr.loaded) return;
+
+                const t = (time !== undefined) ? time : Tone.now() + 0.1;
+
+                instr.triggerAttackRelease(notes.map(n => this.getTransposedNote(n)), dur, t, vel);
+
+            }
+
+        },
 
     playMelodyString: async function(str) {
         await ensureAudioStarted();
@@ -648,25 +739,22 @@ export const audioEngine = {
         await ensureAudioStarted();
         const chord = this.midiChordMap[note];
         const toPlay = chord ? this.chords[chord].map(n => this.getTransposedNote(n)) : this.getTransposedNote(note);
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const instr = this.instruments[this.currentInstrumentName];
         if (instr && instr.triggerAttack) {
             if (instr instanceof Tone.Sampler && !instr.loaded) return;
             instr.triggerAttack(toPlay, Tone.now(), vel);
-            const noteId = triggerAdsrOn();
-            this.midiPlayingNotes.set(note, { notes: toPlay, id: noteId });
+            this.midiPlayingNotes.set(note, { notes: toPlay, id: triggerAdsrOn() });
         }
     },
 
     midiRelease: async function(note) {
         const entry = this.midiPlayingNotes.get(note);
         if (!entry) return;
-        const toRel = entry.notes || entry;
-        const noteId = entry.id;
-        const instr = this.instruments[this.currentInstrumentName] || (this.currentInstrumentName === 'DefaultSynth' ? synth : null);
+        const instr = this.instruments[this.currentInstrumentName];
         if (instr && instr.triggerRelease) {
-            instr.triggerRelease(toRel, Tone.now());
+            instr.triggerRelease(entry.notes, Tone.now());
             this.midiPlayingNotes.delete(note);
-            triggerAdsrOff(noteId);
+            triggerAdsrOff(entry.id);
         }
     },
 
@@ -680,16 +768,15 @@ export const audioEngine = {
         for (const k in blocklyLoops) delete blocklyLoops[k];
         this.currentADSR = { ...DEFAULT_ADSR };
         createCoreInstruments(); 
-        for (const name in this.instruments) { if (this.instruments[name] && this.instruments[name].dispose) this.instruments[name].dispose(); delete this.instruments[name]; } 
+        for (const name in this.instruments) { if (this.instruments[name] && this.instruments[name].dispose) this.instruments[name].dispose(); } 
+        this.instruments = {};
         
-        // Clear Channels
         for (const name in this.channels) {
             if (this.channels[name] && this.channels[name].dispose) this.channels[name].dispose();
-            delete this.channels[name];
         }
+        this.channels = {};
 
-        this.currentInstrumentName = 'DefaultSynth';
-        this.instruments['DefaultSynth'] = synth;
+        this.currentInstrumentName = null;
         this.chords = {}; this.keyboardChordMap = {}; this.midiChordMap = {}; this.clearPressedKeys();
         
         // Clear Global Effects

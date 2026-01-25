@@ -42,19 +42,26 @@ const getBaseNoteForKeyCode = (keyCode) => {
  * @param {number} direction -1 for previous, 1 for next.
  */
 const switchInstrument = (direction) => {
+    // Get currently active instrument names from the engine
     const instrumentNames = Object.keys(audioEngine.instruments);
-    if (instrumentNames.length < 2) {
-        audioEngine.logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', 'Other');
-        return; // Not enough instruments to switch
+    
+    if (instrumentNames.length === 0) {
+        audioEngine.logKey('LOG_ERR_INSTR_NOT_FOUND', 'warning', 'Any');
+        return;
     }
-    const currentIndex = instrumentNames.indexOf(audioEngine.currentInstrumentName);
-    // The + instrumentNames.length is a robust way to handle negative results from modulo
+    if (instrumentNames.length < 2) {
+        audioEngine.logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', 'Alternative');
+        return; 
+    }
+
+    let currentIndex = instrumentNames.indexOf(audioEngine.currentInstrumentName);
+    // If current instrument is somehow lost or not in list, start from 0
+    if (currentIndex === -1) currentIndex = 0;
+
     const newIndex = (currentIndex + direction + instrumentNames.length) % instrumentNames.length;
     const newInstrumentName = instrumentNames[newIndex];
     
-    // Call the existing transition function
     audioEngine.transitionToInstrument(newInstrumentName);
-    logKey('LOG_SWITCH_INSTR_SUCCESS', 'important', newInstrumentName); // Use 'important' for red/bold log
 };
 
 const handleKeyDown = async (e) => {

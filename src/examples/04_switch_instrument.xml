@@ -4,53 +4,68 @@
     <variable id="9:^.}}q,!02#XYYzHqxe">velocity</variable>
     <variable id="mJCT}0J}/8Z6sm[$fiQ=">channel</variable>
   </variables>
-  <block type="sb_comment" id="switch_instr_guide" x="10" y="10">
-    <field name="COMMENT">此範例展示如何「在演奏中即時切換音色」。&amp;#10;&amp;#10;1. 初始化階段：&amp;#10;我們建立了兩個樂器：Piano (PolySynth) 與 Strings (FMSynth)，&amp;#10;並分別為它們設定了不同的 ADSR 包絡（鋼琴短促、弦樂悠長）。&amp;#10;&amp;#10;2. 即時切換邏輯：&amp;#10;在「當收到 MIDI 音符」事件中：&amp;#10;- 彈奏 MIDI F3 (53) 時：切換到 Piano。&amp;#10;- 彈奏 MIDI G3 (55) 時：切換到 Strings。&amp;#10;- 彈奏 MIDI F#3 (54) 時：拍手。&amp;#10;- 彈奏 MIDI G# (56)或更高音：則會以「目前選定」的樂器發聲。&amp;#10;&amp;#10;您可以嘗試在演奏高音旋律時，利用左手按 53 或 55 鍵，&amp;#10;體驗像真實電子琴切換音色的效果！</field>
-    <next>
-      <block type="sb_create_synth_instrument" id="P5iGXg)EtXJH0Y=(Y,=]">
-        <field name="NAME">Piano</field>
+  <block type="sb_instrument_container" id="cont_piano" x="10" y="10">
+    <field name="NAME">Piano</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="create_piano">
         <field name="TYPE">PolySynth</field>
         <next>
-          <block type="sb_set_adsr" id="[txh:G]M_[6w#XU|tg@G">
-            <field name="TARGET">Piano</field>
+          <block type="sb_container_adsr" id="piano_adsr">
             <field name="A">0.01</field>
             <field name="D">0.4</field>
             <field name="S">0.2</field>
             <field name="R">0.5</field>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="cont_strings" x="10" y="130">
+    <field name="NAME">Strings</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="create_strings">
+        <field name="TYPE">FMSynth</field>
+        <next>
+          <block type="sb_container_adsr" id="strings_adsr">
+            <field name="A">0.5</field>
+            <field name="D">1</field>
+            <field name="S">1</field>
+            <field name="R">0.2</field>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="250">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="master_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="XKZ0ZVA-4{%lwPrHH2LT">
+            <field name="NUM">-1</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_comment" id="switch_guide" x="10" y="370">
+    <field name="COMMENT">此範例展示如何「在演奏中即時切換音色」。&amp;#10;&amp;#10;1. 樂器定義：&amp;#10;- 我們建立了兩個樂器：Piano (PolySynth) 與 Strings (FMSynth)。&amp;#10;2. 即時切換樂器：&amp;#10;- 彈奏 MIDI F3 (53) 時：切換到 Piano。&amp;#10;- 彈奏 MIDI G3 (55) 時：切換到 Strings。&amp;#10;- 彈奏 MIDI F#3 (54) 時：拍手聲。&amp;#10;- 彈奏 MIDI G# (56)或更高音：則會以「目前選定」的樂器發聲。&amp;#10;- 使用PC 鍵盤請用左右方向鍵切換樂器。</field>
+    <next>
+      <block type="sb_define_chord" id="def_cm7">
+        <field name="NAME">CM7</field>
+        <field name="NOTES_STRING">C4,E4,G4,B4</field>
+        <next>
+          <block type="sb_toggle_pc_keyboard_midi" id="on_pc">
+            <field name="ACTION">ON</field>
             <next>
-              <block type="sb_create_synth_instrument" id="_Z:!CvC?DtZ=maOpDE|q">
-                <field name="NAME">Strings</field>
-                <field name="TYPE">FMSynth</field>
+              <block type="sb_map_key_to_chord" id="map_a">
+                <field name="KEY_CODE">KeyA</field>
+                <field name="CHORD_NAME">CM7</field>
                 <next>
-                  <block type="sb_set_adsr" id="T[]%Ve*^UnVL7[X{v_[9">
-                    <field name="TARGET">Strings</field>
-                    <field name="A">0.5</field>
-                    <field name="D">1</field>
-                    <field name="S">1</field>
-                    <field name="R">0.2</field>
-                    <next>
-                      <block type="sb_define_chord" id="Cd*N0!Ni`y?/AG+NZ.q.">
-                        <field name="NAME">CM7</field>
-                        <field name="NOTES_STRING">C4,E4,G4,B4</field>
-                        <next>
-                          <block type="sb_toggle_pc_keyboard_midi" id="R*d{U=|#L{zrNQxuj]n!">
-                            <field name="ACTION">ON</field>
-                            <next>
-                              <block type="sb_map_key_to_chord" id="ab5Lg^i@CNb^H@1$Co.H">
-                                <field name="KEY_CODE">KeyA</field>
-                                <field name="CHORD_NAME">CM7</field>
-                                <next>
-                                  <block type="sb_map_midi_to_chord" id="$8vpgGwf[@M/Hogbc^n=">
-                                    <field name="MIDI_NOTE">54</field>
-                                    <field name="CHORD_NAME">CM7</field>
-                                  </block>
-                                </next>
-                              </block>
-                            </next>
-                          </block>
-                        </next>
-                      </block>
-                    </next>
+                  <block type="sb_map_midi_to_chord" id="map_54">
+                    <field name="MIDI_NOTE">54</field>
+                    <field name="CHORD_NAME">CM7</field>
                   </block>
                 </next>
               </block>
@@ -60,112 +75,107 @@
       </block>
     </next>
   </block>
-  <block type="sb_midi_note_received" id="2!S1UNYIS7]+92=ml;VP" x="10" y="570">
+  <block type="sb_midi_note_received" id="midi_logic" x="10" y="670">
     <field name="NOTE" id="4kFk$B_8VRtg9#,1otIT">note</field>
     <field name="VELOCITY" id="9:^.}}q,!02#XYYzHqxe">velocity</field>
     <field name="CHANNEL" id="mJCT}0J}/8Z6sm[$fiQ=">channel</field>
     <statement name="DO">
-      <block type="controls_if" id="dYc^bag5yyg3,Tv}6od4">
+      <block type="controls_if" id="if_53">
         <value name="IF0">
-          <block type="logic_compare" id="qEqLZc6]@EaYgZ,(X{(r">
+          <block type="logic_compare" id="ip{c=P00.SGYG_H3^lQG">
             <field name="OP">EQ</field>
             <value name="A">
-              <block type="variables_get" id="-D{S|V$fd[B%Sy(5n6{|">
+              <block type="variables_get" id="Q;C/6-|%iIM3+3*Z;3Dh">
                 <field name="VAR" id="4kFk$B_8VRtg9#,1otIT">note</field>
               </block>
             </value>
             <value name="B">
-              <block type="math_number" id=",DWi%IU@c;(XjKQwvo8N">
+              <block type="math_number" id="}[7|u[reeWZ.QFg?M8b|">
                 <field name="NUM">53</field>
               </block>
             </value>
           </block>
         </value>
         <statement name="DO0">
-          <block type="sb_select_current_instrument" id="b+!f5,dA3}kW-u,k~}x%">
+          <block type="sb_select_current_instrument" id="3hr;Bso6mvP`FnD5E+xW">
             <field name="NAME">Piano</field>
           </block>
         </statement>
         <next>
-          <block type="controls_if" id="g^X/c-C%4J)Sytp8E/`(">
+          <block type="controls_if" id="if_55">
             <value name="IF0">
-              <block type="logic_compare" id=")-3an=$,=J4nJmgc6C*y">
+              <block type="logic_compare" id="!knXX#ju$ws}W-A|x9.n">
                 <field name="OP">EQ</field>
                 <value name="A">
-                  <block type="variables_get" id="p$4[.hh{k`Y0[d$i5O[u">
+                  <block type="variables_get" id="H^e~XE699]X@#Qi@.F_|">
                     <field name="VAR" id="4kFk$B_8VRtg9#,1otIT">note</field>
                   </block>
                 </value>
                 <value name="B">
-                  <block type="math_number" id="ifj]%N3_7sbr=]F/OZzu">
+                  <block type="math_number" id="[8r(IzL!(}S})J)Ve/~n">
                     <field name="NUM">55</field>
                   </block>
                 </value>
               </block>
             </value>
             <statement name="DO0">
-              <block type="sb_select_current_instrument" id="j;TCpFBkk:~l_xIcdRdD">
+              <block type="sb_select_current_instrument" id="}EjM=ekh]L*tS(7?0b,t">
                 <field name="NAME">Strings</field>
               </block>
             </statement>
             <next>
-              <block type="controls_if" id="Rn61u{S}%[]jg*e~)Ewp">
+              <block type="controls_if" id="if_54">
                 <value name="IF0">
-                  <block type="logic_compare" id="6}N!9~Ra,8TD$0Y$.z?:">
+                  <block type="logic_compare" id="gWZUIRgUu@]UbS]V]:1D">
                     <field name="OP">EQ</field>
                     <value name="A">
-                      <block type="variables_get" id="~}[FkiU6!/Q~|wu2Bj~-">
+                      <block type="variables_get" id="}Ji(:mQzH$G}9arF}$eP">
                         <field name="VAR" id="4kFk$B_8VRtg9#,1otIT">note</field>
                       </block>
                     </value>
                     <value name="B">
-                      <block type="math_number" id="-i(uAy@Oo^yc@iI!1sT:">
+                      <block type="math_number" id="WE37X;o[O=~6i.)gv~{s">
                         <field name="NUM">54</field>
                       </block>
                     </value>
                   </block>
                 </value>
                 <statement name="DO0">
-                  <block type="jazzkit_play_drum" id="2hRh]}xc5?uY7WyC8S$K">
+                  <block type="jazzkit_play_drum" id="l?hl~pUfgODsbVN0SrkE">
                     <field name="DRUM_TYPE">D#1</field>
-                    <value name="VELOCITY">
-                      <shadow type="math_number" id="`B.;(;z-fe{6+]z+Ebb6">
-                        <field name="NUM">1</field>
-                      </shadow>
-                    </value>
                   </block>
                 </statement>
                 <next>
-                  <block type="controls_if" id="?13OvE`c%ym,s68O+];Z">
+                  <block type="controls_if" id="if_gt55">
                     <value name="IF0">
-                      <block type="logic_compare" id="I02x8nDG}#jNZIg:N$6C">
+                      <block type="logic_compare" id="!1T/:MYX|0%/jRi44adZ">
                         <field name="OP">GT</field>
                         <value name="A">
-                          <block type="variables_get" id="T^f$kNlPxlv7Fs7ClSVM">
+                          <block type="variables_get" id="mKB-iQc;!ZD:T?FSK;Os">
                             <field name="VAR" id="4kFk$B_8VRtg9#,1otIT">note</field>
                           </block>
                         </value>
                         <value name="B">
-                          <block type="math_number" id="8clrk=@fIhhXEG8;p9Q(">
+                          <block type="math_number" id="oYYQg}yH:qTkmj}U.8s8">
                             <field name="NUM">55</field>
                           </block>
                         </value>
                       </block>
                     </value>
                     <statement name="DO0">
-                      <block type="sb_midi_play" id="H/:A1D4pd(IDytvd1aTZ">
+                      <block type="sb_midi_play" id="c[uiI~droR8nbW]uC(wt">
                         <value name="NOTE">
-                          <shadow type="variables_get" id="xr:N/mh#EVk.GBJB756n">
+                          <shadow type="variables_get" id="m{_(eEn^G?S1[C*(u4R7">
                             <field name="VAR" id="4kFk$B_8VRtg9#,1otIT">note</field>
                           </shadow>
                         </value>
                         <value name="VELOCITY">
-                          <shadow type="variables_get" id="4_S9h7d([5+TnTt51gM1">
+                          <shadow type="variables_get" id="^4Y=X}gp^NI%/i0HNcx(">
                             <field name="VAR" id="9:^.}}q,!02#XYYzHqxe">velocity</field>
                           </shadow>
                         </value>
                         <value name="CHANNEL">
-                          <shadow type="variables_get" id="7n}PlFIqJMmR^T(I0hGR">
+                          <shadow type="variables_get" id="Tg(YA)!xq[.x=%(xy#b|">
                             <field name="VAR" id="mJCT}0J}/8Z6sm[$fiQ=">channel</field>
                           </shadow>
                         </value>

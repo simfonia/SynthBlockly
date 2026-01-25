@@ -3,41 +3,6 @@
 import * as Blockly from 'blockly';
 import { getHelpUrl } from '../core/helpUtils.js';
 
-class FieldDropdownLenient extends Blockly.FieldDropdown {
-    constructor(menuGenerator, validator) {
-        super(menuGenerator, validator);
-    }
-    
-    doClassValidation_(newValue) {
-        if (typeof newValue !== 'string') return null;
-        return newValue;
-    }
-
-    getOptions(opt_useCache) {
-        // We call super.getOptions, but we know the generator might return an empty list 
-        // or a fallback list if the workspace isn't ready.
-        const options = super.getOptions(opt_useCache);
-        
-        // Ensure the current value is always present in the list
-        const val = this.getValue();
-        if (val && typeof val === 'string') {
-            const exists = options.some(opt => opt[1] === val);
-            if (!exists) {
-                // If it's a valid string value, add it.
-                // This handles forward references in XML loading.
-                options.push([val, val]);
-            }
-        }
-        
-        // Final fallback to prevent empty dropdown errors if even getValue() is null
-        if (options.length === 0) {
-             return [['MyInstrument', 'MyInstrument']];
-        }
-        
-        return options;
-    }
-}
-
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
         console.error('Blockly not available');
@@ -134,7 +99,7 @@ export function registerBlocks() {
                 "nextStatement": null,
                 "colour": "%{BKY_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TONE_LOOP_TOOLTIP}",
-                "hat": true // Often used for top-level event listeners / continuous processes
+                "hat": true
             });
         }
     };
@@ -147,19 +112,18 @@ export function registerBlocks() {
                     {
                         "type": "field_input",
                         "name": "OFFSET",
-                        "text": "0" // Default offset at the start of the loop interval
+                        "text": "0"
                     },
                     {
                         "type": "input_statement",
                         "name": "DO"
                     }
                 ],
-                "previousStatement": null, // It can be chained within a loop callback
-                "nextStatement": null,     // It can be chained within a loop callback
+                "previousStatement": null,
+                "nextStatement": null,
                 "colour": "%{BKY_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_SCHEDULE_AT_OFFSET_TOOLTIP}"
             });
-
             this.setHelpUrl(getHelpUrl('transport_readme'));
         }
     };
@@ -176,41 +140,15 @@ export function registerBlocks() {
         }
     };
 
-    // 預備拍積木
     Blockly.Blocks['sb_transport_count_in'] = {
         init: function () {
             this.jsonInit({
                 "message0": "%{BKY_SB_TRANSPORT_COUNT_IN_MESSAGE}",
                 "args0": [
-                    {
-                        "type": "field_number",
-                        "name": "MEASURES",
-                        "value": 1,
-                        "min": 1,
-                        "max": 4,
-                        "precision": 1
-                    },
-                    {
-                        "type": "field_number",
-                        "name": "BEATS",
-                        "value": 4,
-                        "min": 1,
-                        "max": 16,
-                        "precision": 1
-                    },
-                    {
-                        "type": "field_number",
-                        "name": "BEAT_VALUE",
-                        "value": 4,
-                        "min": 1,
-                        "max": 16,
-                        "precision": 1
-                    },
-                    {
-                        "type": "input_value",
-                        "name": "VOLUME",
-                        "check": "Number"
-                    }
+                    { "type": "field_number", "name": "MEASURES", "value": 1, "min": 1, "max": 4 },
+                    { "type": "field_number", "name": "BEATS", "value": 4, "min": 1, "max": 16 },
+                    { "type": "field_number", "name": "BEAT_VALUE", "value": 4, "min": 1, "max": 16 },
+                    { "type": "input_value", "name": "VOLUME", "check": "Number" }
                 ],
                 "inputsInline": true,
                 "previousStatement": null,
@@ -221,224 +159,6 @@ export function registerBlocks() {
         }
     };
 
-    // 新增：通用音源選擇器 (Instrument Selector)
-    Blockly.Blocks['sb_instrument_selector'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(new FieldDropdownLenient(function() {
-                    const options = [['Master', 'Master']];
-                    
-                    try {
-                        let workspace = null;
-                        if (typeof this.getSourceBlock === 'function') {
-                            const block = this.getSourceBlock();
-                            if (block) workspace = block.workspace;
-                        } else if (this.sourceBlock_) {
-                            workspace = this.sourceBlock_.workspace;
-                        }
-
-                        if (workspace) {
-                            const targetBlockTypes = [
-                                'sb_create_synth_instrument',
-                                'sb_create_harmonic_synth',
-                                'sb_create_additive_synth',
-                                'sb_create_layered_instrument',
-                                'sb_create_sampler_instrument'
-                            ];
-
-                            targetBlockTypes.forEach(type => {
-                                const blocks = workspace.getBlocksByType(type, false);
-                                blocks.forEach(block => {
-                                    const name = block.getFieldValue('NAME');
-                                    if (name) {
-                                        if (!options.some(opt => opt[1] === name)) {
-                                            options.push([name, name]);
-                                        }
-                                    }
-                                });
-                            });
-                        }
-                        
-                        // Sort
-                        const masterOpt = options.shift();
-                        options.sort((a, b) => a[0].localeCompare(b[0]));
-                        options.unshift(masterOpt);
-
-                        return options;
-
-                    } catch (e) {
-                        console.warn("Error in sb_instrument_selector dropdown:", e);
-                        return [['Master', 'Master']];
-                    }
-                }), "NAME");
-
-            this.setOutput(true, "String");
-            this.setColour(Blockly.Msg['TOOLS_HUE'] || "#777777");
-            this.setTooltip("選擇一個已建立的音源或 Master。");
-        }
-    };
-
-    // 步進音序器 來源選擇器 (Shadow Block)
-    Blockly.Blocks['sb_rhythm_source_selector'] = {
-        init: function () {
-            this.appendDummyInput('MAIN_ROW')
-                .appendField(new Blockly.FieldDropdown([
-                    [Blockly.Msg['SB_RHYTHM_SOURCE_KICK'] || "合成音源：大鼓", "KICK"],
-                    [Blockly.Msg['SB_RHYTHM_SOURCE_SNARE'] || "合成音源：小鼓", "SNARE"],
-                    [Blockly.Msg['SB_RHYTHM_SOURCE_HH'] || "合成音源：腳踏鈸", "HH"],
-                    [Blockly.Msg['SB_SAMPLER_TYPE_DEFAULT_LABEL'] || "鋼琴", "CURRENT"],
-                    ["自訂樂器...", "CUSTOM"]
-                ]), "TYPE");
-
-                                    this.appendDummyInput('CUSTOM_ROW')
-
-                                        .appendField("↳")
-
-                                        .appendField(new FieldDropdownLenient(function() {
-
-                                            let options = [];
-
-                                            try {
-
-                                                let workspace = null;
-
-                                                if (typeof this.getSourceBlock === 'function') {
-
-                                                    const block = this.getSourceBlock();
-
-                                                    if (block) workspace = block.workspace;
-
-                                                } else if (this.sourceBlock_) {
-
-                                                    workspace = this.sourceBlock_.workspace;
-
-                                                }
-
-                                                
-
-                                                if (workspace) {
-
-                                                    const targetBlockTypes = [
-
-                                                        'sb_create_synth_instrument',
-
-                                                        'sb_create_harmonic_synth',
-
-                                                        'sb_create_additive_synth',
-
-                                                        'sb_create_layered_instrument',
-
-                                                        'sb_create_sampler_instrument'
-
-                                                    ];
-
-                        
-
-                                                    targetBlockTypes.forEach(type => {
-
-                                                        const blocks = workspace.getBlocksByType(type, false);
-
-                                                        blocks.forEach(block => {
-
-                                                            const name = block.getFieldValue('NAME');
-
-                                                            if (name && !options.some(opt => opt[1] === name)) {
-
-                                                                options.push([name, name]);
-
-                                                            }
-
-                                                        });
-
-                                                    });
-
-                                                }
-
-                                                
-
-                                                options.sort((a, b) => a[0].localeCompare(b[0]));
-
-                                                
-
-                                                // If no instruments found, provide a default so the dropdown isn't empty
-
-                                                if (options.length === 0) {
-
-                                                    options.push(["MyInstrument", "MyInstrument"]);
-
-                                                }
-
-                                                
-
-                                                return options;
-
-                        
-
-                                            } catch (e) {
-
-                                                console.warn("Error in sb_rhythm_source_selector dropdown:", e);
-
-                                                return [["MyInstrument", "MyInstrument"]];
-
-                                            }
-
-                                        }), "CUSTOM_TYPE");
-
-            this.setOutput(true, "String");
-            this.setColour(Blockly.Msg['TRANSPORT_HUE'] || "#16A085");
-            this.setTooltip(function() {
-                return Blockly.Msg['SB_RHYTHM_SOURCE_SELECTOR_TOOLTIP'];
-            });
-            
-            this.updateShape_();
-        },
-
-        // JSON Serialization (Modern) - Fixes copy/paste issues
-        saveExtraState: function() {
-            return {
-                'isCustom': this.getFieldValue('TYPE') === 'CUSTOM'
-            };
-        },
-
-        loadExtraState: function(state) {
-            this.is_custom_state_ = state['isCustom'];
-            this.updateShape_();
-        },
-
-        // XML Serialization (Legacy compatibility)
-        mutationToDom: function () {
-            var container = Blockly.utils.xml.createElement('mutation');
-            container.setAttribute('is_custom', this.getFieldValue('TYPE') === 'CUSTOM');
-            return container;
-        },
-
-        domToMutation: function (xmlElement) {
-            const isCustom = xmlElement.getAttribute('is_custom') === 'true';
-            this.is_custom_state_ = isCustom; 
-            this.updateShape_();
-        },
-
-        onchange: function (event) {
-            if (!this.workspace || this.workspace.isDragging()) return;
-            if (event.type === Blockly.Events.BLOCK_CHANGE && event.blockId === this.id && event.name === 'TYPE') {
-                this.is_custom_state_ = (this.getFieldValue('TYPE') === 'CUSTOM');
-                this.updateShape_();
-            }
-        },
-
-        updateShape_: function () {
-            const isCustom = (this.is_custom_state_ !== undefined) ? this.is_custom_state_ : (this.getFieldValue('TYPE') === 'CUSTOM');
-            const customRow = this.getInput('CUSTOM_ROW');
-            if (customRow) {
-                customRow.setVisible(isCustom);
-            }
-            if (this.rendered) {
-                this.render();
-            }
-        }
-    };
-
-    // 步進音序器積木
     Blockly.Blocks['sb_rhythm_sequence'] = {
         init: function () {
             this.appendValueInput('SOURCE')
@@ -455,14 +175,13 @@ export function registerBlocks() {
 
             this.appendDummyInput('MAIN_ROW')
                 .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%3')[0].split('%2')[1] || "小節 序列")
-                .appendField(new Blockly.FieldTextInput("x . . . | x . . . | x . . . | x . . ."), "SEQUENCE");
+                .appendField(new Blockly.FieldTextInput("x--- x--- x--- x---"), "SEQUENCE");
 
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['TRANSPORT_HUE'] || "#16A085");
+            this.setColour(Blockly.Msg['TRANSPORT_HUE']);
             this.setTooltip(Blockly.Msg['SB_RHYTHM_SEQUENCE_TOOLTIP']);
             this.setInputsInline(true);
-            
             this.setHelpUrl(getHelpUrl('step_sequencer_readme'));
         }
     };

@@ -1,125 +1,104 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="sb_comment" id="custom_sound_guide" x="10" y="10">
-    <field name="COMMENT">此範例展示如何從零開始「設計音色」。&amp;#10;&amp;#10;1. 諧波合成音源 (Mellow)：&amp;#10;這是最基礎的加法合成。透過疊加「整數倍頻」的泛音來改變波形。&amp;#10;1倍頻 (基頻) 決定音高，2倍、3倍頻決定音色亮度。&amp;#10;這種方式產生的聲音較為和諧、悅耳。&amp;#10;&amp;#10;2. 自訂加法合成音源 (Scary)：&amp;#10;進階功能。您可以自由設定每個分音的「頻率倍率」。&amp;#10;當倍率不是整數（例如 1.3 倍）時，會產生「非諧波」分音，&amp;#10;聽起來會有金屬撞擊感、不和諧感，適合製造恐怖或特殊音效。&amp;#10;&amp;#10;3. 限幅器 (Limiter)：&amp;#10;由於多個振盪器疊加會使能量大增，最後掛載 Limiter 效果器可以防止破音。&amp;#10;&amp;#10;請點擊「執行程式」後，使用電腦鍵盤來體驗兩種音色的巨大差異！&amp;#10;&amp;#10;想了解更多細節，請在積木上按右鍵/說明。</field>
-    <next>
-      <block type="sb_create_harmonic_synth" id="ijn/%6W~YQDpa]#^kLB:">
+  <block type="sb_instrument_container" id="cont_mellow" x="10" y="10">
+    <field name="NAME">Mellow</field>
+    <statement name="STACK">
+      <block type="sb_create_harmonic_synth" id="h1">
         <mutation items="3"></mutation>
-        <field name="NAME">Mellow</field>
         <value name="PARTIAL0">
-          <shadow type="math_number" id="nO4i^Pwf7pUuS1v%c3,Z">
-            <field name="NUM">0.5</field>
-          </shadow>
-          <block type="math_number" id="gjWoJ2iG?TXg$[F39a0x">
+          <shadow type="math_number" id="X*{h=~=WF-z[5R]gA2*i">
             <field name="NUM">1</field>
-          </block>
+          </shadow>
         </value>
         <value name="PARTIAL1">
-          <shadow type="math_number" id="]-Z3Q^uj8%uWFoSOg3@[">
-            <field name="NUM">0.5</field>
-          </shadow>
-          <block type="math_number" id="j@5TN1h{ACtXW%_t)Wmp">
+          <shadow type="math_number" id="[d3?OYPgE8hFESZVx/SJ">
             <field name="NUM">0.8</field>
-          </block>
+          </shadow>
         </value>
         <value name="PARTIAL2">
-          <shadow type="math_number" id="q~fQ$4CT.Z|K55OBN|wW">
-            <field name="NUM">0.5</field>
-          </shadow>
-          <block type="math_number" id="pdP.$+5W(Ky3|NkI]-F=">
+          <shadow type="math_number" id="7d/F0h*8=n.xdD@rbPmW">
             <field name="NUM">0</field>
-          </block>
+          </shadow>
         </value>
         <next>
-          <block type="sb_set_adsr" id="FfQ,]`;M3s0d#qm-jRFo">
-            <field name="TARGET">Mellow</field>
+          <block type="sb_container_adsr" id="Bj5A[2]UY%|sHpa`y.ei">
             <field name="A">0.01</field>
             <field name="D">0.1</field>
             <field name="S">0.5</field>
             <field name="R">0.2</field>
-            <next>
-              <block type="sb_create_additive_synth" id="+Ntwfft9;NKxMqq8ysU5">
-                <mutation items="3"></mutation>
-                <field name="NAME">Scary</field>
-                <field name="WAVE0">sine</field>
-                <field name="WAVE1">sine</field>
-                <field name="WAVE2">sine</field>
-                <value name="AMP0">
-                  <shadow type="math_number" id="C[p3R+O9JL=lK_.F(J:K">
-                    <field name="NUM">0.5</field>
-                  </shadow>
-                  <block type="math_number" id="j.LE0683Epaa:P+0FG3L">
-                    <field name="NUM">1</field>
-                  </block>
-                </value>
-                <value name="FREQ_RATIO0">
-                  <shadow type="math_number" id="tqKRFK;HGcbIl.8n)(sS">
-                    <field name="NUM">1</field>
-                  </shadow>
-                  <block type="math_number" id="k3[r+B$Se7N_xOtFoS+e">
-                    <field name="NUM">1</field>
-                  </block>
-                </value>
-                <value name="AMP1">
-                  <shadow type="math_number" id="X,mc*I59BjMP.)5A)m,d">
-                    <field name="NUM">0.5</field>
-                  </shadow>
-                  <block type="math_number" id="^T:s|y,RJ#kk.^Xqd9,7">
-                    <field name="NUM">0.8</field>
-                  </block>
-                </value>
-                <value name="FREQ_RATIO1">
-                  <shadow type="math_number" id="^i7a?^oIfwB1KxWVq9F_">
-                    <field name="NUM">1</field>
-                  </shadow>
-                  <block type="math_number" id="7PSO`d$A.}I.7pJQn=N/">
-                    <field name="NUM">1.3</field>
-                  </block>
-                </value>
-                <value name="AMP2">
-                  <shadow type="math_number" id="lLIYsStzPf()K.b~p-,s">
-                    <field name="NUM">0.5</field>
-                  </shadow>
-                  <block type="math_number" id="/*0GF@X8xstfz~Wi::h#">
-                    <field name="NUM">0.2</field>
-                  </block>
-                </value>
-                <value name="FREQ_RATIO2">
-                  <shadow type="math_number" id="oN0`b(]6aZ2YAhdZ+V3G">
-                    <field name="NUM">1</field>
-                  </shadow>
-                  <block type="math_number" id="FU+eH,hOBovSro.m^x.M">
-                    <field name="NUM">0.7</field>
-                  </block>
-                </value>
-                <next>
-                  <block type="sb_set_adsr" id="V~$Bhm*)*~bCeF}#C:nE">
-                    <field name="TARGET">Scary</field>
-                    <field name="A">0.01</field>
-                    <field name="D">0.1</field>
-                    <field name="S">0.5</field>
-                    <field name="R">1</field>
-                  </block>
-                </next>
-              </block>
-            </next>
           </block>
         </next>
       </block>
-    </next>
+    </statement>
   </block>
-  <block type="sb_select_current_instrument" id="]1fVnLODoAU,|cAy+V)-" x="10" y="850">
+  <block type="sb_instrument_container" id="cont_scary" x="10" y="230">
     <field name="NAME">Scary</field>
-    <next>
-      <block type="sb_setup_effect" id="a*cTUApKuj:P[D;z~P$]">
-        <mutation effect_type="limiter"></mutation>
-        <field name="EFFECT_TYPE">limiter</field>
-        <value name="THRESHOLD">
-          <shadow type="math_number" id=";)W=:|LPPWwgIJoAE8SR">
-            <field name="NUM">-6</field>
+    <statement name="STACK">
+      <block type="sb_create_additive_synth" id="add1">
+        <mutation items="3"></mutation>
+        <field name="WAVE0">sine</field>
+        <field name="WAVE1">sine</field>
+        <field name="WAVE2">sine</field>
+        <value name="AMP0">
+          <shadow type="math_number" id="ldX}M18EnWI2vMi34u}H">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="FREQ_RATIO0">
+          <shadow type="math_number" id="gC}WBcu:zII$wR.MpW/1">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="AMP1">
+          <shadow type="math_number" id="|txj[6mC5v]M`8|3#Q}G">
+            <field name="NUM">0.8</field>
+          </shadow>
+        </value>
+        <value name="FREQ_RATIO1">
+          <shadow type="math_number" id="tSI])cGwQ5;%i/0#/!H%">
+            <field name="NUM">1.3</field>
+          </shadow>
+        </value>
+        <value name="AMP2">
+          <shadow type="math_number" id="9F9hmY_q}(|j%PqP.?KU">
+            <field name="NUM">0.2</field>
+          </shadow>
+        </value>
+        <value name="FREQ_RATIO2">
+          <shadow type="math_number" id="7ng^{pw~Ys.6Qj%n:ptp">
+            <field name="NUM">0.7</field>
           </shadow>
         </value>
         <next>
-          <block type="sb_toggle_pc_keyboard_midi" id="^JUWi!1[!Ly1UtcT`%MH">
+          <block type="sb_container_adsr" id="_ataQ[kUF;%~3W)48vDA">
+            <field name="A">0.01</field>
+            <field name="D">0.1</field>
+            <field name="S">0.5</field>
+            <field name="R">1</field>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="610">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="master_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="%+JwIgct{Ju.G62`rx*q">
+            <field name="NUM">-1</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_comment" id="guide" x="10" y="730">
+    <field name="COMMENT">此範例展示如何從零開始「設計音色」。&amp;#10;&amp;#10;1. 諧波合成音源 (Mellow)：由整數倍頻疊加而成，聲音和諧。&amp;#10;2. 自訂加法合成 (Scary)：包含非整數倍率，會產生不和諧的金屬撞擊感。&amp;#10;3. 各別樂器的 ADSR 可分別在&lt;定義樂器&gt;積木內定義。</field>
+    <next>
+      <block type="sb_select_current_instrument" id="I,|7tuQ9@G,Vrg)FQ@hk">
+        <field name="NAME">Scary</field>
+        <next>
+          <block type="sb_toggle_pc_keyboard_midi" id="yfRTX3dzu:u={lE@cKka">
             <field name="ACTION">ON</field>
           </block>
         </next>

@@ -4,9 +4,21 @@ import { javascriptGenerator } from 'blockly/javascript';
 
 export function registerGenerators(BlocklyInstance, javascriptGeneratorInstance) {
 
+  /**
+   * Helper to find the nearest container's instrument name.
+   */
+  function getContainerTarget(block) {
+    let p = block.getSurroundParent();
+    while (p) {
+      if (p.type === 'sb_instrument_container') return p.getFieldValue('NAME') || 'MyInstrument';
+      p = p.getSurroundParent();
+    }
+    return 'DefaultSynth';
+  }
+
   // Generator for the new all-in-one sb_create_harmonic_synth block
   javascriptGeneratorInstance.forBlock['sb_create_harmonic_synth'] = function (block, generator) {
-    const instrumentName = generator.quote_(block.getFieldValue('NAME'));
+    const instrumentName = generator.quote_(getContainerTarget(block));
 
     // Logic moved from the old 'sb_harmonic_partials' generator
     const partials = [];
@@ -25,7 +37,7 @@ export function registerGenerators(BlocklyInstance, javascriptGeneratorInstance)
 
   // Generator for sb_create_additive_synth block
   javascriptGeneratorInstance.forBlock['sb_create_additive_synth'] = function (block, generator) {
-    const instrumentName = generator.quote_(block.getFieldValue('NAME'));
+    const instrumentName = generator.quote_(getContainerTarget(block));
 
     const components = [];
     for (let i = 0; i < block.itemCount_; i++) {

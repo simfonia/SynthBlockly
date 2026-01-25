@@ -20,12 +20,11 @@
     <p>Using the "Set Effect" block, you can add professional post-processing to your instruments. Understanding the meaning and range of each parameter will help you shape your sound precisely.</p>
 
     <div class="important">
-        <h3>⚠️ Usage Notice: Global Effects</h3>
-        <p>Currently, effects in SynthBlockly are <strong>Global</strong>. This means:</p>
+        <h3>📂 Usage: Local vs. Global Effects</h3>
+        <p>In SynthBlockly, the scope of an effect is determined by its <strong>Container</strong>:</p>
         <ul>
-            <li>When you add an effect, it applies to <strong>ALL</strong> instruments (Synth, Drum, Sampler, etc.).</li>
-            <li>You cannot yet apply distortion only to the guitar while keeping the piano clean.</li>
-            <li>We are working on "Targeted Effects" for a future update!</li>
+            <li><strong>Local Effect</strong>: Place the effect block inside an <code>Instrument Container</code>. It will only affect that specific instrument.</li>
+            <li><strong>Global Effect</strong>: Place the effect block inside the <code>Master Container</code>. It will affect <strong>ALL</strong> sounds before final output.</li>
         </ul>
     </div>
 

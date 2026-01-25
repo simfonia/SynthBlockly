@@ -157,7 +157,7 @@ export function initButtons() {
                 reader.onload = (e) => {
                     const xmlText = e.target.result;
                     try {
-                        resetWorkspaceAndAudio(); // Call the new reset function
+                        resetWorkspaceAndAudio(true); // Call the new reset function with skipTemplate = true
                         clearLogs(); // Clear logs on successful load
                         const xml = Blockly.utils.xml.textToDom(xmlText);
                         Blockly.Xml.domToWorkspace(xml, workspace);

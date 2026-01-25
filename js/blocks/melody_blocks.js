@@ -40,9 +40,16 @@ export function registerBlocks() {
                     if (this.sourceBlock_) workspace = this.sourceBlock_.workspace;
                     else if (this.workspace) workspace = this.workspace;
 
-                    const options = [["DefaultSynth", "DefaultSynth"]];
+                    const options = [];
                     if (workspace) {
-                        const targetBlockTypes = ['sb_create_synth_instrument', 'sb_create_harmonic_synth', 'sb_create_additive_synth', 'sb_create_layered_instrument', 'sb_create_sampler_instrument'];
+                        const targetBlockTypes = [
+                            'sb_instrument_container', // New V2.1 Container
+                            'sb_create_synth_instrument', 
+                            'sb_create_harmonic_synth', 
+                            'sb_create_additive_synth', 
+                            'sb_create_layered_instrument', 
+                            'sb_create_sampler_instrument'
+                        ];
                         targetBlockTypes.forEach(type => {
                             workspace.getBlocksByType(type, false).forEach(block => {
                                 const name = block.getFieldValue('NAME');
@@ -50,9 +57,13 @@ export function registerBlocks() {
                             });
                         });
                     }
-                    const defaultOpt = options.shift();
-                    options.sort((a, b) => a[0].localeCompare(b[0]));
-                    options.unshift(defaultOpt);
+                    if (options.length > 1) {
+                        options.sort((a, b) => a[0].localeCompare(b[0]));
+                    }
+                    
+                    if (options.length === 0) {
+                        return [["(無樂器)", "NONE"]];
+                    }
                     
                     const currentValue = this.getValue();
                     if (currentValue && !options.some(opt => opt[1] === currentValue)) {

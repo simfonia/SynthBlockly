@@ -45,7 +45,7 @@ export const MSG_EN = {
     // --- SynthBlockly Custom Category Names and Colors ---
     'MSG_SYNTHBLOCKLY_CATEGORY': 'SynthBlockly',
     'SYNTHBLOCKLY_HUE': '#5CA6A6',
-    'MSG_SOUND_SOURCES_CATEGORY': 'Sound Sources',
+    'MSG_SOUND_SOURCES_CATEGORY': 'Create Instruments',
     'SOUND_SOURCES_HUE': '#5CB85C',
     'MSG_PERFORMANCE_CATEGORY': 'Performance',
     'PERFORMANCE_HUE': '#E74C3C',
@@ -86,8 +86,8 @@ export const MSG_EN = {
     'MSG_FUNDAMENTAL_FIELD': 'Fundamental (1x) Amplitude (0-1)',
     'MSG_HARMONIC_FIELD': 'Harmonic ({0}x) Amplitude (0-1)',
 
-    'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': 'Create Custom Synth Source Name %1',
-    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer sound source using multiple oscillators. Right-click for Help.',
+    'MSG_CREATE_ADDITIVE_SYNTH_MESSAGE': 'Create Additive Synth Source',
+    'MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP': 'Creates an additive synthesizer sound source using multiple oscillators. Must be placed inside an Instrument Container.',
     'MSG_MAIN_OSCILLATOR_FIELD': 'Main Oscillator (Fundamental)',
     'MSG_OSCILLATOR_FIELD': 'Oscillator {0}',
     'MSG_AMPLITUDE_INPUT_FIELD': 'Amplitude',
@@ -100,24 +100,33 @@ export const MSG_EN = {
     'MATH_CONSTRAIN_TOOLTIP': 'Restricts a value to be within the specified low and high bounds.',
 
     // SOUND SOURCE CONTROL
-    'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': 'Create Synth Source %1 Type %2',
-    'SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP': 'Creates a synthesizer sound source. Right-click for Help.',
+    'SB_CREATE_SYNTH_INSTRUMENT_MESSAGE': 'Create Synth Type %1',
+    'SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP': 'Creates a synthesizer sound source. Must be placed inside an Instrument Container.',
     'SB_SELECT_CURRENT_INSTRUMENT_MESSAGE': 'Select Current Sound Source as %1',
     'SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP': 'Sets the default sound source for playback.',
     'SB_SET_ADSR_MESSAGE': 'Set %1 Envelope (ADSR) A %2 D %3 S %4 R %5',
-    'SB_SET_ADSR_TOOLTIP': 'Sets the volume envelope for the specified sound source(s).',
+    'SB_SET_ADSR_TOOLTIP': 'Sets the volume envelope for the synthesizer. Must be placed inside an Instrument Container.',
     'SB_TARGET_ALL_INSTRUMENTS': 'All Instruments',
+    'SB_INSTRUMENT_CONTAINER_MESSAGE': 'Define Instrument: %1 %2',
+    'SB_INSTRUMENT_CONTAINER_TOOLTIP': 'Instrument definition container. Place synthesizers, ADSR, and local effects inside this hat block and give it a name.',
+    'SB_MASTER_CONTAINER_MESSAGE': 'Master Output %1',
+    'SB_MASTER_CONTAINER_TOOLTIP': 'Global output container. Place master volume and global effects here.',
+    'SB_CONTAINER_ADSR_LABEL': 'Set Envelope (ADSR) A %1 D %2 S %3 R %4',
+    'SB_CONTAINER_VOLUME_LABEL': 'Set Volume %1',
+    'SB_CONTAINER_MUTE_LABEL': 'Mute %1',
+    'SB_CONTAINER_SOLO_LABEL': 'Solo %1',
+    'SB_CONTAINER_VIBRATO_LABEL': 'Set Vibrato %1',
     'SB_DEFINE_CHORD_MESSAGE': 'Define Chord %1 Notes as %2',
     'SB_GET_CHORD_NAME_MESSAGE': 'Chord Name %1',
     'SB_GET_CHORD_NAME_TOOLTIP': 'Gets the name string of a defined chord for use in the Step Sequencer.',
     'SB_SET_INSTRUMENT_VIBRATO_MESSAGE': 'Set %1 Vibrato %2',
-    'SB_SET_INSTRUMENT_VIBRATO_TOOLTIP': 'Sets the pitch deviation (vibrato) in cents for the specified source.',
+    'SB_SET_INSTRUMENT_VIBRATO_TOOLTIP': 'Sets the pitch deviation (vibrato) in cents. Must be placed inside an Instrument Container.',
     'SB_SET_INSTRUMENT_VOLUME_MESSAGE': 'Set %1 Volume %2',
-    'SB_SET_INSTRUMENT_VOLUME_TOOLTIP': 'Sets the output volume (0 to 1) for the specified source.',
+    'SB_SET_INSTRUMENT_VOLUME_TOOLTIP': 'Sets the output volume. Must be placed inside a Container (Instrument or Master).',
     'SB_SET_INSTRUMENT_MUTE_MESSAGE': 'Set %1 Mute %2',
-    'SB_SET_INSTRUMENT_MUTE_TOOLTIP': 'Mutes the specified sound source.',
+    'SB_SET_INSTRUMENT_MUTE_TOOLTIP': 'Mutes the sound source. Must be placed inside a Container (Instrument or Master).',
     'SB_SET_INSTRUMENT_SOLO_MESSAGE': 'Set %1 Solo %2',
-    'SB_SET_INSTRUMENT_SOLO_TOOLTIP': 'Solos the specified sound source (others will be muted).',
+    'SB_SET_INSTRUMENT_SOLO_TOOLTIP': 'Solos the sound source. Must be placed inside a Container (Instrument or Master).',
 
     // PERFORMANCE
     'SB_PLAY_NOTE_MESSAGE': 'Play Note %1 Duration %2 Velocity %3 (non-blocking)',
@@ -159,8 +168,8 @@ export const MSG_EN = {
 
     
 
-        'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': 'Create Sampler Source %1 Type %2',
-    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': 'Creates a sound source based on recorded samples. Right-click for Help.',
+        'SB_CREATE_SAMPLER_INSTRUMENT_MESSAGE': 'Create Sampler Type %1',
+    'SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP': 'Creates a sampler sound source. Must be placed inside an Instrument Container.',
     'SB_CREATE_LAYERED_INSTRUMENT_MESSAGE': 'Create Layered Source Name %1 with Layers %2',
     'SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP': 'Combines multiple existing instruments into a single layered instrument. Use commas to separate names.',
     'SB_SAMPLER_TYPE_DEFAULT': 'Piano',
@@ -198,7 +207,8 @@ export const MSG_EN = {
 
     // EFFECTS
     'SB_SETUP_EFFECT_MESSAGE': 'Set %2 effect for %1',
-    'SB_SETUP_EFFECT_TOOLTIP': 'Add professional post-processing effects. Right-click for Help.',
+    'SB_CONTAINER_SETUP_EFFECT_MESSAGE': 'Add %1 Effect',
+    'SB_SETUP_EFFECT_TOOLTIP': 'Add professional post-processing effects. Must be placed inside a Container (Instrument or Master).',
     'SB_EFFECT_DISTORTION_TYPE_FIELD': 'Distortion',
     'SB_EFFECT_REVERB_TYPE_FIELD': 'Reverb',
     'SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD': 'Delay',

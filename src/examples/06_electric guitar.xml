@@ -1,65 +1,79 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="sb_comment" id="guitar_effect_guide" x="10" y="10">
-    <field name="COMMENT">此範例展示如何利用「效果器」將平凡的合成器轉變為激昂的「電吉他」。&amp;#10;&amp;#10;1. 選擇音源：&amp;#10;我們使用 FMSynth 作為基礎，因為它能產生帶有金屬感的諧波，與吉他弦的特性相似。&amp;#10;&amp;#10;2. 失真效果 (Distortion)：&amp;#10;這是音色的核心。Distortion 會刻意讓訊號產生數位截波（破音），&amp;#10;製造出搖滾樂中典型的破音吉他聲。&amp;#10;&amp;#10;3. 混響效果 (Reverb)：&amp;#10;加入空間感，模擬吉他音箱在房間中產生的回響，讓聲音更豐富。&amp;#10;&amp;#10;您可以嘗試調整 Distortion 的「量」，&amp;#10;感受從輕微過載 (Overdrive) 到重金屬失真 (High Gain) 的變化！</field>
-    <next>
-      <block type="sb_create_synth_instrument" id="7Mp)W4|0Z(BP)?dG{.4t">
-        <field name="NAME">electric_guitar</field>
+  <block type="sb_instrument_container" id="cont_guitar" x="10" y="10">
+    <field name="NAME">electric_guitar</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="fm1">
         <field name="TYPE">FMSynth</field>
         <next>
-          <block type="sb_select_current_instrument" id="^!BB$a7(ho7#Yg/$1r5?">
-            <field name="NAME">electric_guitar</field>
+          <block type="sb_container_adsr" id="adsr1">
+            <field name="A">0.01</field>
+            <field name="D">0.2</field>
+            <field name="S">0.5</field>
+            <field name="R">0.5</field>
             <next>
-              <block type="sb_set_adsr" id="[xBQ3WzecS8Oq#rrlHK5">
-                <field name="TARGET">electric_guitar</field>
-                <field name="A">0.01</field>
-                <field name="D">0.2</field>
-                <field name="S">0.7</field>
-                <field name="R">0.5</field>
+              <block type="sb_container_setup_effect" id="dist1">
+                <mutation effect_type="distortion" oversample_value="none"></mutation>
+                <field name="EFFECT_TYPE">distortion</field>
+                <field name="OVERSAMPLE_VALUE">none</field>
+                <value name="WET">
+                  <shadow type="math_number" id="tt5VmW1jek*ZA(jOfiam">
+                    <field name="NUM">0.6</field>
+                  </shadow>
+                </value>
+                <value name="DISTORTION_AMOUNT">
+                  <shadow type="math_number" id="mdW{9cX$p?X`Cp]Mc%i3">
+                    <field name="NUM">0.4</field>
+                  </shadow>
+                </value>
                 <next>
-                  <block type="sb_setup_effect" id="I[Hr1[r5AJ~o[PV,J?`9">
-                    <mutation effect_type="distortion" oversample_value="none"></mutation>
-                    <field name="EFFECT_TYPE">distortion</field>
-                    <field name="OVERSAMPLE_VALUE">none</field>
+                  <block type="sb_container_setup_effect" id="rev1">
+                    <mutation effect_type="reverb"></mutation>
+                    <field name="EFFECT_TYPE">reverb</field>
                     <value name="WET">
-                      <shadow type="math_number" id="%z$;z}RZU(ZscJM[`[q5">
-                        <field name="NUM">0.6</field>
+                      <shadow type="math_number" id="bqosB6.!@[(b_1:uuW`n">
+                        <field name="NUM">0.5</field>
                       </shadow>
                     </value>
-                    <value name="DISTORTION_AMOUNT">
-                      <shadow type="math_number" id="___Ce`+[NiK4R]XmD$}T">
-                        <field name="NUM">5</field>
+                    <value name="DECAY">
+                      <shadow type="math_number" id="BO3Cm##z~Qw+p/nW2uAm">
+                        <field name="NUM">1.5</field>
                       </shadow>
                     </value>
-                    <next>
-                      <block type="sb_setup_effect" id="]*0]8r=6T}oH6mS2hH}y">
-                        <mutation effect_type="reverb"></mutation>
-                        <field name="EFFECT_TYPE">reverb</field>
-                        <value name="WET">
-                          <shadow type="math_number" id="+_-hbU#:bN)n:rmG(3Yp">
-                            <field name="NUM">0.5</field>
-                          </shadow>
-                        </value>
-                        <value name="DECAY">
-                          <shadow type="math_number" id="h},mzbT`f-?M~lpv%k*+">
-                            <field name="NUM">1.5</field>
-                          </shadow>
-                        </value>
-                        <value name="PREDELAY">
-                          <shadow type="math_number" id="FU-]i,V}-FO7oF1WTB(?">
-                            <field name="NUM">0.01</field>
-                          </shadow>
-                        </value>
-                        <next>
-                          <block type="sb_toggle_pc_keyboard_midi" id="0I63B1{XMi3X6#~):aI]">
-                            <field name="ACTION">ON</field>
-                          </block>
-                        </next>
-                      </block>
-                    </next>
+                    <value name="PREDELAY">
+                      <shadow type="math_number" id="RO!c^b@#)xOiAseyD63Y">
+                        <field name="NUM">0.01</field>
+                      </shadow>
+                    </value>
                   </block>
                 </next>
               </block>
             </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="350">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="master_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="1KX!qrk2b0dLCD^;{v{h">
+            <field name="NUM">-1</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_comment" id="guide" x="10" y="470">
+    <field name="COMMENT">此範例展示如何利用「效果器」將平凡的合成器轉變為激昂的「電吉他」。&amp;#10;&amp;#10;1. 選擇音源：我們使用 FMSynth 作為基礎。&amp;#10;2. 失真效果 (Distortion)：這是音色的核心，製造出搖滾樂中典型的破音吉他聲。&amp;#10;3. 混響效果 (Reverb)：模擬吉他音箱在房間中產生的回響。&amp;#10;&amp;#10;您可以嘗試調整容器內 Distortion 的「量」！</field>
+    <next>
+      <block type="sb_select_current_instrument" id="NFDX}iyXp,Hvo@py9Z7m">
+        <field name="NAME">electric_guitar</field>
+        <next>
+          <block type="sb_toggle_pc_keyboard_midi" id="cA~o-X`m7l@9Cy4ez8M6">
+            <field name="ACTION">ON</field>
           </block>
         </next>
       </block>

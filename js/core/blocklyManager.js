@@ -107,31 +107,31 @@ function onWorkspaceChanged(event) {
     if (!workspace) return; 
     
     // --- ADSR UI Synchronization ---
-    // Only update if the user explicitly interacts with an ADSR block
-    if ((event.type === BlocklyModule.Events.SELECTED && event.newElementId) || 
-        (event.type === BlocklyModule.Events.BLOCK_CHANGE && event.element === 'field')) {
-        
-        const blockId = event.blockId || event.newElementId;
-        const block = workspace.getBlockById(blockId);
+    const isAdsrBlock = (b) => b && (b.type === 'sb_set_adsr' || b.type === 'sb_container_adsr');
+    
+    // Check for explicit selection or value change
+    let targetBlock = null;
+    if (event.type === BlocklyModule.Events.SELECTED && event.newElementId) {
+        targetBlock = workspace.getBlockById(event.newElementId);
+    } else if (event.type === BlocklyModule.Events.BLOCK_CHANGE && event.element === 'field') {
+        targetBlock = workspace.getBlockById(event.blockId);
+    }
 
-        if (block && block.type === 'sb_set_adsr') {
-            if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
-            adsrUpdateTimer = setTimeout(() => {
-                const getNum = (name, def) => {
-                    const val = block.getFieldValue(name);
-                    return (val === null || val === "" || isNaN(val)) ? def : Number(val);
-                };
-                // Preview only: do not change audioEngine.currentADSR
-                audioEngine.updateADSRUI(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
-            }, 50);
-        } else if (event.type === BlocklyModule.Events.SELECTED && (!block || block.type !== 'sb_set_adsr')) {
-            // If user selects something else (or nothing), sync UI back to current instrument
-            // This allows keyboard switching to update the graph correctly
-            if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
-            setTimeout(() => {
-                audioEngine.syncAdsrToUI(); 
-            }, 50);
-        }
+    if (isAdsrBlock(targetBlock)) {
+        if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
+        adsrUpdateTimer = setTimeout(() => {
+            const getNum = (name, def) => {
+                const val = targetBlock.getFieldValue(name);
+                return (val === null || val === "" || isNaN(val)) ? def : Number(val);
+            };
+            audioEngine.updateADSRUI(getNum('A', 0.01), getNum('D', 0.1), getNum('S', 0.5), getNum('R', 1.0));
+        }, 50);
+    } else if (event.type === BlocklyModule.Events.SELECTED || event.type === BlocklyModule.Events.BLOCK_DELETE) {
+        // Debounce syncing back to avoid flickering during block switching
+        if (adsrUpdateTimer) clearTimeout(adsrUpdateTimer);
+        adsrUpdateTimer = setTimeout(() => {
+            audioEngine.syncAdsrToUI();
+        }, 200);
     }
 
     if (event.type === BlocklyModule.Events.BLOCK_DELETE) {
@@ -141,15 +141,48 @@ function onWorkspaceChanged(event) {
 
     // --- Force Redraw on Change (Fixes Shadow Block collapse) ---
     if (event.type === BlocklyModule.Events.BLOCK_CHANGE || 
-        event.type === BlocklyModule.Events.BLOCK_CREATE) {
-         // ... (existing redraw logic) ...
+        event.type === BlocklyModule.Events.BLOCK_CREATE ||
+        event.type === BlocklyModule.Events.BLOCK_MOVE) {
+         
          if (workspace) {
             const allBlocks = workspace.getAllBlocks(false);
-            for (const block of allBlocks) {
+            const containerOnlyTypes = [
+                'sb_create_synth_instrument', 'sb_create_harmonic_synth', 'sb_create_additive_synth', 
+                'sb_create_sampler_instrument', 'sb_container_adsr', 'sb_container_volume', 
+                'sb_container_vibrato', 'sb_container_mute', 'sb_container_solo', 'sb_container_setup_effect'
+            ];
+
+            allBlocks.forEach(block => {
+                if (containerOnlyTypes.includes(block.type)) {
+                    let container = null;
+                    let p = block.getSurroundParent();
+                    while (p) {
+                        if (p.type === 'sb_instrument_container' || p.type === 'sb_master_container') {
+                            container = p;
+                            break;
+                        }
+                        p = p.getSurroundParent();
+                    }
+
+                    // Use modern setDisabledReason for reliable UI feedback
+                    if (container) {
+                        if (container.type === 'sb_master_container') {
+                            const masterAllowed = ['sb_container_volume', 'sb_container_mute', 'sb_container_solo', 'sb_container_setup_effect'];
+                            const isAllowed = masterAllowed.includes(block.type);
+                            block.setDisabledReason(!isAllowed, 'invalid_container');
+                        } else {
+                            block.setDisabledReason(false, 'invalid_container');
+                        }
+                    } else {
+                        // Not inside any container - must be disabled
+                        block.setDisabledReason(true, 'invalid_container');
+                    }
+                }
+                
                 if (block.rendered) {
                     block.render();
                 }
-            }
+            });
         }
     }
 
@@ -489,6 +522,54 @@ function applyAsyncProcedureOverrides(javascriptGenerator) {
 }
 
 /**
+ * Injects a default setup (Instrument + Master) if the workspace is empty.
+ */
+function setupDefaultWorkspace() {
+    if (!workspace || workspace.getAllBlocks(false).length > 0) return;
+
+    const defaultXml = `
+        <xml xmlns="https://developers.google.com/blockly/xml">
+            <block type="sb_instrument_container" x="50" y="50">
+                <field name="NAME">DefaultSynth</field>
+                <statement name="STACK">
+                    <block type="sb_create_synth_instrument">
+                        <field name="TYPE">PolySynth</field>
+                        <next>
+                            <block type="sb_container_adsr">
+                                <field name="A">0.01</field>
+                                <field name="D">0.1</field>
+                                <field name="S">0.5</field>
+                                <field name="R">1.0</field>
+                            </block>
+                        </next>
+                    </block>
+                </statement>
+            </block>
+            <block type="sb_master_container" x="50" y="250">
+                <statement name="STACK">
+                    <block type="sb_container_setup_effect">
+                        <field name="EFFECT_TYPE">limiter</field>
+                        <mutation effect_type="limiter"></mutation>
+                        <value name="THRESHOLD">
+                            <shadow type="math_number">
+                                <field name="NUM">-1</field>
+                            </shadow>
+                        </value>
+                    </block>
+                </statement>
+            </block>
+        </xml>
+    `;
+    
+    try {
+        const dom = BlocklyModule.utils.xml.textToDom(defaultXml);
+        BlocklyModule.Xml.domToWorkspace(dom, workspace);
+    } catch (e) {
+        console.warn("Failed to inject default workspace template:", e);
+    }
+}
+
+/**
  * Initializes Blockly workspace and registers blocks/generators.
  */
 export async function initBlocklyManager() {
@@ -518,6 +599,9 @@ export async function initBlocklyManager() {
         logKey('LOG_WORKSPACE_INJECTED');
         workspace.addChangeListener(onWorkspaceChanged);
         logKey('LOG_LISTENERS_ATTACHED');
+
+        // V2.1: Setup default template
+        setupDefaultWorkspace();
 
     } catch (e) {
         console.error('Blockly initialization failed:', e);
@@ -585,21 +669,12 @@ export async function getBlocksCode() {
         const topBlocks = workspace.getTopBlocks(true);
         
         const instrumentBlockTypes = [
-            'sb_create_synth_instrument',
-            'sb_create_harmonic_synth',
-            'sb_create_additive_synth',
-            'sb_create_sampler_instrument',
-            'sb_create_layered_instrument',
+            'sb_instrument_container',
             'sb_define_chord'
         ];
 
         const setupBlockTypes = [
-            'sb_setup_effect',
-            'sb_set_adsr',
-            'sb_set_instrument_volume',
-            'sb_set_instrument_vibrato',
-            'sb_set_instrument_mute',
-            'sb_set_instrument_solo',
+            'sb_master_container',
             'sb_rhythm_sequence'
         ];
 
@@ -725,7 +800,31 @@ export async function getBlocksCode() {
                         return javascriptGenerator.forBlock[t].call(javascriptGenerator, block) || '';
                     }
                 } catch (err) { } // Ignore errors during block generation
-                if (t === 'sb_play_note') {
+                if (t === 'sb_instrument_container') {
+                    const name = block.getFieldValue('NAME') || 'MyInstrument';
+                    let branch = '';
+                    let inner = block.getInputTargetBlock('STACK');
+                    while (inner) {
+                        branch += genBlock(inner);
+                        inner = inner.getNextBlock();
+                    }
+                    return `/* INSTRUMENT_DEFINITION:${name} */\n${branch}\n`;
+                } else if (t === 'sb_master_container') {
+                    let branch = '';
+                    let inner = block.getInputTargetBlock('STACK');
+                    while (inner) {
+                        branch += genBlock(inner);
+                        inner = inner.getNextBlock();
+                    }
+                    return `/* MASTER_DEFINITION */\n${branch}\n`;
+                } else if (t === 'sb_create_synth_instrument') {
+                    // Fallback for inner block - need name from parent
+                    let name = 'DefaultSynth';
+                    let p = block.getSurroundParent();
+                    if (p && p.type === 'sb_instrument_container') name = p.getFieldValue('NAME');
+                    const type = block.getFieldValue('TYPE') || 'PolySynth';
+                    return `window.audioEngine.createInstrument('${name}', '${type}');\n`;
+                } else if (t === 'sb_play_note') {
                     const note = block.getFieldValue('NOTE') || 'C4';
                     const dur = block.getFieldValue('DUR') || '8n';
                     return "synth.triggerAttackRelease('" + note + "','" + dur + "');\n";
@@ -768,12 +867,17 @@ export async function getBlocksCode() {
 
 /**
  * Clears the Blockly workspace and resets the audio engine state.
+ * @param {boolean} skipTemplate Whether to skip re-injecting the default template.
  */
-export function resetWorkspaceAndAudio() {
+export function resetWorkspaceAndAudio(skipTemplate = false) {
     if (workspace) {
         workspace.clear();
         workspace.clearUndo();
         logKey('LOG_WORKSPACE_CLEARED');
+        // V2.1: Re-inject default template unless loading a file
+        if (!skipTemplate) {
+            setupDefaultWorkspace();
+        }
     }
     audioEngine.resetAudioEngineState();
     logKey('LOG_ENGINE_RESTARTED');

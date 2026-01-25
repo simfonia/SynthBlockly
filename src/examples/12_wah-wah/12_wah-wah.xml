@@ -4,162 +4,181 @@
     <variable id="C_1^b8R[wzF_Nl}YjV$L">ldrValue</variable>
     <variable id="8y6_D@qG=zLwOa*V7`|:">filterFreq</variable>
   </variables>
-  <block type="sb_comment" id="wah_guide" x="10" y="10">
-    <field name="COMMENT">【光控 Wah-wah 效果器】&amp;#10;&amp;#10;此範例示範如何用感測器數值即時控制聲音參數：&amp;#10;1. 序列埠解析：監聽格式如 "LDR:350" 的字串。&amp;#10;2. 數值映射 (Map)：將 LDR 的原始數值 (200-500) 轉換為音訊頻率 (200-5000 Hz)。&amp;#10;3. 即時濾波：透過「掛載效果器」積木，將計算好的頻率套用至濾波器。&amp;#10;&amp;#10;Arduino 寫法：&amp;#10;Serial.print("LDR:");&amp;#10;Serial.println(analogRead(A0));&amp;#10;&amp;#10;請連接 Arduino 後，用手遮擋光敏電阻，體驗音色的動態變化！</field>
-    <next>
-      <block type="sb_toggle_pc_keyboard_midi" id="Y_9^75N{62I]d`LgDSb(">
-        <field name="ACTION">ON</field>
-      </block>
-    </next>
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">【光控 Wah-wah 效果器】&amp;#10;&amp;#10;1. 樂器與濾波：已在「DefaultSynth」容器內預先掛載了 Filter。&amp;#10;2. 數值映射：將 LDR 數值 (200-500) 轉換為頻率 (200-5000 Hz)。&amp;#10;3. 即時控制：利用序列埠帽積木，動態更新容器內的 Filter 頻率。&amp;#10;&amp;#10;請連接 Arduino 並遮擋光敏電阻來體驗 Wah-wah 效果！</field>
   </block>
-  <block type="sb_serial_data_received" id="K%V]k)/j[)pBv{B=9_hY" x="10" y="300">
+  <block type="sb_instrument_container" id="c_wah" x="10" y="190">
+    <field name="NAME">DefaultSynth</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="Fz.0:4bnzMz*Xl_mF/2W">
+        <field name="TYPE">SawtoothWave</field>
+        <next>
+          <block type="sb_container_setup_effect" id="target_filter">
+            <mutation effect_type="filter" filter_type_value="lowpass" filter_rolloff_value="-12"></mutation>
+            <field name="EFFECT_TYPE">filter</field>
+            <field name="FILTER_TYPE_VALUE">lowpass</field>
+            <field name="FILTER_ROLLOFF_VALUE">-12</field>
+            <value name="FILTER_FREQ">
+              <shadow type="math_number" id="PV1iJXCrma#Eca)nP$]W">
+                <field name="NUM">20000</field>
+              </shadow>
+            </value>
+            <value name="FILTER_Q">
+              <shadow type="math_number" id="ib[Ch;W$U=]BjtWb[I+@">
+                <field name="NUM">5</field>
+              </shadow>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_toggle_pc_keyboard_midi" id="l(`*_6E6$9J/sP5fA;jl" x="10" y="430">
+    <field name="ACTION">ON</field>
+  </block>
+  <block type="sb_serial_data_received" id="serial_in" x="10" y="490">
     <field name="DATA" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
     <statement name="DO">
-      <block type="controls_if" id="z=o;c(7?b88R}7+m+@#*">
+      <block type="controls_if" id="U;Y{^}56wwfnoC#d/-f7">
         <mutation elseif="1"></mutation>
         <value name="IF0">
-          <block type="logic_compare" id="4@d9K|J|g^!KkI*zWnFm">
+          <block type="logic_compare" id="2?rFni:Z}XUIkU-.D|D4">
             <field name="OP">EQ</field>
             <value name="A">
-              <block type="variables_get" id="N8?6Iq10qIA1_b#,B6Qp">
+              <block type="variables_get" id="vEk.rwSbzg.rGpEO}Px2">
                 <field name="VAR" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
               </block>
             </value>
             <value name="B">
-              <shadow type="text" id="WAPxY7IJW^#P-9n^^.al">
+              <shadow type="text" id="CbZq9v72L0O$QfSu+gB%">
                 <field name="TEXT">KICK</field>
               </shadow>
             </value>
           </block>
         </value>
         <statement name="DO0">
-          <block type="jazzkit_play_drum" id="Sg=8*Y`q0]R[1v]Hn*~3">
-            <field name="DRUM_TYPE">C1</field>
-            <value name="VELOCITY">
-              <shadow type="math_number" id="%mDY5,ss%x`0H)3u0iE9">
-                <field name="NUM">1</field>
-              </shadow>
-            </value>
+          <block type="sb_play_drum" id="4gxdkJCBQw*-c!tGLpEU">
+            <field name="TYPE">KICK</field>
           </block>
         </statement>
         <value name="IF1">
-          <block type="logic_compare" id="CHECK_LDR_PREFIX">
+          <block type="logic_compare" id="g:dtN?TzG,O2i~j3q%Z`">
             <field name="OP">GTE</field>
             <value name="A">
-              <block type="text_indexOf" id="FIND_LDR_PREFIX">
+              <block type="text_indexOf" id="r`gNF-Y{*6cR.)dh+sH`">
                 <field name="END">FIRST</field>
                 <value name="VALUE">
-                  <block type="variables_get" id="Z0HXhMx~9pgBl8IDDcxW">
+                  <block type="variables_get" id="v*jimxi%{nCk(!cv%vA,">
                     <field name="VAR" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
                   </block>
                 </value>
                 <value name="FIND">
-                  <shadow type="text" id="SHADOW_LDR_PREFIX">
+                  <shadow type="text" id="2)Cmdf(wcP{,NwksU[kZ">
                     <field name="TEXT">LDR:</field>
                   </shadow>
                 </value>
               </block>
             </value>
             <value name="B">
-              <shadow type="math_number" id="X95tm0~_@T#SI[1w,Zt!">
+              <shadow type="math_number" id="_#imaa=~JS[7b`/BTU;F">
                 <field name="NUM">1</field>
               </shadow>
             </value>
           </block>
         </value>
         <statement name="DO1">
-          <block type="variables_set" id="wXh+W7z[wH,Z-N8{p1@Q">
+          <block type="variables_set" id="3,;9Du+bTCTbu3[]3Sik">
             <field name="VAR" id="C_1^b8R[wzF_Nl}YjV$L">ldrValue</field>
             <value name="VALUE">
-              <block type="lists_getIndex" id="A8-j{M$W5q#Hk`r7Zk^u">
+              <block type="lists_getIndex" id="8AL?L2Gh$8yLEe29Vwi~">
                 <mutation statement="false" at="true"></mutation>
                 <field name="MODE">GET</field>
                 <field name="WHERE">FROM_START</field>
                 <value name="VALUE">
-                  <block type="lists_split" id="U+g}l@;`R2]K#17Pj[Yk">
+                  <block type="lists_split" id="fO;|A99x.GOCstiCu#@`">
                     <mutation mode="SPLIT"></mutation>
                     <field name="MODE">SPLIT</field>
                     <value name="INPUT">
-                      <block type="variables_get" id="QSl3r]t!=oeZ_kcb/t~[">
+                      <block type="variables_get" id="2D#f}3IdgHfS~JIP$zfQ">
                         <field name="VAR" id="AMsTv;=~Yy:y8A]oD7Z*">receivedString</field>
                       </block>
                     </value>
                     <value name="DELIM">
-                      <shadow type="text" id=".Ynqv.z2BEzVlDreEAk}">
+                      <shadow type="text" id="17#c_-_QiSH$uSDC|0,m">
                         <field name="TEXT">:</field>
                       </shadow>
                     </value>
                   </block>
                 </value>
                 <value name="AT">
-                  <shadow type="math_number" id="weVMGT6TaR/1Edv]U(9/">
+                  <shadow type="math_number" id="0$Xr!5:H7tK}.L)$k}^c">
                     <field name="NUM">2</field>
                   </shadow>
                 </value>
               </block>
             </value>
             <next>
-              <block type="variables_set" id="set_freq">
+              <block type="variables_set" id="Kj[enMvCW[@2AW*82H;(">
                 <field name="VAR" id="8y6_D@qG=zLwOa*V7`|:">filterFreq</field>
                 <value name="VALUE">
-                  <block type="math_map" id="map_logic">
+                  <block type="math_map" id="GD7YW9Mts6vcGif5nl_9">
                     <value name="VALUE">
-                      <block type="math_constrain" id="constrain_ldr">
+                      <block type="math_constrain" id="3qLd1!JF31D,x2{1I^bl">
                         <value name="VALUE">
-                          <block type="variables_get" id="iA8$;dzTUq|6%Vazqo6K">
+                          <block type="variables_get" id="ph53gz%T8d{li(vB=q3,">
                             <field name="VAR" id="C_1^b8R[wzF_Nl}YjV$L">ldrValue</field>
                           </block>
                         </value>
                         <value name="LOW">
-                          <shadow type="math_number" id="M+]xbj9Z;76-c(_7_(;X">
+                          <shadow type="math_number" id="=a_SyJq$V^Cha$rKIW{W">
                             <field name="NUM">200</field>
                           </shadow>
                         </value>
                         <value name="HIGH">
-                          <shadow type="math_number" id="wow5Sv#CJu/7hQ,UDqM+">
+                          <shadow type="math_number" id="O-$Xg1d`H)s;^+6yK]{_">
                             <field name="NUM">500</field>
                           </shadow>
                         </value>
                       </block>
                     </value>
                     <value name="FROM_LOW">
-                      <shadow type="math_number" id="E?@i0|q7@cK,7m-]?}?(">
+                      <shadow type="math_number" id="2cO$VA~F-5n1n{8IT1sE">
                         <field name="NUM">200</field>
                       </shadow>
                     </value>
                     <value name="FROM_HIGH">
-                      <shadow type="math_number" id="MZ$^~p]EBPCc`lz:|^pN">
+                      <shadow type="math_number" id=";b/Y.~/Gu=TvOLYE]I;*">
                         <field name="NUM">500</field>
                       </shadow>
                     </value>
                     <value name="TO_LOW">
-                      <shadow type="math_number" id="6y^a}ChdO-Fy1OOg^/g{">
+                      <shadow type="math_number" id="?KL#u$-@Cw9h!EQI?!YD">
                         <field name="NUM">5000</field>
                       </shadow>
                     </value>
                     <value name="TO_HIGH">
-                      <shadow type="math_number" id="6E$7JbhRwIKc~W{.C=N#">
+                      <shadow type="math_number" id="J/#xxj`hzwSd4^^ZjFRB">
                         <field name="NUM">200</field>
                       </shadow>
                     </value>
                   </block>
                 </value>
                 <next>
-                  <block type="sb_setup_effect" id="K(U,l+kP%JvH.Qk=Z9tE">
+                  <block type="sb_container_setup_effect" id="!]9E[~3,c.^(hAerQl@*" disabled-reasons="invalid_container">
                     <mutation effect_type="filter" filter_type_value="lowpass" filter_rolloff_value="-12"></mutation>
                     <field name="EFFECT_TYPE">filter</field>
                     <field name="FILTER_TYPE_VALUE">lowpass</field>
                     <field name="FILTER_ROLLOFF_VALUE">-12</field>
                     <value name="FILTER_FREQ">
-                      <shadow type="math_number" id="b@WZK-x0Eb0L`7gu$M5v">
+                      <shadow type="math_number" id="|~PCNUQ1@E8TXp0!z13@">
                         <field name="NUM">20000</field>
                       </shadow>
-                      <block type="variables_get" id="|Br39wcu:fdQ%D8$x02R">
+                      <block type="variables_get" id="K{/;Ve-$V$W*7/J=i-ZL">
                         <field name="VAR" id="8y6_D@qG=zLwOa*V7`|:">filterFreq</field>
                       </block>
                     </value>
                     <value name="FILTER_Q">
-                      <shadow type="math_number" id="@a)n(1bs_(v8r@36[SPI">
+                      <shadow type="math_number" id="^eInwvq?:iu0*xt=zyY$">
                         <field name="NUM">5</field>
                       </shadow>
                     </value>

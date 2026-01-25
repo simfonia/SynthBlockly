@@ -4,69 +4,78 @@
     <variable id="t_58Z%F-bzi=L0]L=~Bm">velocity</variable>
     <variable id="2ZGm|O?HgX9o`vd?7U|`">channel</variable>
   </variables>
-  <block type="sb_comment" id="iA]#($uIH]o?,e.Hd2QV" x="10" y="10">
-    <field name="COMMENT">1.展示使用MIDI按鍵的「映射 (Mapping)」功能。&amp;#10;它屬於「閘門式 (Gate)」演奏：&amp;#10;按住琴鍵時發聲 (Attack)，放開琴鍵時停止 (Release)。&amp;#10;聲音的長度完全由您的手指按壓時間控制，&amp;#10;適合用於即時演奏與表現力豐富的樂句。&amp;#10;&amp;#10;2.示範使用單鍵來觸發和弦&amp;#10;由於多個音的疊加會造成截波而產生破音，&amp;#10;此時使用Compressor可以避免這個狀況發生。&amp;#10;可以啟用Compressor積木聽看看和弦的效果。</field>
-    <next>
-      <block type="sb_create_synth_instrument" id=";30:|Le_bj7?V[*6gRre">
-        <field name="NAME">DefaultSynth</field>
+  <block type="sb_instrument_container" id="setup_chord_synth" x="10" y="10">
+    <field name="NAME">DefaultSynth</field>
+    <statement name="STACK">
+      <block type="sb_create_synth_instrument" id="c1">
         <field name="TYPE">PolySynth</field>
         <next>
-          <block type="sb_select_current_instrument" id="dYvIrgOUCkwJYteWT|?^">
-            <field name="NAME">DefaultSynth</field>
+          <block type="sb_container_adsr" id="a1">
+            <field name="A">0.01</field>
+            <field name="D">0.1</field>
+            <field name="S">0.8</field>
+            <field name="R">0.1</field>
             <next>
-              <block type="sb_set_adsr" id="B[GM@UOyF7Ob!WnW$yip">
-                <field name="TARGET">DefaultSynth</field>
-                <field name="A">0.01</field>
-                <field name="D">0.1</field>
-                <field name="S">0.8</field>
-                <field name="R">0.1</field>
+              <block type="sb_container_setup_effect" id="comp1">
+                <mutation effect_type="compressor"></mutation>
+                <field name="EFFECT_TYPE">compressor</field>
+                <value name="THRESHOLD">
+                  <shadow type="math_number" id="*tET2s%)ZD*`gIh2wSL-">
+                    <field name="NUM">-24</field>
+                  </shadow>
+                </value>
+                <value name="RATIO">
+                  <shadow type="math_number" id="yxYk[X4c2;Fo)0zo`w*:">
+                    <field name="NUM">12</field>
+                  </shadow>
+                </value>
+                <value name="ATTACK">
+                  <shadow type="math_number" id="!;m8XsLElJi;a6ZqvA{6">
+                    <field name="NUM">0.003</field>
+                  </shadow>
+                </value>
+                <value name="RELEASE">
+                  <shadow type="math_number" id="wX|dD@C7j5*}n((!uZkr">
+                    <field name="NUM">0.25</field>
+                  </shadow>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="270">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="m_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="hj@,Ct*JOUQD?$DvX!/.">
+            <field name="NUM">-1</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_comment" id="chord_guide" x="10" y="390">
+    <field name="COMMENT">1.展示使用MIDI按鍵的「映射 (Mapping)」功能。&amp;#10;它屬於「閘門式 (Gate)」演奏：&amp;#10;按住琴鍵時發聲 (Attack)，放開琴鍵時停止 (Release)。&amp;#10;聲音的長度完全由您的手指按壓時間控制。&amp;#10;&amp;#10;2.示範使用單鍵來觸發和弦&amp;#10;由於多個音的疊加會造成截波而產生破音，&amp;#10;此時使用Compressor可以避免這個狀況發生。</field>
+    <next>
+      <block type="sb_define_chord" id="def_cm7">
+        <field name="NAME">CM7</field>
+        <field name="NOTES_STRING">C4,E4,G4,B4</field>
+        <next>
+          <block type="sb_map_key_to_chord" id="map_key">
+            <field name="KEY_CODE">KeyA</field>
+            <field name="CHORD_NAME">CM7</field>
+            <next>
+              <block type="sb_map_midi_to_chord" id="map_midi">
+                <field name="MIDI_NOTE">59</field>
+                <field name="CHORD_NAME">CM7</field>
                 <next>
-                  <block type="sb_setup_effect" id="$T?6QTC!=fvv|8~5G,GT" disabled-reasons="MANUALLY_DISABLED">
-                    <mutation effect_type="compressor"></mutation>
-                    <field name="EFFECT_TYPE">compressor</field>
-                    <value name="THRESHOLD">
-                      <shadow type="math_number" id="A$k}3%TirtFU+}-%]^wB">
-                        <field name="NUM">-24</field>
-                      </shadow>
-                    </value>
-                    <value name="RATIO">
-                      <shadow type="math_number" id="7$1:ho4%OLguldNhk%[l">
-                        <field name="NUM">12</field>
-                      </shadow>
-                    </value>
-                    <value name="ATTACK">
-                      <shadow type="math_number" id="Wfx8plAyQY]y2$8!)qNq">
-                        <field name="NUM">0.003</field>
-                      </shadow>
-                    </value>
-                    <value name="RELEASE">
-                      <shadow type="math_number" id="vaUbe|R9k}v,2_FO!sYo">
-                        <field name="NUM">0.25</field>
-                      </shadow>
-                    </value>
-                    <next>
-                      <block type="sb_define_chord" id="w(6vD)F%Hv{1HHm4MS{7}">
-                        <field name="NAME">CM7</field>
-                        <field name="NOTES_STRING">C4,E4,G4,B4</field>
-                        <next>
-                          <block type="sb_map_key_to_chord" id="aAd;Z4+;KBQ~^O-HpGyW">
-                            <field name="KEY_CODE">KeyA</field>
-                            <field name="CHORD_NAME">CM7</field>
-                            <next>
-                              <block type="sb_map_midi_to_chord" id="midi_map_59_CM7">
-                                <field name="MIDI_NOTE">59</field>
-                                <field name="CHORD_NAME">CM7</field>
-                                <next>
-                                  <block type="sb_toggle_pc_keyboard_midi" id="K:ofboPHbtbV)@|$Xx/7">
-                                    <field name="ACTION">ON</field>
-                                  </block>
-                                </next>
-                              </block>
-                            </next>
-                          </block>
-                        </next>
-                      </block>
-                    </next>
+                  <block type="sb_toggle_pc_keyboard_midi" id="enable_pc">
+                    <field name="ACTION">ON</field>
                   </block>
                 </next>
               </block>
@@ -76,107 +85,109 @@
       </block>
     </next>
   </block>
-  <block type="sb_midi_note_received" id="8g~7s?zV)K!V3GrqInB!" x="10" y="570">
+  <block type="sb_midi_note_received" id="midi_gate" x="10" y="690">
     <field name="NOTE" id="943%g@1O`6M-[E3FdF/f">note</field>
     <field name="VELOCITY" id="t_58Z%F-bzi=L0]L=~Bm">velocity</field>
     <field name="CHANNEL" id="2ZGm|O?HgX9o`vd?7U|`">channel</field>
     <statement name="DO">
-      <block type="controls_if" id="CnK|oe^n%3-.Y.[T60h:">
+      <block type="controls_if" id="check_60">
         <value name="IF0">
-          <block type="logic_compare" id="j*i`m%4oZP(UaD+Lql[N">
+          <block type="logic_compare" id="h.V9F*LNr=FcPUMyK%6O">
             <field name="OP">GTE</field>
             <value name="A">
-              <block type="variables_get" id="aSg4Ks~~+:71LpeOnl{}">
+              <block type="variables_get" id="17!6L#mAqa0f~}#(bI{T">
                 <field name="VAR" id="943%g@1O`6M-[E3FdF/f">note</field>
               </block>
             </value>
             <value name="B">
-              <block type="math_number" id="=qN][xfT/[vge~~rP,B#">
+              <block type="math_number" id="{dicjsB;d+lSJcuTRuB~">
                 <field name="NUM">60</field>
               </block>
             </value>
           </block>
         </value>
         <statement name="DO0">
-          <block type="sb_midi_play" id="Rbh}K,o$e/cZ3mWr7TJE">
+          <block type="sb_midi_play" id="D:a@8Z=z3s!-}9?[5L)b">
             <value name="NOTE">
-              <shadow type="variables_get" id="Afn)odruoZ6,)B;6~lrj">
+              <shadow type="variables_get" id="tYme!o4-LvEKuyO_B_14">
                 <field name="VAR" id="943%g@1O`6M-[E3FdF/f">note</field>
               </shadow>
             </value>
             <value name="VELOCITY">
-              <shadow type="variables_get" id="K9R+i6~r0(pS^9K!u2t|">
+              <shadow type="variables_get" id="4zPJb.r.;)D7{#p*q3]P">
                 <field name="VAR" id="t_58Z%F-bzi=L0]L=~Bm">velocity</field>
               </shadow>
             </value>
             <value name="CHANNEL">
-              <shadow type="variables_get" id="3sO%S^3M}t+3|vG2s$lA">
+              <shadow type="variables_get" id="I{SO~R[o34C{6npN+Y^*">
                 <field name="VAR" id="2ZGm|O?HgX9o`vd?7U|`">channel</field>
               </shadow>
             </value>
           </block>
         </statement>
         <next>
-          <block type="controls_if" id="/jAoK:)1.}Fd=bT:!?pb">
+          <block type="controls_if" id="check_59">
             <value name="IF0">
-              <block type="logic_compare" id="UX2-*D~oE;}!{CHy/1l7">
+              <block type="logic_compare" id="kL,ob%v6QK2yYVw}YyBk">
                 <field name="OP">EQ</field>
                 <value name="A">
-                  <block type="variables_get" id="kfRu3iBT(GFJ]hw{lDg3">
+                  <block type="variables_get" id="a)2@!WNVyUEzS-NRZ]:G">
                     <field name="VAR" id="943%g@1O`6M-[E3FdF/f">note</field>
                   </block>
                 </value>
                 <value name="B">
-                  <block type="math_number" id="aQH4v-4L8XuL5kY-Zk%b">
+                  <block type="math_number" id="7%^yDB,)kyveNH)I+]qZ">
                     <field name="NUM">59</field>
                   </block>
                 </value>
               </block>
             </value>
             <statement name="DO0">
-              <block type="sb_midi_play" id="?0.4S0(D~u_HTw!Eq*e^">
-                <value name="NOTE">
-                  <shadow type="variables_get" id="T^*da0=mGzG##k^ct4nF">
-                    <field name="VAR" id="943%g@1O`6M-[E3FdF/f">note</field>
-                  </shadow>
-                </value>
-                <value name="VELOCITY">
-                  <shadow type="variables_get" id="Y3Wy?`~f4}$I{1ty0-2B">
-                    <field name="VAR" id="t_58Z%F-bzi=L0]L=~Bm">velocity</field>
-                  </shadow>
-                </value>
-                <value name="CHANNEL">
-                  <shadow type="variables_get" id="NRUm9RO)h1f}X6kOT.J,">
-                    <field name="VAR" id="2ZGm|O?HgX9o`vd?7U|`">channel</field>
-                  </shadow>
-                </value>
+              <block type="sb_comment" id="!wlO0j`HPVw;7Ao1k4o$">
+                <field name="COMMENT">底下的觸發會被轉成CM7和弦映射</field>
+                <next>
+                  <block type="sb_midi_play" id=";qjfqMRnHOfSYxu^]j5i">
+                    <value name="NOTE">
+                      <shadow type="variables_get" id="-|x/{7h8FDr51yA|t4Nx">
+                        <field name="VAR" id="943%g@1O`6M-[E3FdF/f">note</field>
+                      </shadow>
+                    </value>
+                    <value name="VELOCITY">
+                      <shadow type="variables_get" id="H(HJ17/(N=z,2+`sp3dH">
+                        <field name="VAR" id="t_58Z%F-bzi=L0]L=~Bm">velocity</field>
+                      </shadow>
+                    </value>
+                    <value name="CHANNEL">
+                      <shadow type="variables_get" id=".Af}k6{QaI(zg=.42.PN">
+                        <field name="VAR" id="2ZGm|O?HgX9o`vd?7U|`">channel</field>
+                      </shadow>
+                    </value>
+                  </block>
+                </next>
               </block>
             </statement>
             <next>
-              <block type="controls_if" id="Va6#5OBD0]pLKv:NZ*W~">
+              <block type="controls_if" id="check_58">
                 <value name="IF0">
-                  <block type="logic_compare" id="gijEl71`FNU_c-bF+[?u">
+                  <block type="logic_compare" id="g=fP9n)Xx$P;;H)E5AH=">
                     <field name="OP">EQ</field>
                     <value name="A">
-                      <block type="variables_get" id="@|h$9QyUERT9v;F8N7}B">
+                      <block type="variables_get" id="Ed4[1Za}-fO1l0~((tH=">
                         <field name="VAR" id="943%g@1O`6M-[E3FdF/f">note</field>
                       </block>
                     </value>
                     <value name="B">
-                      <block type="math_number" id="y`.@1d(:y`KRbRpcuLw:">
+                      <block type="math_number" id="nSEiGUG3=H+R#FiTQg_2">
                         <field name="NUM">58</field>
                       </block>
                     </value>
                   </block>
                 </value>
                 <statement name="DO0">
-                  <block type="jazzkit_play_drum" id="z4ng8=U4{31sw.E[{{yJ">
+                  <block type="jazzkit_play_drum" id="Kf2oGvHd{3@L4yP5x5A1">
                     <field name="DRUM_TYPE">D#1</field>
                     <value name="VELOCITY">
-                      <shadow type="math_number" id="DgyT}q$$%[a]EA*K69Bk">
-                        <field name="NUM">1</field>
-                      </shadow>
-                      <block type="variables_get" id="T$EM6|xap.eg0-yfJceo">
+                      <block type="variables_get" id="=f0Xq`,_]5g{o7`E2)8Q">
                         <field name="VAR" id="t_58Z%F-bzi=L0]L=~Bm">velocity</field>
                       </block>
                     </value>

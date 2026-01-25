@@ -3,21 +3,17 @@ import { getHelpUrl } from '../core/helpUtils.js';
 
 export function registerBlocks(BlocklyInstance) {
 
-  // --- Mutator Logic Object (to be used by the main block) ---
   const HARMONIC_PARTIALS_MUTATOR = {
     itemCount_: 1,
-
     mutationToDom: function () {
       const container = BlocklyInstance.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
       return container;
     },
-
     domToMutation: function (xmlElement) {
       this.itemCount_ = parseInt(xmlElement.getAttribute('items'), 10) || 0;
       this.updateShape_();
     },
-
     decompose: function (workspace) {
       const containerBlock = workspace.newBlock('sb_harmonic_partial_container');
       containerBlock.initSvg();
@@ -30,7 +26,6 @@ export function registerBlocks(BlocklyInstance) {
       }
       return containerBlock;
     },
-
     compose: function (containerBlock) {
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       const connections = [];
@@ -38,24 +33,16 @@ export function registerBlocks(BlocklyInstance) {
         connections.push(itemBlock.valueConnection_);
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
-
       for (let i = 0; i < this.itemCount_; i++) {
         const connection = this.getInput('PARTIAL' + i).connection.targetConnection;
-        if (connection && connections.indexOf(connection) === -1) {
-          connection.disconnect();
-        }
+        if (connection && connections.indexOf(connection) === -1) connection.disconnect();
       }
-
       this.itemCount_ = connections.length;
       this.updateShape_();
-
       for (let i = 0; i < this.itemCount_; i++) {
-        if (connections[i]) {
-          connections[i].reconnect(this, 'PARTIAL' + i);
-        }
+        if (connections[i]) connections[i].reconnect(this, 'PARTIAL' + i);
       }
     },
-
     saveConnections: function (containerBlock) {
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       let i = 0;
@@ -66,94 +53,38 @@ export function registerBlocks(BlocklyInstance) {
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
     },
-
     updateShape_: function () {
-      // Add new inputs.
       for (let i = 0; i < this.itemCount_; i++) {
         if (!this.getInput('PARTIAL' + i)) {
-          const input = this.appendValueInput('PARTIAL' + i)
-            .setCheck('Number');
-          if (i === 0) {
-            input.appendField(BlocklyInstance.Msg['MSG_FUNDAMENTAL_FIELD']);
-          } else {
-            input.appendField(BlocklyInstance.Msg['MSG_HARMONIC_FIELD'].replace('{0}', i + 1));
-          }
-
-          // Add shadow for Partial (Amplitude)
-          const shadowDom = BlocklyInstance.utils.xml.textToDom(
-            '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
-          );
-          input.connection.setShadowDom(shadowDom);
+          const input = this.appendValueInput('PARTIAL' + i).setCheck('Number');
+          if (i === 0) input.appendField(BlocklyInstance.Msg['MSG_FUNDAMENTAL_FIELD']);
+          else input.appendField(BlocklyInstance.Msg['MSG_HARMONIC_FIELD'].replace('{0}', i + 1));
+          input.connection.setShadowDom(BlocklyInstance.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.5</field></shadow>'));
         }
       }
-      // Remove deleted inputs.
       let i = this.itemCount_;
-      while (this.getInput('PARTIAL' + i)) {
-        this.removeInput('PARTIAL' + i);
-        i++;
-      }
+      while (this.getInput('PARTIAL' + i)) { this.removeInput('PARTIAL' + i); i++; }
     }
   };
 
-  // Define the new "all-in-one" synth block
   BlocklyInstance.Blocks['sb_create_harmonic_synth'] = {
     init: function () {
       this.jsonInit({
-        "message0": "%{BKY_MSG_HARMONIC_ADDER_CATEGORY} 名稱 %1",
-        "args0": [
-          {
-            "type": "field_input",
-            "name": "NAME",
-            "text": "MyHarmonicSynth"
-          }
-        ],
+        "message0": "%{BKY_MSG_HARMONIC_ADDER_CATEGORY}",
+        "args0": [],
         "previousStatement": null,
         "nextStatement": null,
         "colour": "%{BKY_SOUND_SOURCES_HUE}",
         "tooltip": "%{BKY_MSG_HARMONIC_SYNTH_TOOLTIP}"
       });
-
       this.setHelpUrl(getHelpUrl('instrument_readme'));
-
-      // Manually add the mutator icon
       this.setMutator(new BlocklyInstance.icons.MutatorIcon(['sb_harmonic_partial_item'], this));
-
-      // Initialize with one partial input
       this.itemCount_ = 1;
       this.updateShape_();
+      this.is_sound_source_block = true;
     },
-    // Add all mutator hooks directly to the block definition
     ...HARMONIC_PARTIALS_MUTATOR
   };
-
-  // Mutator "container" and "item" blocks are still needed for the dialog
-  BlocklyInstance.defineBlocksWithJsonArray([
-    {
-      "type": "sb_harmonic_partial_container",
-      "message0": "泛音",
-      "message1": "%1",
-      "args1": [{
-        "type": "input_statement",
-        "name": "STACK"
-      }],
-      "colour": "%{BKY_SOUND_SOURCES_HUE}",
-      "tooltip": "為自訂波形添加、刪除或重新排序泛音。",
-      "enableContextMenu": false
-    },
-    {
-      "type": "sb_harmonic_partial_item",
-      "message0": "泛音項目",
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": "%{BKY_SOUND_SOURCES_HUE}",
-      "tooltip": "泛音項目，用於設定振幅。",
-      "enableContextMenu": false
-    }
-  ]);
-
-  //================================================================
-  //== ADDITIVE SYNTHESIZER (FREE FREQUENCY)
-  //================================================================
 
   const ADDITIVE_SYNTH_MUTATOR = {
     itemCount_: 1,
@@ -197,15 +128,9 @@ export function registerBlocks(BlocklyInstance) {
       this.itemCount_ = connections.amp.length;
       this.updateShape_();
       for (let i = 0; i < this.itemCount_; i++) {
-        if (connections.amp[i]) {
-          connections.amp[i].reconnect(this, 'AMP' + i);
-        }
-        if (connections.freq[i]) {
-          connections.freq[i].reconnect(this, 'FREQ_RATIO' + i);
-        }
-        if (connections.wave[i]) {
-          this.setFieldValue(connections.wave[i], 'WAVE' + i);
-        }
+        if (connections.amp[i]) connections.amp[i].reconnect(this, 'AMP' + i);
+        if (connections.freq[i]) connections.freq[i].reconnect(this, 'FREQ_RATIO' + i);
+        if (connections.wave[i]) this.setFieldValue(connections.wave[i], 'WAVE' + i);
       }
     },
     saveConnections: function (containerBlock) {
@@ -228,51 +153,19 @@ export function registerBlocks(BlocklyInstance) {
         [BlocklyInstance.Msg['SB_WAVE_TRIANGLE'] || "三角波 (Triangle)", "triangle"],
         [BlocklyInstance.Msg['SB_WAVE_SAWTOOTH'] || "鋸齒波 (Sawtooth)", "sawtooth"]
       ];
-
       for (let i = 0; i < this.itemCount_; i++) {
         if (!this.getInput('AMP' + i)) {
-          // Add Oscillator Label and Waveform Dropdown
           const oscLabel = this.appendDummyInput('OSC_LABEL' + i);
-          const labelText = (i === 0) ?
-            BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD'] :
-            BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1);
-
-          oscLabel.appendField(labelText)
-            .appendField(new BlocklyInstance.FieldDropdown(waveOptions), 'WAVE' + i);
-
-          // Add Amplitude Input
-          const ampInput = this.appendValueInput('AMP' + i)
-            .setCheck('Number')
-            .setAlign(BlocklyInstance.ALIGN_RIGHT)
-            .appendField(BlocklyInstance.Msg['MSG_AMPLITUDE_INPUT_FIELD']);
-
-          // Add shadow for Amplitude
-          const ampShadowDom = BlocklyInstance.utils.xml.textToDom(
-            '<shadow type="math_number"><field name="NUM">0.5</field></shadow>'
-          );
-          ampInput.connection.setShadowDom(ampShadowDom);
-
-          // Add Frequency Ratio Input
-          const freqInput = this.appendValueInput('FREQ_RATIO' + i)
-            .setCheck('Number')
-            .setAlign(BlocklyInstance.ALIGN_RIGHT)
-            .appendField(BlocklyInstance.Msg['MSG_FREQ_RATIO_INPUT_FIELD']);
-
-          // Add a shadow block with default value '1' for all frequency ratios
-          const freqShadowDom = BlocklyInstance.utils.xml.textToDom(
-            '<shadow type="math_number"><field name="NUM">1</field></shadow>'
-          );
-          freqInput.connection.setShadowDom(freqShadowDom);
+          const labelText = (i === 0) ? BlocklyInstance.Msg['MSG_MAIN_OSCILLATOR_FIELD'] : BlocklyInstance.Msg['MSG_OSCILLATOR_FIELD'].replace('{0}', i + 1);
+          oscLabel.appendField(labelText).appendField(new BlocklyInstance.FieldDropdown(waveOptions), 'WAVE' + i);
+          const ampInput = this.appendValueInput('AMP' + i).setCheck('Number').setAlign(Blockly.ALIGN_RIGHT).appendField(BlocklyInstance.Msg['MSG_AMPLITUDE_INPUT_FIELD']);
+          ampInput.connection.setShadowDom(BlocklyInstance.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.5</field></shadow>'));
+          const freqInput = this.appendValueInput('FREQ_RATIO' + i).setCheck('Number').setAlign(Blockly.ALIGN_RIGHT).appendField(BlocklyInstance.Msg['MSG_FREQ_RATIO_INPUT_FIELD']);
+          freqInput.connection.setShadowDom(BlocklyInstance.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">1</field></shadow>'));
         }
       }
-      // Remove deleted inputs.
       let i = this.itemCount_;
-      while (this.getInput('AMP' + i)) {
-        this.removeInput('OSC_LABEL' + i);
-        this.removeInput('AMP' + i);
-        this.removeInput('FREQ_RATIO' + i);
-        i++;
-      }
+      while (this.getInput('AMP' + i)) { this.removeInput('OSC_LABEL' + i); this.removeInput('AMP' + i); this.removeInput('FREQ_RATIO' + i); i++; }
     }
   };
 
@@ -280,47 +173,26 @@ export function registerBlocks(BlocklyInstance) {
     init: function () {
       this.jsonInit({
         "message0": "%{BKY_MSG_CREATE_ADDITIVE_SYNTH_MESSAGE}",
-        "args0": [
-          {
-            "type": "field_input",
-            "name": "NAME",
-            "text": "MyAdditiveSynth"
-          }
-        ],
+        "args0": [],
         "previousStatement": null,
         "nextStatement": null,
         "colour": "%{BKY_SOUND_SOURCES_HUE}",
         "tooltip": "%{BKY_MSG_CREATE_ADDITIVE_SYNTH_TOOLTIP}"
       });
-
       this.setHelpUrl(getHelpUrl('instrument_readme'));
-
       this.setMutator(new BlocklyInstance.icons.MutatorIcon(['sb_additive_synth_item'], this));
       this.itemCount_ = 1;
       this.updateShape_();
+      this.is_sound_source_block = true;
     },
     ...ADDITIVE_SYNTH_MUTATOR
   };
 
   BlocklyInstance.defineBlocksWithJsonArray([
-    {
-      "type": "sb_additive_synth_container",
-      "message0": "振盪器",
-      "message1": "%1",
-      "args1": [{ "type": "input_statement", "name": "STACK" }],
-      "colour": "%{BKY_SOUND_SOURCES_HUE}",
-      "tooltip": "為加法合成器添加、刪除或重新排序振盪器。",
-      "enableContextMenu": false
-    },
-    {
-      "type": "sb_additive_synth_item",
-      "message0": "振盪器項目",
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": "%{BKY_SOUND_SOURCES_HUE}",
-      "tooltip": "一個振盪器項目。",
-      "enableContextMenu": false
-    }
+    { "type": "sb_harmonic_partial_container", "message0": "泛音", "message1": "%1", "args1": [{ "type": "input_statement", "name": "STACK" }], "colour": "%{BKY_SOUND_SOURCES_HUE}", "enableContextMenu": false },
+    { "type": "sb_harmonic_partial_item", "message0": "泛音項目", "previousStatement": null, "nextStatement": null, "colour": "%{BKY_SOUND_SOURCES_HUE}", "enableContextMenu": false },
+    { "type": "sb_additive_synth_container", "message0": "振盪器", "message1": "%1", "args1": [{ "type": "input_statement", "name": "STACK" }], "colour": "%{BKY_SOUND_SOURCES_HUE}", "enableContextMenu": false },
+    { "type": "sb_additive_synth_item", "message0": "振盪器項目", "previousStatement": null, "nextStatement": null, "colour": "%{BKY_SOUND_SOURCES_HUE}", "enableContextMenu": false }
   ]);
 
-} // End export function registerBlocks
+}
