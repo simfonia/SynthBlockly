@@ -1,5 +1,5 @@
 // js/core/serialEngine.js
-import { ensureAudioStarted } from './audioEngine.js';
+import { ensureAudioStarted } from './audioUtils.js';
 import { log, logKey, clearErrorLog, getMsg } from '../ui/logger.js';
 
 let serialPort = null;

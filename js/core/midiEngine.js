@@ -1,4 +1,5 @@
-import { ensureAudioStarted, audioEngine } from './audioEngine.js';
+import { ensureAudioStarted } from './audioUtils.js';
+import { audioEngine } from './audioEngine.js';
 import { log, logKey, getMsg, clearErrorLog } from '../ui/logger.js';
 
 let midiAccess = null;

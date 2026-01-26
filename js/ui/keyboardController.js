@@ -1,6 +1,7 @@
 // js/ui/keyboardController.js
 import { log, logKey } from './logger.js';
-import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js'; // Note: audioEngine contains the pressedKeys, chords, etc.
+import { audioEngine } from '../core/audioEngine.js'; // Note: audioEngine contains the pressedKeys, chords, etc.
+import { ensureAudioStarted } from '../core/audioUtils.js';
 import { triggerAdsrOn, triggerAdsrOff } from './adsrVisualizer.js';
 
 const KEY_TO_NOTE_MAP = {

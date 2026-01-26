@@ -1,5 +1,6 @@
 import { log, logKey, clearLogs } from './logger.js';
-import { audioEngine, ensureAudioStarted } from '../core/audioEngine.js';
+import { audioEngine } from '../core/audioEngine.js';
+import { ensureAudioStarted } from '../core/audioUtils.js';
 import { getBlocksCode, resetWorkspaceAndAudio } from '../core/blocklyManager.js'; // Import resetWorkspaceAndAudio
 import * as Blockly from 'blockly'; // Import Blockly
 import { showExampleModal } from './exampleModal.js'; // Import Example Modal

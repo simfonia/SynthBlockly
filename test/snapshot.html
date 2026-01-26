@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SynthBlockly Snapshot Tester</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        .result { margin-bottom: 20px; border: 1px solid #444; padding: 10px; }
+        .header { font-weight: bold; color: #569cd6; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; }
+        .code { white-space: pre; font-size: 12px; overflow-x: auto; max-height: 300px; }
+        .status { color: #ce9178; }
+        #controls { margin-bottom: 20px; position: sticky; top: 0; background: #1e1e1e; padding: 10px; border-bottom: 2px solid #007acc; }
+        button { padding: 10px 20px; cursor: pointer; background: #007acc; color: white; border: none; }
+        button:hover { background: #005a9e; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h1>Snapshot Tester (Regression Protection)</h1>
+        <div style="margin-bottom: 10px;">
+            <label>1. Load Base Snapshot (e.g., snapshot-0.txt): </label>
+            <input type="file" id="baseFile" accept=".txt">
+        </div>
+        <button id="runBtn">2. Generate & Compare</button>
+        <button id="copyBtn">Copy Current to Clipboard</button>
+    </div>
+    <div id="results">請先載入基準檔案或點擊按鈕產生新快照...</div>
+
+    <!-- Blockly 注入所需的隱藏容器 -->
+    <div id="blocklyDiv" style="display: none; height: 480px; width: 600px;"></div>
+
+    <!-- 這裡需要載入專案的相依項，我們透過動態 import 現有的模組 -->
+    <script type="module">
+        import { initBlocklyManager, getBlocksCode, resetWorkspaceAndAudio } from '../js/core/blocklyManager.js';
+        import * as Blockly from 'blockly';
+
+        const examples = [
+            '01_Melody and Chord.xml', 
+            '02_Rock.xml', 
+            '03_Chord.xml', 
+            '04_Switch_instrument.xml', 
+            '05_Custom sounds.xml', 
+            '06_Electric guitar.xml',
+            '07_sampler.xml', 
+            '08_Step Sequencer.xml', 
+            '09_12-bar blues.xml',
+            '10-1_Functions and Long Compositions.xml', 
+            '10-2_Functions and Sequencer Arranger.xml'
+        ];
+
+        let baseSnapshots = {};
+        const baseFile = document.getElementById('baseFile');
+        const runBtn = document.getElementById('runBtn');
+        const resultsDiv = document.getElementById('results');
+
+        // 自動載入預設基準檔
+        async function loadDefaultBase() {
+            try {
+                const response = await fetch('./snapshot-0.txt');
+                if (response.ok) {
+                    const text = await response.text();
+                    parseBaseText(text);
+                    console.log("Default base snapshot loaded.");
+                }
+            } catch (e) {
+                console.warn("Could not load default base snapshot:", e);
+            }
+        }
+
+        function parseBaseText(text) {
+            // 使用正則表達式切割區段，相容 === SNAPSHOT: Name === 格式
+            const regex = /===\s*SNAPSHOT:\s*(.*?)\s*===/g;
+            const sections = text.split(regex);
+            
+            baseSnapshots = {};
+            // split 會產生 [空, 名稱1, 內容1, 名稱2, 內容2...] 的陣列
+            for (let i = 1; i < sections.length; i += 2) {
+                const name = sections[i].trim();
+                const code = sections[i+1] ? sections[i+1].trim() : "";
+                if (name) {
+                    baseSnapshots[name] = code;
+                }
+            }
+            console.log("Parsed Snapshots:", baseSnapshots);
+        }
+
+        // 保留手動載入功能
+        baseFile.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                parseBaseText(event.target.result);
+                alert(`Loaded ${Object.keys(baseSnapshots).length} base snapshots.`);
+            };
+            reader.readAsText(file);
+        };
+
+        loadDefaultBase(); // 初始化時執行
+
+        // 標準化字串進行比對 (忽略空白差異)
+        function normalize(str) {
+            return str.replace(/\s+/g, ' ').trim();
+        }
+
+        runBtn.onclick = async () => {
+            resultsDiv.innerHTML = "Initializing Blockly...";
+            
+            try {
+                if (!Blockly.getMainWorkspace()) {
+                    await initBlocklyManager();
+                }
+            } catch (e) {
+                console.error("Initialization error:", e);
+            }
+            
+            resultsDiv.innerHTML = "";
+            let allOutput = "";
+
+            for (const name of examples) {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'result';
+                itemDiv.innerHTML = `<div class="header">Testing: ${name} <span class="status">...Processing</span></div>`;
+                resultsDiv.appendChild(itemDiv);
+
+                try {
+                    const response = await fetch(`../src/examples/${encodeURIComponent(name)}`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const xmlText = await response.text();
+                    
+                    // 1. Reset Workspace
+                    resetWorkspaceAndAudio(true);
+                    
+                    // 2. Load XML
+                    const dom = Blockly.utils.xml.textToDom(xmlText);
+                    const workspace = Blockly.getMainWorkspace();
+                    Blockly.Xml.domToWorkspace(dom, workspace);
+
+                    // 3. Generate Code
+                    const code = await getBlocksCode();
+                    const trimmedCode = code.trim();
+                    
+                    // 4. Compare with base
+                    let diffStatus = "";
+                    let diffColor = "#4ec9b0"; // Green
+                    
+                    if (Object.keys(baseSnapshots).length > 0) {
+                        const baseCode = baseSnapshots[name];
+                        if (baseCode) {
+                            if (normalize(baseCode) === normalize(trimmedCode)) {
+                                diffStatus = " [MATCH]";
+                            } else {
+                                diffStatus = " [!!! DIFF !!!]";
+                                diffColor = "#f44747"; // Red
+                            }
+                        } else {
+                            diffStatus = " [NO BASE]";
+                            diffColor = "#ce9178";
+                        }
+                    }
+                    
+                    // 5. Update UI
+                    itemDiv.querySelector('.status').textContent = "✓ Success" + diffStatus;
+                    itemDiv.querySelector('.status').style.color = diffColor;
+                    const codeDiv = document.createElement('div');
+                    codeDiv.className = 'code';
+                    codeDiv.textContent = code;
+                    itemDiv.appendChild(codeDiv);
+
+                    allOutput += `=== SNAPSHOT: ${name} ===\n${code}\n\n`;
+                } catch (e) {
+                    itemDiv.querySelector('.status').textContent = "✗ Error: " + e.message;
+                    itemDiv.querySelector('.status').style.color = "#f44747";
+                }
+            }
+            window._lastSnapshot = allOutput;
+        };
+
+        document.getElementById('copyBtn').onclick = () => {
+            if (window._lastSnapshot) {
+                navigator.clipboard.writeText(window._lastSnapshot);
+                alert("Snapshots copied to clipboard!");
+            }
+        };
+    </script>
+</body>
+</html>
