@@ -25,7 +25,13 @@ export class InstrumentService {
             case 'SquareWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } }); break;
             case 'TriangleWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } }); break;
             case 'SawtoothWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } }); break;
-            case 'Sampler': i = new Tone.Sampler({ urls: { "C4": "C4.mp3" }, baseUrl: "https://tonejs.github.io/audio/salamander/" }); break;
+            case 'Sampler': 
+                // Use a local sample as default to avoid external SSL issues
+                i = new Tone.Sampler({ 
+                    urls: { "C1": "BT0A0D0.WAV" }, 
+                    baseUrl: import.meta.env.BASE_URL + "samples/jazzkit/Roland_TR-909/" 
+                }); 
+                break;
         }
         if (i) {
             try {

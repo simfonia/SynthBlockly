@@ -90,16 +90,16 @@
 - [x] **和弦清單擴充**: 讓 `sb_play_melody` 直接支援解析和弦名稱字串。
 
 ## V2.1 系統重構與自動化驗證 (Refactoring)
-- [ ] **建立自動化代碼快照測試工具 (Snapshot Testing)**
-    - [ ] 實作讀取 `src/examples/*.xml` 並產出 JS 代碼的腳本。
-    - [ ] 實作重構前後代碼比對功能，確保邏輯一致性。
-- [ ] **核心引擎拆解 (AudioEngine Decomposition)**
-    - [ ] 建立 `InstrumentService.js` (樂器生命週期與 ADSR)。
-    - [ ] 建立 `EffectService.js` (效果器鏈與動態更新)。
-    - [ ] 建立 `SequencerService.js` (旋律解析與排程)。
-- [ ] **Blockly 管理器模組化**
-    - [ ] 獨立 `HatBlockListener.js` (事件監聽器管理)。
-    - [ ] 獨立 `GeneratorUtils.js` (Blockly 核心產生器修正)。
+- [x] **建立自動化代碼快照測試工具 (Snapshot Testing)**
+    - [x] 實作讀取 `src/examples/*.xml` 並產出 JS 代碼的腳本。
+    - [x] 實作重構前後代碼比對功能，確保邏輯一致性。
+- [x] **核心引擎拆解 (AudioEngine Decomposition)**
+    - [x] 建立 `InstrumentService.js` (樂器生命週期與 ADSR)。
+    - [x] 建立 `EffectService.js` (效果器鏈與動態更新)。
+    - [x] 建立 `SequencerService.js` (旋律解析與排程)。
+- [x] **Blockly 管理器模組化**
+    - [x] 獨立 `HatBlockManager.js` (事件監聽器管理)。
+    - [x] 獨立 `GeneratorUtils.js` (Blockly 核心產生器修正，命名為 blocklyCoreFixes.js)。
 - [ ] **JSDoc 與 Dead Code 清理**
     - [ ] 補全所有核心方法的 JSDoc 註解。
     - [ ] 移除過時的註解程式碼與除錯 Log。

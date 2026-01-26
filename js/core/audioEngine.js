@@ -168,7 +168,8 @@ export const audioEngine = {
         const masterChain = [...this._activeEffects, analyser];
         
         // Core (Hidden) Instruments -> Master
-        [drum, hh, snare, click, jazzKit].forEach(i => {
+        const core = this._coreInstruments;
+        [core.drum, core.hh, core.snare, core.click, core.jazzKit].forEach(i => {
              if (i && i.chain) { i.disconnect(); i.chain(...masterChain); }
         });
 

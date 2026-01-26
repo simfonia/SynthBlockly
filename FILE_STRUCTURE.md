@@ -28,12 +28,19 @@
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
-      - `audioEngine.js`: Tone.js 封裝，處理移調、音源與效果鏈 (新增和弦字串解析邏輯)。
-      - `blocklyManager.js`: Blockly 工作區管理、即時程式碼執行與全域容器約束掃描。
+      - `audioEngine.js`: Tone.js 封裝，現在作為各個 Service 的整合入口 (Facade)。
+      - `audioUtils.js`: 基礎音訊工具，包含 ensureAudioStarted，解決循環相依問題。
+      - `blocklyManager.js`: Blockly 工作區管理、UI 同步，現在高度精簡並委派邏輯至 Service。
+      - `blocklyCoreFixes.js`: 處理 Blockly 在 Vite 環境下的補丁與 Async/Await 強制支援。
       - `helpUtils.js`: 統一 HelpUrl 生成工具 (語系/路徑)。
       - `midiEngine.js`: MIDI 訊號接收與轉發。
       - `serialEngine.js`: 序列埠通訊。
       - `toolbox.js`: 工具箱 XML 定義 (V2.1 容器化配置)。
+      - `services/`: **(V2.1 新增) 核心服務層**。
+        - `InstrumentService.js`: 專責管理樂器生命週期、類型創建與 ADSR 同步。
+        - `EffectService.js`: 專責管理效果器鏈、動態參數更新與資源回收。
+        - `SequencerService.js`: 專責處理旋律解析、音序器排程與基礎打擊樂觸發。
+        - `HatBlockManager.js`: 專責監聽與管理「帽子積木」(MIDI/Serial/Key) 的事件綁定。
     - `ui/`: 介面組件。
       - `adsrVisualizer.js`: ADSR 包絡線視覺化。
       - `visualizer.js`: 即時示波器 (p5.js)。
