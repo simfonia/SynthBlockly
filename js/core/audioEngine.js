@@ -80,9 +80,18 @@ export const audioEngine = {
     instruments: {}, layeredInstruments: {}, channels: {}, instrumentSettings: {},
     currentInstrumentName: null,
     currentSemitoneOffset: 0,
-    pressedKeys: new Map(), chords: {}, keyboardChordMap: {}, midiChordMap: {},
+    pressedKeys: new Map(), chords: {}, keyboardChordMap: {}, keyActionMap: {}, midiChordMap: {},
     midiPressedNotes: new Map(), midiPlayingNotes: new Map(), backgroundNoise: null,
     log, logKey, getMsg,
+
+    registerKeyAction: function(keyCode, onDown, onUp = null) {
+        this.keyActionMap[keyCode] = { down: onDown, up: onUp };
+        this.logKey('LOG_KEY_ACTION_REGISTERED', 'info', keyCode);
+    },
+
+    clearKeyActions: function() {
+        this.keyActionMap = {};
+    },
 
     waitForSamples: async function() { 
         return Tone.loaded(); 
@@ -294,6 +303,21 @@ export const audioEngine = {
             // Re-chain everything
             this._reconnectAll();
         }
+    },
+
+    clearEffects: function(target) {
+        const cleanTarget = String(target || 'Master').replace(/^['"]|['"]$/g, '');
+        
+        if (cleanTarget === 'Master') {
+            this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); });
+            this._activeEffects = [];
+        } else {
+            if (this.instrumentEffects[cleanTarget]) {
+                this.instrumentEffects[cleanTarget].forEach(e => { if (e && e.dispose) e.dispose(); });
+                delete this.instrumentEffects[cleanTarget];
+            }
+        }
+        this._reconnectAll();
     },
 
     createInstrument: function(name, type) {
@@ -664,29 +688,65 @@ export const audioEngine = {
 
             }
 
-        },
+                },
 
-    
+        
 
-        _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
+                _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
 
-            const instr = this.instruments[name];
+                    const instr = this.instruments[name];
 
-            if (instr && instr.triggerAttackRelease) {
+                    if (instr && instr.triggerAttackRelease) {
 
-                if (instr instanceof Tone.Sampler && !instr.loaded) return;
+                        if (instr instanceof Tone.Sampler && !instr.loaded) return;
 
-                const t = (time !== undefined) ? time : Tone.now() + 0.05;
+                        const t = (time !== undefined) ? time : Tone.now() + 0.05;
 
-                instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
+                        instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
 
-            }
+                    }
 
-        },
+                },
 
-    
+        
 
-        playSFX: async function(url, options = {}) {
+                playSpecificInstrumentNoteAttack: function(name, note, velocity = 1) {
+
+                    const instr = this.instruments[name];
+
+                    if (instr && instr.triggerAttack) {
+
+                        if (instr instanceof Tone.Sampler && !instr.loaded) return null;
+
+                        instr.triggerAttack(this.getTransposedNote(note), Tone.now(), velocity);
+
+                        return triggerAdsrOn();
+
+                    }
+
+                    return null;
+
+                },
+
+        
+
+                playSpecificInstrumentNoteRelease: function(name, note, noteId) {
+
+                    const instr = this.instruments[name];
+
+                    if (instr && instr.triggerRelease) {
+
+                        instr.triggerRelease(this.getTransposedNote(note), Tone.now());
+
+                        triggerAdsrOff(noteId);
+
+                    }
+
+                },
+
+            
+
+                playSFX: async function(url, options = {}) {
 
             await ensureAudioStarted();
 
@@ -725,26 +785,33 @@ export const audioEngine = {
         for (const token of tokens) {
             if (!this.isExecutionActive) break;
             
-            // 1. 提取結尾的時值與修飾符 ([WHQEST][.|_T]?)
-            const mDur = token.match(/([WHQEST])(\.?|_T)?$/i);
-            if (!mDur) continue; 
+            let prefix = token;
+            let d = '4n'; // Default duration if not specified
             
-            const durPart = mDur[0];
-            const durCode = mDur[1].toUpperCase();
-            const modifier = mDur[2] || '';
-            let d = durMap[durCode] || '4n';
-            if (modifier === '.') d += '.'; 
-            else if (modifier === '_T') d = d.replace('n', 't');
+            // 1. 嘗試提取結尾的時值與修飾符 ([WHQEST][.|_T]?)
+            const mDur = token.match(/([WHQEST])(\.?|_T)?$/i);
+            
+            if (mDur) {
+                const durPart = mDur[0];
+                const durCode = mDur[1].toUpperCase();
+                const modifier = mDur[2] || '';
+                
+                // 計算時值字串
+                let baseDur = durMap[durCode] || '4n';
+                if (modifier === '.') baseDur += '.'; 
+                else if (modifier === '_T') baseDur = baseDur.replace('n', 't');
+                d = baseDur;
+
+                // 分離前綴
+                prefix = token.slice(0, -durPart.length);
+            }
             
             const ms = Tone.Time(d).toMilliseconds();
-            
-            // 2. 提取前綴（主體）
-            const prefix = token.slice(0, -durPart.length);
             const uprefix = prefix.toUpperCase();
 
             // 3. 執行邏輯 (按優先級)
-            if (uprefix === 'R' || prefix === '') {
-                // 情境 1: 休止符
+            if (uprefix === 'R' || (prefix === '' && mDur)) {
+                // 情境 1: 休止符 (明確 R 或僅輸入時值代碼如 Q, E)
                 await new Promise(r => setTimeout(r, ms));
             } else {
                 // 優先判定是否為「嚴格單音」(如 C4, F#5)
@@ -760,6 +827,9 @@ export const audioEngine = {
                     const isLooseNote = prefix.match(/^[A-G][#b]?$/i);
                     if (isLooseNote) {
                         this.playCurrentInstrumentNote(prefix + "4", d, undefined, 0.8);
+                    } else {
+                         // 情境 4: 無法解析
+                         this.logKey('LOG_MELODY_PARSE_ERR', 'warning', prefix);
                     }
                 }
                 // 等待該時值結束以進行下一個 token

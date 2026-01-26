@@ -113,6 +113,16 @@ const handleKeyDown = async (e) => {
         return;
     }
 
+    // --- 1. Custom Key Actions (Highest Priority) ---
+    const action = audioEngine.keyActionMap[e.code];
+    if (action) {
+        if (typeof action.down === 'function') action.down();
+        else if (typeof action === 'function') action(); // Backward compatibility if simple function
+        e.preventDefault();
+        return;
+    }
+
+    // --- 2. Chord Mapping ---
     let notesToPlay = null;
     let notePlayedType = 'Single';
 
@@ -152,6 +162,14 @@ const handleKeyUp = async (e) => {
 
     // Ignore special control keys
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Minus', 'Equal', 'NumpadSubtract', 'NumpadAdd', 'Backspace'].includes(e.code)) return;
+
+    // --- 1. Custom Key Actions ---
+    const action = audioEngine.keyActionMap[e.code];
+    if (action && typeof action.up === 'function') {
+        action.up();
+        e.preventDefault();
+        return;
+    }
 
     const playedInfo = audioEngine.pressedKeys.get(e.code);
     if (playedInfo) {

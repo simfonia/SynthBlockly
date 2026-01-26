@@ -115,5 +115,11 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     }.bind(G);
     try { G.forBlock['sb_container_setup_effect'] = G['sb_container_setup_effect']; } catch (e) { }
 
+    G['sb_clear_effects'] = function (block) {
+        const target = G.valueToCode(block, 'TARGET', G.ORDER_ATOMIC) || "'Master'";
+        return `window.audioEngine.clearEffects(${target});\n`;
+    };
+    try { G.forBlock['sb_clear_effects'] = G['sb_clear_effects']; } catch (e) { }
+
     return true;
 }

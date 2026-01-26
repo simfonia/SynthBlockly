@@ -21,7 +21,7 @@
         <mutation effect_type="limiter"></mutation>
         <field name="EFFECT_TYPE">limiter</field>
         <value name="THRESHOLD">
-          <shadow type="math_number">
+          <shadow type="math_number" id="w02/b$xW8jcI3]yVALL-">
             <field name="NUM">-1</field>
           </shadow>
         </value>
@@ -29,72 +29,195 @@
     </statement>
   </block>
   <block type="sb_comment" id="intro_comment" x="10" y="280">
-    <field name="COMMENT">此範例展示建立旋律與重疊音符。&#10;&#10;1. 樂器定義：所有樂器必須在<定義樂器>內定義。&#10;2.「播放音符並等待」：循序播放，適合線性旋律。&#10;3.「播放音符」：立即執行下一個積木，適合產生和弦。</field>
+    <field name="COMMENT">此範例展示建立旋律與重疊音符，並示範旋律譜寫。&amp;#10;&amp;#10;1. 樂器定義：所有樂器必須在&lt;定義樂器&gt;內定義。&amp;#10;2.「播放音符並等待」：循序播放，適合線性旋律。&amp;#10;3.「播放音符」：立即執行下一個積木，適合產生和弦。&amp;#10;4. 可利用「定義和弦」積木來自訂和弦。&amp;#10;5. 使用「演奏旋律清單」來譜寫長樂句。</field>
     <next>
-      <block type="sb_play_note_and_wait" id="p1">
-        <field name="DUR">4n</field>
-        <value name="NOTE">
-          <shadow type="text">
-            <field name="TEXT">C4</field>
-          </shadow>
-        </value>
-        <value name="VELOCITY">
-          <shadow type="math_number">
-            <field name="NUM">1</field>
-          </shadow>
-        </value>
+      <block type="sb_transport_set_bpm" id="nt3K6=cEEd=X#XGgcKiD">
+        <field name="BPM">60</field>
         <next>
-          <block type="sb_play_note_and_wait" id="p2">
+          <block type="sb_play_note_and_wait" id="p1">
             <field name="DUR">4n</field>
             <value name="NOTE">
-              <shadow type="text">
-                <field name="TEXT">D4</field>
+              <shadow type="text" id="p=5?08b/KCmE`,G_WKF`">
+                <field name="TEXT">C4</field>
               </shadow>
             </value>
             <value name="VELOCITY">
-              <shadow type="math_number">
+              <shadow type="math_number" id="8NH+{+TW.p$H/G:;6FvD">
                 <field name="NUM">1</field>
               </shadow>
             </value>
             <next>
-              <block type="sb_play_note" id="c1">
-                <field name="DUR">8n</field>
+              <block type="sb_play_note_and_wait" id="p2">
+                <field name="DUR">4n</field>
                 <value name="NOTE">
-                  <shadow type="text">
-                    <field name="TEXT">C4</field>
+                  <shadow type="text" id="BK2Y^~mM3=9K0Uj#Kwty">
+                    <field name="TEXT">D4</field>
                   </shadow>
                 </value>
                 <value name="VELOCITY">
-                  <shadow type="math_number">
+                  <shadow type="math_number" id="RjEa/?p:00nJyhaF9X`b">
                     <field name="NUM">1</field>
                   </shadow>
                 </value>
                 <next>
-                  <block type="sb_play_note" id="c2">
+                  <block type="sb_play_note" id="c1">
                     <field name="DUR">8n</field>
                     <value name="NOTE">
-                      <shadow type="text">
-                        <field name="TEXT">E4</field>
+                      <shadow type="text" id="G-Zvs*%*i@M+QPQJ+wSC">
+                        <field name="TEXT">C4</field>
                       </shadow>
                     </value>
                     <value name="VELOCITY">
-                      <shadow type="math_number">
+                      <shadow type="math_number" id="{R|p|ZLIciw08IIp`IUm">
                         <field name="NUM">1</field>
                       </shadow>
                     </value>
                     <next>
-                      <block type="sb_play_note" id="c3">
+                      <block type="sb_play_note" id="c2">
                         <field name="DUR">8n</field>
                         <value name="NOTE">
-                          <shadow type="text">
-                            <field name="TEXT">G5</field>
+                          <shadow type="text" id="boa]s7#,VOk?yRKK7%;r">
+                            <field name="TEXT">E4</field>
                           </shadow>
                         </value>
                         <value name="VELOCITY">
-                          <shadow type="math_number">
+                          <shadow type="math_number" id="()O+|N5mN%QBeJgG1F+V">
                             <field name="NUM">1</field>
                           </shadow>
                         </value>
+                        <next>
+                          <block type="sb_play_note" id="c3">
+                            <field name="DUR">8n</field>
+                            <value name="NOTE">
+                              <shadow type="text" id="ZdQ}^-Nt}Ss4,kpq*3{Q">
+                                <field name="TEXT">G5</field>
+                              </shadow>
+                            </value>
+                            <value name="VELOCITY">
+                              <shadow type="math_number" id="#~G{xC4004HsL#ctDJf@">
+                                <field name="NUM">1</field>
+                              </shadow>
+                            </value>
+                            <next>
+                              <block type="sb_wait_musical" id="L[l)Z=(tRRt98H(wvjDI">
+                                <field name="DURATION">2n</field>
+                                <next>
+                                  <block type="sb_transport_set_bpm" id="AwIoNcJnx=`iEk~)0cXp">
+                                    <field name="BPM">120</field>
+                                    <next>
+                                      <block type="sb_play_note_and_wait" id=":2vNwP+FjI),0Ta0=Yh%">
+                                        <field name="DUR">4n</field>
+                                        <value name="NOTE">
+                                          <shadow type="text" id="+X+o:S]KB^r?z]!$Y)D5">
+                                            <field name="TEXT">C4</field>
+                                          </shadow>
+                                        </value>
+                                        <value name="VELOCITY">
+                                          <shadow type="math_number" id="K`5x$SV4a6cvwk*(Q2Ib">
+                                            <field name="NUM">1</field>
+                                          </shadow>
+                                        </value>
+                                        <next>
+                                          <block type="sb_play_note_and_wait" id="XYUTZ3tShW1FVD3J,!}C">
+                                            <field name="DUR">4n</field>
+                                            <value name="NOTE">
+                                              <shadow type="text" id="3)kM+B}YkKP-HC!|bydq">
+                                                <field name="TEXT">D4</field>
+                                              </shadow>
+                                            </value>
+                                            <value name="VELOCITY">
+                                              <shadow type="math_number" id="@~72?lm8ug{P?l.x(jXo">
+                                                <field name="NUM">1</field>
+                                              </shadow>
+                                            </value>
+                                            <next>
+                                              <block type="sb_play_note" id="|^:bMid{axI9eB7xL[9?">
+                                                <field name="DUR">8n</field>
+                                                <value name="NOTE">
+                                                  <shadow type="text" id="~[MP6|l2cq]j6@fbWi!8">
+                                                    <field name="TEXT">C4</field>
+                                                  </shadow>
+                                                </value>
+                                                <value name="VELOCITY">
+                                                  <shadow type="math_number" id="AtC.pZ/{W[1FjQXv(TxY">
+                                                    <field name="NUM">1</field>
+                                                  </shadow>
+                                                </value>
+                                                <next>
+                                                  <block type="sb_play_note" id="6ID^P+(6:@K%:0|izDmK">
+                                                    <field name="DUR">8n</field>
+                                                    <value name="NOTE">
+                                                      <shadow type="text" id="G40${~7O76kY$:ev34_s">
+                                                        <field name="TEXT">E4</field>
+                                                      </shadow>
+                                                    </value>
+                                                    <value name="VELOCITY">
+                                                      <shadow type="math_number" id="ye@+WBTjEpb+xrL_Y9ST">
+                                                        <field name="NUM">1</field>
+                                                      </shadow>
+                                                    </value>
+                                                    <next>
+                                                      <block type="sb_play_note" id="SF6+L)001hw[YOd/#8%A">
+                                                        <field name="DUR">8n</field>
+                                                        <value name="NOTE">
+                                                          <shadow type="text" id="n=kbm.BZ[GHXNZ%X%n$B">
+                                                            <field name="TEXT">G5</field>
+                                                          </shadow>
+                                                        </value>
+                                                        <value name="VELOCITY">
+                                                          <shadow type="math_number" id="}7p]5S3z5}XnI6_S{E8r">
+                                                            <field name="NUM">1</field>
+                                                          </shadow>
+                                                        </value>
+                                                        <next>
+                                                          <block type="sb_wait_musical" id="-3h`fF),#9/u++CQ+G5m">
+                                                            <field name="DURATION">2n</field>
+                                                            <next>
+                                                              <block type="sb_transport_set_bpm" id="*$b6xN.U}`|$L`7%XQol">
+                                                                <field name="BPM">80</field>
+                                                                <next>
+                                                                  <block type="sb_define_chord" id="v!SW0LB%CwLqO6vuE5HJ">
+                                                                    <field name="NAME">CM7</field>
+                                                                    <field name="NOTES_STRING">C4,E4,G4,B4</field>
+                                                                    <next>
+                                                                      <block type="sb_define_chord" id="~o]t@(fFtOz7(0#}CU(j">
+                                                                        <field name="NAME">Dm</field>
+                                                                        <field name="NOTES_STRING">D4,F4,A4</field>
+                                                                        <next>
+                                                                          <block type="sb_define_chord" id="^PzL_r?@|[Z0)4fAZLHz">
+                                                                            <field name="NAME">FM7</field>
+                                                                            <field name="NOTES_STRING">F3,A3,E4</field>
+                                                                            <next>
+                                                                              <block type="sb_play_melody" id="saIe4)-;(Y9vo^Q/Dd|F">
+                                                                                <field name="MELODY_STRING">RQ   C4Q D4Q.   E4E &amp;#10;CM7H.                 RQ&amp;#10;RQ C5Q B4Q.  G4E&amp;#10;DmH      FM7H</field>
+                                                                              </block>
+                                                                            </next>
+                                                                          </block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
                       </block>
                     </next>
                   </block>

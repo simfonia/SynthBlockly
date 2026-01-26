@@ -47,6 +47,29 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         `;
     };
 
+    javascriptGenerator.forBlock['sb_key_action_event'] = function (block, generator) {
+        // The code is handled dynamically by blocklyManager.js
+        // We just return the inner statements for context if needed, 
+        // but primarily the manager extracts this.
+        const branch = generator.statementToCode(block, 'DO');
+        return branch;
+    };
+
+    javascriptGenerator.forBlock['sb_map_key_to_note'] = function (block, generator) {
+        var keyCode = generator.quote_(block.getFieldValue('KEY_CODE'));
+        var instrument = generator.valueToCode(block, 'INSTRUMENT', generator.ORDER_ATOMIC) || "'DefaultSynth'";
+        var note = generator.quote_(block.getFieldValue('NOTE'));
+
+        return `
+        window.audioEngine.registerKeyAction(
+            ${keyCode}, 
+            () => window.audioEngine.playSpecificInstrumentNoteAttack(${instrument}, ${note}), 
+            () => { /* Release handled by noteId tracking in controller if needed, currently generic release */ 
+                    window.audioEngine.playSpecificInstrumentNoteRelease(${instrument}, ${note}); 
+            }
+        );\n`;
+    };
+
     javascriptGenerator.forBlock['sb_toggle_pc_keyboard_midi'] = function (block, generator) {
         var action = block.getFieldValue('ACTION');
         return action === 'ON' ? 'window.audioEngine.enablePcKeyboardMidi();\n' : 'window.audioEngine.disablePcKeyboardMidi();\n';

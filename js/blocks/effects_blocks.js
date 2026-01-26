@@ -162,4 +162,25 @@ export function registerBlocks() {
             }
         }
     };
+
+    Blockly.Blocks['sb_clear_effects'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_CLEAR_EFFECTS_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "TARGET",
+                        "check": "String"
+                    }
+                ],
+                "inputsInline": true,
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_EFFECTS_HUE}",
+                "tooltip": "%{BKY_SB_CLEAR_EFFECTS_TOOLTIP}"
+            });
+            this.setHelpUrl(getHelpUrl('effect_readme'));
+        }
+    };
 }

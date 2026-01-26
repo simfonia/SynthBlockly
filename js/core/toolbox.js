@@ -226,6 +226,11 @@ export const TOOLBOX_XML_STRING = `
 
     <category name="%{BKY_MSG_EFFECTS_CATEGORY}" colour="%{BKY_EFFECTS_HUE}">
         <block type="sb_container_setup_effect"></block>
+        <block type="sb_clear_effects">
+            <value name="TARGET">
+                <shadow type="sb_instrument_selector"></shadow>
+            </value>
+        </block>
     </category>
 
     <category name="%{BKY_MSG_SFX_CATEGORY}" colour="%{BKY_SFX_HUE}">
@@ -251,6 +256,12 @@ export const TOOLBOX_XML_STRING = `
     <category name="%{BKY_MSG_PC_KEYBOARD_CATEGORY}" colour="%{BKY_PC_KEYBOARD_HUE}">
         <block type="sb_toggle_pc_keyboard_midi"></block>
         <block type="sb_map_key_to_chord"></block>
+        <block type="sb_key_action_event"></block>
+        <block type="sb_map_key_to_note">
+            <value name="INSTRUMENT">
+                <shadow type="sb_instrument_selector"></shadow>
+            </value>
+        </block>
     </category>
 
     <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">

@@ -256,9 +256,20 @@ export const MSG_ZH_HANT = {
     'SB_MAP_MIDI_TO_CHORD_TOOLTIP': '設定特定的 MIDI 按鍵觸發已定義的和弦。',
 
     // PC KEYBOARD
-    'SB_MAP_KEY_TO_CHORD_MESSAGE': '將按鍵 %1 映射至和弦 %2',
-    'SB_MAP_KEY_TO_CHORD_TOOLTIP': '設定電腦鍵盤按鍵觸發已定義的和弦。',
-    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': '電腦鍵盤模擬演奏 %1',
+    'SB_MAP_KEY_TO_CHORD_MESSAGE': '將電腦鍵盤按鍵 %1 綁定至和弦 %2',
+    'SB_MAP_KEY_TO_CHORD_TOOLTIP': '當按下指定按鍵時播放已定義的和弦 (必須先定義和弦)。',
+    'SB_KEY_ACTION_EVENT_MESSAGE': '當按鍵 %1 %2 時',
+    'SB_KEY_ACTION_EVENT_TOOLTIP': '當指定按鍵被按下或放開時，執行內部的積木程式。',
+    'SB_KEY_PRESS': '按下',
+    'SB_KEY_RELEASE': '放開',
+    'SB_MAP_KEY_TO_NOTE_MESSAGE': '將電腦鍵盤按鍵 %1 綁定至樂器 %2 音符 %3',
+    'SB_MAP_KEY_TO_NOTE_TOOLTIP': '當按下指定按鍵時演奏特定樂器的單音 (支援 ADSR，如按住大鼓)。',
+    'LOG_KEY_ACTION_REGISTERED': '已註冊按鍵動作事件 (Key: %1)',
+    'SB_ACTION_CLEAR_EFFECTS': '清除 Master 效果器',
+    'SB_ACTION_PANIC': '緊急停止 (Panic)',
+    'SB_ACTION_TOGGLE_TRANSPORT': '播放/暫停',
+    'SB_ACTION_LOG_DEBUG': '除錯 Log',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': '電腦鍵盤演奏模式 %1',
     'SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP': `啟用電腦鍵盤演奏功能。請切換為英文輸入法。`,
 
     // SERIAL
@@ -450,4 +461,8 @@ export const MSG_ZH_HANT = {
     'SB_CONSOLE_LOG_MESSAGE': '顯示到訊息區 %1',
     'SB_CONSOLE_LOG_TOOLTIP': '將訊息輸出至除錯面板。',
     'LOG_CONSOLE_LOG_MSG': '%1',
+
+    // EFFECTS
+    'SB_CLEAR_EFFECTS_MESSAGE': '清除 %1 的所有效果器',
+    'SB_CLEAR_EFFECTS_TOOLTIP': '移除指定音軌（樂器或 Master）上目前掛載的所有效果器鏈，恢復乾淨音色。',
 };

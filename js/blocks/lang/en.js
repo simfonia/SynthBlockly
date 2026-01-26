@@ -262,7 +262,19 @@ export const MSG_EN = {
 
     // PC KEYBOARD
     'SB_MAP_KEY_TO_CHORD_MESSAGE': 'Map Key %1 to Chord %2',
-    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC Keyboard Playback %1',
+    'SB_MAP_KEY_TO_CHORD_TOOLTIP': 'Plays the defined chord when the key is pressed.',
+    'SB_KEY_ACTION_EVENT_MESSAGE': 'When Key %1 is %2',
+    'SB_KEY_ACTION_EVENT_TOOLTIP': 'Execute blocks when the key is pressed or released.',
+    'SB_KEY_PRESS': 'Pressed',
+    'SB_KEY_RELEASE': 'Released',
+    'SB_MAP_KEY_TO_NOTE_MESSAGE': 'Map Key %1 to Instrument %2 Note %3',
+    'SB_MAP_KEY_TO_NOTE_TOOLTIP': 'Plays a specific note on an instrument when key is pressed.',
+    'LOG_KEY_ACTION_REGISTERED': 'Key Action Registered (Key: %1)',
+    'SB_ACTION_CLEAR_EFFECTS': 'Clear Master Effects',
+    'SB_ACTION_PANIC': 'Panic (Stop All)',
+    'SB_ACTION_TOGGLE_TRANSPORT': 'Play/Pause',
+    'SB_ACTION_LOG_DEBUG': 'Debug Log',
+    'SB_TOGGLE_PC_KEYBOARD_MIDI_MESSAGE': 'PC Keyboard MIDI Mode %1',
 
     // SERIAL
     'SB_SERIAL_DATA_RECEIVED_MESSAGE': 'When serial data %1 received',
@@ -447,4 +459,8 @@ export const MSG_EN = {
     'SB_CONSOLE_LOG_MESSAGE': 'Log %1',
     'SB_CONSOLE_LOG_TOOLTIP': 'Logs a message to the debug panel.',
     'LOG_CONSOLE_LOG_MSG': '%1',
+
+    // EFFECTS
+    'SB_CLEAR_EFFECTS_MESSAGE': 'Clear all effects for %1',
+    'SB_CLEAR_EFFECTS_TOOLTIP': 'Removes all active effects from the specified target (Instrument or Master).',
 };

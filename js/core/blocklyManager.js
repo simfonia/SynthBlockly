@@ -1,7 +1,7 @@
 // js/core/blocklyManager.js
 import * as BlocklyModule from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript'; 
-import { log, logKey, clearErrorLog } from '../ui/logger.js';
+import { log, logKey, clearErrorLog, clearLogs } from '../ui/logger.js';
 import { registerAll } from '../blocks/index.js'; 
 import { registerMidiListener, unregisterMidiListener } from './midiEngine.js';
 import { audioEngine } from './audioEngine.js'; 
@@ -203,8 +203,9 @@ function updateAllHatBlocks() {
 
     const serialHats = workspace.getBlocksByType('sb_serial_data_received', false);
     const midiHats = workspace.getBlocksByType('sb_midi_note_received', false);
+    const keyActionHats = workspace.getBlocksByType('sb_key_action_event', false);
     const registeredIds = Object.keys(blockListeners);
-    const allCurrentHats = [...serialHats, ...midiHats];
+    const allCurrentHats = [...serialHats, ...midiHats, ...keyActionHats];
     const allCurrentHatIds = allCurrentHats.map(b => b.id);
 
     // 1. Unregister hats that no longer exist
@@ -214,6 +215,8 @@ function updateAllHatBlocks() {
                 unregisterListenerForBlock(blockId);
             } else if (blockListeners[blockId].type === 'midi') {
                 unregisterListenerForMidiBlock(blockId);
+            } else if (blockListeners[blockId].type === 'key_action') {
+                unregisterListenerForKeyActionBlock(blockId);
             }
         }
     });
@@ -223,40 +226,127 @@ function updateAllHatBlocks() {
         if (blockListeners[block.id]) {
             const current = blockListeners[block.id];
             
-            // Check if code or variable mapping has changed
+            // Check if code or parameters changed
             javascriptGenerator.init(workspace);
-            applyAsyncProcedureOverrides(javascriptGenerator); // Ensure async support during check
+            applyAsyncProcedureOverrides(javascriptGenerator); 
             const newCode = javascriptGenerator.statementToCode(block, 'DO');
             javascriptGenerator.finish('');
             
-            let newVarName = "";
+            let changed = false;
+            
             if (block.type === 'sb_serial_data_received') {
                 const varId = block.getFieldValue('DATA');
-                newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
+                const newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
+                if (current.code !== newCode || current.varName !== newVarName) changed = true;
             } else if (block.type === 'sb_midi_note_received') {
                 const varId = block.getFieldValue('NOTE');
-                newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
+                const newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
+                if (current.code !== newCode || current.varName !== newVarName) changed = true; // Simplified check
+            } else if (block.type === 'sb_key_action_event') {
+                const newKeyCode = block.getFieldValue('KEY_CODE');
+                const newTriggerMode = block.getFieldValue('TRIGGER_MODE');
+                if (current.code !== newCode || current.keyCode !== newKeyCode || current.triggerMode !== newTriggerMode) changed = true;
             }
 
-            if (current.code === newCode && current.varName === newVarName) {
-                return; // No changes, keep existing listener
-            }
+            if (!changed) return; // No changes
 
-            // Code changed, unregister old one before re-registering
-            if (current.type === 'serial') {
-                unregisterListenerForBlock(block.id);
-            } else {
-                unregisterListenerForMidiBlock(block.id);
-            }
+            // Code changed, unregister old one
+            if (current.type === 'serial') unregisterListenerForBlock(block.id);
+            else if (current.type === 'midi') unregisterListenerForMidiBlock(block.id);
+            else if (current.type === 'key_action') unregisterListenerForKeyActionBlock(block.id);
         }
 
-        // Register the hat (either new or updated)
-        if (block.type === 'sb_serial_data_received') {
-            registerListenerForBlock(block);
-        } else if (block.type === 'sb_midi_note_received') {
-            registerListenerForMidiBlock(block);
-        }
+        // Register the hat
+        if (block.type === 'sb_serial_data_received') registerListenerForBlock(block);
+        else if (block.type === 'sb_midi_note_received') registerListenerForMidiBlock(block);
+        else if (block.type === 'sb_key_action_event') registerListenerForKeyActionBlock(block);
     });
+}
+
+function registerListenerForKeyActionBlock(block) {
+    if (!block || blockListeners[block.id]) return;
+    
+    const keyCode = block.getFieldValue('KEY_CODE');
+    const triggerMode = block.getFieldValue('TRIGGER_MODE');
+    
+    javascriptGenerator.init(workspace);
+    const code = javascriptGenerator.statementToCode(block, 'DO');
+    javascriptGenerator.finish('');
+    
+    if (!code) return;
+
+    // --- EFFECT_CONFIG handling similar to other hats ---
+    const configMatches = code.match(/\/\* EFFECT_CONFIG:(.*?) \*\//g);
+    if (configMatches) {
+        try {
+            const configs = configMatches.map(comment => {
+                const jsonStr = comment.match(/EFFECT_CONFIG:(.*?) \*\//)[1];
+                return JSON.parse(jsonStr);
+            });
+            audioEngine.rebuildEffectChain(configs);
+        } catch (e) {
+            console.warn("Failed to parse effect config:", e);
+        }
+    }
+
+    let cleanCode = code.replace(/\/\* EFFECT_CONFIG:.*? \*\//g, "").trim();
+    cleanCode = cleanCode.replace(/window\.audioEngine\.addEffectToChain\(.*?\);\n?/g, "").trim();
+
+    try {
+        const functionBody = 
+            "return (async () => { " +
+            "  try { " +
+            cleanCode + 
+            "  } catch (e) { " +
+            "    console.error('Error executing Key Action Code:', e); " +
+            "  } " +
+            "})();";
+
+        const executeCode = new Function(functionBody);
+        
+        // Register to AudioEngine
+        if (triggerMode === 'PRESS') {
+            audioEngine.registerKeyAction(keyCode, executeCode, null);
+        } else if (triggerMode === 'RELEASE') {
+            audioEngine.registerKeyAction(keyCode, null, executeCode);
+        }
+        
+        blockListeners[block.id] = { 
+            type: 'key_action', 
+            keyCode: keyCode, 
+            triggerMode: triggerMode, 
+            code: code 
+        };
+        // logKey('LOG_KEY_ACTION_REGISTERED', 'info', keyCode); // Handled by audioEngine
+        
+    } catch (e) {
+        logKey('LOG_EXEC_ERR', 'error', e.message);
+    }
+}
+
+function unregisterListenerForKeyActionBlock(blockId) {
+    const listenerEntry = blockListeners[blockId];
+    if (listenerEntry && listenerEntry.type === 'key_action') {
+        // We can't easily unregister a specific callback from keyActionMap if multiple blocks target same key (though UI should prevent it)
+        // For now, assume AudioEngine's registerKeyAction overwrites.
+        // To strictly "unregister", we might need delete, but since we overwrite on register, maybe just delete from blockListeners is enough metadata-wise.
+        // Ideally AudioEngine should have unregisterKeyAction. 
+        // Let's assume re-registering or full clear handles conflicts.
+        // For clean up:
+        // audioEngine.keyActionMap[listenerEntry.keyCode] = undefined; // This removes ALL actions for that key
+        // But if we have multiple blocks (press vs release), this is tricky.
+        // Simplified: The update logic unregisters THEN registers.
+        // If the block is deleted, we should remove the action.
+        
+        // Check if there are other blocks using this key? No, dynamic options prevent it.
+        // So safe to remove.
+        if (audioEngine.keyActionMap[listenerEntry.keyCode]) {
+             delete audioEngine.keyActionMap[listenerEntry.keyCode];
+        }
+
+        delete blockListeners[blockId];
+        // logKey('LOG_KEY_ACTION_UNREGISTERED', 'info', blockId);
+    }
 }
 
 function registerListenerForBlock(block) {
@@ -880,5 +970,6 @@ export function resetWorkspaceAndAudio(skipTemplate = false) {
         }
     }
     audioEngine.resetAudioEngineState();
+    clearLogs(); // Clear ALL logs (both info and error)
     logKey('LOG_ENGINE_RESTARTED');
 }

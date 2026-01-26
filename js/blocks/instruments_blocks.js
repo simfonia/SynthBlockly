@@ -255,13 +255,21 @@ export function registerBlocks() {
         }
     };
 
-    Blockly.Blocks['sb_define_chord'] = {
+        Blockly.Blocks['sb_define_chord'] = {
         init: function () {
             this.jsonInit({
                 "message0": "%{BKY_SB_DEFINE_CHORD_MESSAGE}",
                 "args0": [
-                    { "type": "field_input", "name": "NAME", "text": "C" },
-                    { "type": "field_input", "name": "NOTES_STRING", "text": "C4,E4,G4" }
+                    {
+                        "type": "field_input",
+                        "name": "NAME",
+                        "text": "CM7"
+                    },
+                    {
+                        "type": "field_input",
+                        "name": "NOTES_STRING",
+                        "text": "C4,E4,G4,B4"
+                    }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
