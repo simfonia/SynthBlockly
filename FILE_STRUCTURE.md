@@ -28,8 +28,9 @@
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。
-      - `audioEngine.js`: Tone.js 封裝，現在作為各個 Service 的整合入口 (Facade)。
+      - `audioEngine.js`: Tone.js 封裝，現在作為各個 Service 的整合入口 (Facade)，並包含 Blockly v12 API Polyfills。
       - `audioUtils.js`: 基礎音訊工具，包含 ensureAudioStarted，解決循環相依問題。
+      - `blocklyUtils.js`: **(V2.1 新增) Blockly 輔助工具庫**，包含動態樂器清單產生器與寬容下拉選單 (LenientDropdown)。
       - `blocklyManager.js`: Blockly 工作區管理、UI 同步，現在高度精簡並委派邏輯至 Service。
       - `blocklyCoreFixes.js`: 處理 Blockly 在 Vite 環境下的補丁與 Async/Await 強制支援。
       - `helpUtils.js`: 統一 HelpUrl 生成工具 (語系/路徑)。

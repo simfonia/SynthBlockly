@@ -2,11 +2,29 @@
 // Effects-related custom blocks (Container Version)
 import * as Blockly from 'blockly';
 import { getHelpUrl } from '../core/helpUtils.js';
+import { getInstrumentOptions, FieldDropdownLenient } from '../core/blocklyUtils.js';
 
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
         console.error('Blockly not available');
         return false;
+    }
+
+    // Register custom lenient dropdown for JSON usage
+    // Use Blockly.registry if available (v9+), otherwise fallback or skip check (it throws if duplicate)
+    // Here assuming modern Blockly where fieldRegistry is available via registry
+    if (Blockly.registry && Blockly.registry.hasItem) {
+        if (!Blockly.registry.hasItem(Blockly.registry.Type.FIELD, 'field_dropdown_lenient')) {
+            Blockly.fieldRegistry.register('field_dropdown_lenient', FieldDropdownLenient);
+        }
+    } else {
+        // Fallback for older versions or if registry API differs
+        // Try to register, catch if already exists
+        try {
+            Blockly.fieldRegistry.register('field_dropdown_lenient', FieldDropdownLenient);
+        } catch (e) {
+            // Ignore error if already registered
+        }
     }
 
     Blockly.Blocks['sb_container_setup_effect'] = {
@@ -181,6 +199,175 @@ export function registerBlocks() {
                 "tooltip": "%{BKY_SB_CLEAR_EFFECTS_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('effect_readme'));
+        }
+    };
+
+    Blockly.Extensions.register('dynamic_effect_param_extension', function() {
+        this.setOnChange(function(changeEvent) {
+            if (changeEvent.type === Blockly.Events.BLOCK_CHANGE && 
+                changeEvent.blockId === this.id && 
+                changeEvent.name === 'EFFECT_TYPE') {
+                this.updateParamOptions_();
+            }
+        });
+
+        this.updateParamOptions_ = function() {
+            const effectType = this.getFieldValue('EFFECT_TYPE');
+            const paramField = this.getField('PARAM_NAME');
+            if (!paramField) return;
+
+            // Helper to safely get localized string
+            const getMsg = (key) => Blockly.Msg[key] || key;
+
+            let options = [];
+            // Common wet option for most effects
+            const wetOpt = [getMsg("SB_PARAM_WET"), "wet"];
+
+            switch (effectType) {
+                case 'filter':
+                    options = [
+                        [getMsg("SB_PARAM_FREQ"), "frequency"],
+                        [getMsg("SB_PARAM_Q"), "Q"],
+                        wetOpt
+                    ];
+                    break;
+                case 'distortion':
+                    options = [
+                        [getMsg("SB_PARAM_DISTORTION"), "distortion"],
+                        wetOpt
+                    ];
+                    break;
+                case 'reverb':
+                    options = [
+                        [getMsg("SB_PARAM_DECAY"), "decay"],
+                        [getMsg("SB_EFFECT_PREDELAY_FIELD"), "preDelay"],
+                        wetOpt
+                    ];
+                    break;
+                case 'feedbackDelay':
+                    options = [
+                        [getMsg("SB_PARAM_DELAY_TIME"), "delayTime"],
+                        [getMsg("SB_PARAM_FEEDBACK"), "feedback"],
+                        wetOpt
+                    ];
+                    break;
+                case 'compressor':
+                    options = [
+                        [getMsg("SB_PARAM_THRESHOLD"), "threshold"],
+                        [getMsg("SB_PARAM_RATIO"), "ratio"],
+                        [getMsg("SB_PARAM_ATTACK"), "attack"],
+                        [getMsg("SB_PARAM_RELEASE"), "release"]
+                    ];
+                    break;
+                case 'limiter':
+                    options = [
+                        [getMsg("SB_PARAM_THRESHOLD"), "threshold"]
+                    ];
+                    break;
+                case 'lofi':
+                    options = [
+                        [getMsg("SB_PARAM_BITS"), "bits"],
+                        wetOpt
+                    ];
+                    break;
+                case 'chorus':
+                    options = [
+                        [getMsg("SB_PARAM_FREQ"), "frequency"],
+                        [getMsg("SB_PARAM_DELAY_TIME"), "delayTime"],
+                        [getMsg("SB_PARAM_DEPTH"), "depth"],
+                        wetOpt
+                    ];
+                    break;
+                case 'phaser':
+                    options = [
+                        [getMsg("SB_PARAM_FREQ"), "frequency"],
+                        [getMsg("SB_EFFECT_OCTAVES_FIELD"), "octaves"],
+                        [getMsg("SB_EFFECT_BASE_FREQUENCY_FIELD"), "baseFrequency"],
+                        wetOpt
+                    ];
+                    break;
+                case 'autoPanner':
+                case 'tremolo':
+                    options = [
+                        [getMsg("SB_PARAM_FREQ"), "frequency"],
+                        [getMsg("SB_PARAM_DEPTH"), "depth"],
+                        wetOpt
+                    ];
+                    break;
+                default:
+                    options = [["---", "none"]];
+            }
+
+            const currentVal = paramField.getValue();
+            paramField.menuGenerator_ = options;
+            
+            const isValid = options.some(opt => opt[1] === currentVal);
+            if (!isValid && options.length > 0) {
+                paramField.setValue(options[0][1]);
+            }
+        };
+    });
+
+    Blockly.Blocks['sb_set_effect_param'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_SET_EFFECT_PARAM_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TARGET",
+                        "options": function() { return getInstrumentOptions(true); }
+                    },
+                    {
+                        "type": "field_number",
+                        "name": "INDEX",
+                        "value": 1,
+                        "min": 1,
+                        "precision": 1
+                    },
+                    {
+                        "type": "field_dropdown",
+                        "name": "EFFECT_TYPE",
+                        "options": [
+                            ["%{BKY_SB_EFFECT_DISTORTION_TYPE_FIELD}", "distortion"],
+                            ["%{BKY_SB_EFFECT_REVERB_TYPE_FIELD}", "reverb"],
+                            ["%{BKY_SB_EFFECT_FEEDBACKDELAY_TYPE_FIELD}", "feedbackDelay"],
+                            ["%{BKY_SB_EFFECT_FILTER_TYPE_FIELD}", "filter"],
+                            ["%{BKY_SB_EFFECT_COMPRESSOR_TYPE_FIELD}", "compressor"],
+                            ["%{BKY_SB_EFFECT_LIMITER_TYPE_FIELD}", "limiter"],
+                            ["%{BKY_SB_EFFECT_LOFI_TYPE_FIELD}", "lofi"],
+                            ["%{BKY_SB_EFFECT_CHORUS_TYPE_FIELD}", "chorus"],
+                            ["%{BKY_SB_EFFECT_PHASER_TYPE_FIELD}", "phaser"],
+                            ["%{BKY_SB_EFFECT_AUTOPANNER_TYPE_FIELD}", "autoPanner"],
+                            ["%{BKY_SB_EFFECT_TREMOLO_TYPE_FIELD}", "tremolo"]
+                        ]
+                    },
+                    {
+                        "type": "field_dropdown_lenient",
+                        "name": "PARAM_NAME",
+                        "options": [
+                            ["%{BKY_SB_PARAM_FREQ}", "frequency"],
+                            ["%{BKY_SB_PARAM_Q}", "Q"],
+                            ["%{BKY_SB_PARAM_WET}", "wet"]
+                        ]
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "VALUE",
+                        "check": "Number"
+                    }
+                ],
+                "inputsInline": true,
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_EFFECTS_HUE}",
+                "tooltip": "%{BKY_SB_SET_EFFECT_PARAM_TOOLTIP}",
+                "extensions": ["dynamic_effect_param_extension"]
+            });
+            this.setHelpUrl(getHelpUrl('effect_readme'));
+            
+            // Ensure options are correct on load
+            if (this.updateParamOptions_) this.updateParamOptions_();
         }
     };
 }

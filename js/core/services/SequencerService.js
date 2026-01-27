@@ -1,7 +1,13 @@
 import * as Tone from 'tone';
 import { ensureAudioStarted } from '../audioUtils.js';
 
+/**
+ * Service responsible for sequencing, rhythm playback, and melody parsing.
+ */
 export class SequencerService {
+    /**
+     * @param {Object} audioEngine - Reference to the main AudioEngine.
+     */
     constructor(audioEngine) {
         this.audioEngine = audioEngine;
     }
@@ -28,6 +34,14 @@ export class SequencerService {
         }
     }
 
+    /**
+     * Plays a step sequence (rhythm).
+     * @param {string} soundSource - Source name or keyword (KICK, SNARE, HH, CLAP).
+     * @param {string} steps - The sequence string (e.g. "x . x .").
+     * @param {number} time - Start time.
+     * @param {number} measure - Measure number.
+     * @param {boolean} isChord - Whether the steps represent chords.
+     */
     playRhythmSequence(soundSource, steps, time, measure = 1, isChord = false) {
         if (!steps || !Array.isArray(steps) || time === undefined) return;
         
@@ -83,7 +97,11 @@ export class SequencerService {
         }
     }
 
-        async playMelodyString(str) {
+    /**
+     * Parses and plays a melody string.
+     * @param {string} str - The melody string (e.g. "C4Q, D4H").
+     */
+    async playMelodyString(str) {
             await ensureAudioStarted();
             const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
             const tokens = str.split(/[,\s\n\r]+/).filter(s => s.trim().length > 0);

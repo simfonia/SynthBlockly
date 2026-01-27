@@ -2,53 +2,7 @@
 // Instrument-related custom blocks
 import * as Blockly from 'blockly';
 import { getHelpUrl } from '../core/helpUtils.js';
-
-/**
- * A custom Dropdown field that accepts values even if they are not in the options list.
- */
-class FieldDropdownLenient extends Blockly.FieldDropdown {
-    constructor(menuGenerator, validator) {
-        super(menuGenerator, validator);
-    }
-    doClassValidation_(newValue) {
-        if (typeof newValue !== 'string') return null;
-        return newValue;
-    }
-    getOptions(opt_useCache) {
-        const options = super.getOptions(opt_useCache);
-        const val = this.getValue();
-        if (val && typeof val === 'string') {
-            const exists = options.some(opt => opt[1] === val);
-            if (!exists) options.push([val, val]);
-        }
-        return options;
-    }
-}
-
-/**
- * Shared helper to find all instrument names defined in any workspace.
- */
-function getInstrumentOptions(includeMaster = false) {
-    const options = includeMaster ? [['Master', 'Master']] : [];
-    let ws = Blockly.getMainWorkspace();
-    if (ws) {
-        const foundNames = [];
-        ws.getBlocksByType('sb_instrument_container', false).forEach(block => {
-            const name = block.getFieldValue('NAME');
-            if (name && !foundNames.includes(name)) {
-                foundNames.push(name);
-            }
-        });
-        foundNames.sort().forEach(name => {
-            options.push([name, name]);
-        });
-    }
-    // Final fallback to ensure the dropdown doesn't crash Blockly
-    if (options.length === 0) {
-        options.push(['(No Instruments)', 'NONE']);
-    }
-    return options;
-}
+import { FieldDropdownLenient, getInstrumentOptions } from '../core/blocklyUtils.js';
 
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {

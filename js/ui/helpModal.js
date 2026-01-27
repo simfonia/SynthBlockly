@@ -19,6 +19,18 @@ import { logKey } from './logger.js';
 // 根據您的需求，我們嘗試 glob public 下的 readme
 const docFiles = import.meta.glob('../../public/docs/*_readme_*.html', { query: '?url', import: 'default' });
 
+// 定義左側選單的優先順序 (ID 為檔名中 _readme_ 之前的文字)
+const HELP_ORDER = [
+    'examples',
+    'instrument',
+    'performance',
+    'melody',
+    'step_sequencer',
+    'transport',
+    'effect',
+    'custom_sampler'
+];
+
 // 用於快取已載入的內容
 const contentCache = {};
 
@@ -264,10 +276,20 @@ export async function showHelpModal() {
     // 取得並過濾文件列表
     const allDocs = await getDocList();
     
-    // 過濾當前語系，若無則 fallback 到 zh-hant 或 en
-    // 這裡的邏輯：針對每個 'id' (標題)，優先找 currentLang，找不到找 'en'
+    // 取得唯一的 ID 並根據 HELP_ORDER 進行排序
+    const uniqueIds = [...new Set(allDocs.map(d => d.id))].sort((a, b) => {
+        const indexA = HELP_ORDER.indexOf(a);
+        const indexB = HELP_ORDER.indexOf(b);
+        
+        // 若兩者都在自訂順序中，按順序排
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        // 若只有其中一個在自訂順序中，該項排前面
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        // 若都不在順序中，則按字母排
+        return a.localeCompare(b);
+    });
     
-    const uniqueIds = [...new Set(allDocs.map(d => d.id))].sort();
     const displayList = [];
     
     uniqueIds.forEach(id => {

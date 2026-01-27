@@ -121,5 +121,15 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     };
     try { G.forBlock['sb_clear_effects'] = G['sb_clear_effects']; } catch (e) { }
 
+    G['sb_set_effect_param'] = function (block) {
+        const target = G.quote_(block.getFieldValue('TARGET') || 'DefaultSynth');
+        const index = parseInt(block.getFieldValue('INDEX') || '1', 10) - 1; // Convert 1-based to 0-based
+        const effectType = G.quote_(block.getFieldValue('EFFECT_TYPE'));
+        const paramName = G.quote_(block.getFieldValue('PARAM_NAME'));
+        const value = G.valueToCode(block, 'VALUE', G.ORDER_ATOMIC) || '0';
+        return `window.audioEngine.updateEffectParam(${target}, ${effectType}, ${paramName}, ${value}, ${index});\n`;
+    };
+    try { G.forBlock['sb_set_effect_param'] = G['sb_set_effect_param']; } catch (e) { }
+
     return true;
 }

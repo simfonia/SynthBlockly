@@ -100,6 +100,12 @@
 - [x] **Blockly 管理器模組化**
     - [x] 獨立 `HatBlockManager.js` (事件監聽器管理)。
     - [x] 獨立 `GeneratorUtils.js` (Blockly 核心產生器修正，命名為 blocklyCoreFixes.js)。
-- [ ] **JSDoc 與 Dead Code 清理**
-    - [ ] 補全所有核心方法的 JSDoc 註解。
-    - [ ] 移除過時的註解程式碼與除錯 Log。
+- [x] **JSDoc 與 Dead Code 清理**
+    - [x] 補全所有核心方法的 JSDoc 註解 (AudioEngine, Services, BlocklyManager)。
+    - [x] 移除過時的註解程式碼與除錯 Log。
+
+## 已修復 Bug (Bug Fixes)
+- [x] **修復效果器動態參數控制失效問題 (Wah-wah 範例)**
+    - [x] 新增 `sb_set_effect_param` (設定效果器參數) 積木，支援執行期間動態更新。
+    - [x] `EffectService` 實作 `updateEffectParam` 方法，支援透過索引 (Index) 指定多個相同類型的效果器。
+    - [x] 更新 `12_wah-wah.xml` 範例邏輯。

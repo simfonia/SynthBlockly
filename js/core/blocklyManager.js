@@ -28,6 +28,28 @@ window.Blockly = Blockly;
 window.javascriptGenerator = javascriptGenerator;
 window['Blockly.JavaScript'] = javascriptGenerator;
 
+// --- 2. 實作 Polyfills 處理 Blockly v12+ 棄用警告 ---
+// 強制攔截 Workspace 層級的變數 API 並導向 getVariableMap()
+const WS_PROTO = Blockly.Workspace.prototype;
+if (!WS_PROTO._original_getAllVariables) {
+    WS_PROTO._original_getAllVariables = WS_PROTO.getAllVariables;
+    WS_PROTO.getAllVariables = function() {
+        return this.getVariableMap ? this.getVariableMap().getAllVariables() : [];
+    };
+}
+if (!WS_PROTO._original_getVariableById) {
+    WS_PROTO._original_getVariableById = WS_PROTO.getVariableById;
+    WS_PROTO.getVariableById = function(id) {
+        return this.getVariableMap ? this.getVariableMap().getVariableById(id) : null;
+    };
+}
+if (!WS_PROTO._original_getVariable) {
+    WS_PROTO._original_getVariable = WS_PROTO.getVariable;
+    WS_PROTO.getVariable = function(name, type) {
+        return this.getVariableMap ? this.getVariableMap().getVariable(name, type) : null;
+    };
+}
+
 const G = javascriptGenerator;
 applyBlocklyCoreFixes(Blockly, G); // Apply manual fixes for standard blocks and async support
 
@@ -152,6 +174,10 @@ function setupDefaultWorkspace() {
     } catch (e) { console.warn("Failed to inject default workspace template:", e); }
 }
 
+/**
+ * Initializes the Blockly environment, including injecting the workspace,
+ * loading plugins, and setting up event listeners.
+ */
 export async function initBlocklyManager() {
     try {
         await prepareBlocklyEnvironment();
@@ -173,6 +199,11 @@ export async function initBlocklyManager() {
     }
 }
 
+/**
+ * Generates JavaScript code from the current Blockly workspace.
+ * Uses a multi-pass approach to handle instrument definitions, setup, and execution logic.
+ * @returns {Promise<string>} The generated JavaScript code.
+ */
 export async function getBlocksCode() {
     if (!workspace) { logKey('LOG_WORKSPACE_NOT_INIT', 'error'); return ''; }
     clearErrorLog('EXEC'); clearErrorLog('EFFECT');
@@ -268,6 +299,10 @@ export async function getBlocksCode() {
     }
 }
 
+/**
+ * Resets the workspace and the audio engine to their default states.
+ * @param {boolean} [skipTemplate=false] - If true, skips injecting the default blocks.
+ */
 export function resetWorkspaceAndAudio(skipTemplate = false) {
     if (workspace) { workspace.clear(); workspace.clearUndo(); logKey('LOG_WORKSPACE_CLEARED'); if (!skipTemplate) setupDefaultWorkspace(); }
     audioEngine.resetAudioEngineState();

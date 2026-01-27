@@ -231,6 +231,11 @@ export const TOOLBOX_XML_STRING = `
                 <shadow type="sb_instrument_selector"></shadow>
             </value>
         </block>
+        <block type="sb_set_effect_param">
+            <value name="VALUE">
+                <shadow type="math_number"><field name="NUM">0</field></shadow>
+            </value>
+        </block>
     </category>
 
     <category name="%{BKY_MSG_SFX_CATEGORY}" colour="%{BKY_SFX_HUE}">

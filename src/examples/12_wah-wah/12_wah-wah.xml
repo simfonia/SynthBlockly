@@ -5,7 +5,7 @@
     <variable id="8y6_D@qG=zLwOa*V7`|:">filterFreq</variable>
   </variables>
   <block type="sb_comment" id="guide" x="10" y="10">
-    <field name="COMMENT">【光控 Wah-wah 效果器】&amp;#10;&amp;#10;1. 樂器與濾波：已在「DefaultSynth」容器內預先掛載了 Filter。&amp;#10;2. 數值映射：將 LDR 數值 (200-500) 轉換為頻率 (200-5000 Hz)。&amp;#10;3. 即時控制：利用序列埠帽積木，動態更新容器內的 Filter 頻率。&amp;#10;&amp;#10;請連接 Arduino 並遮擋光敏電阻來體驗 Wah-wah 效果！</field>
+    <field name="COMMENT">【光控 Wah-wah 效果器】&#10;&#10;1. 樂器與濾波：已在「DefaultSynth」容器內預先掛載了 Filter。&#10;2. 數值映射：將 LDR 數值 (200-500) 轉換為頻率 (200-5000 Hz)。&#10;3. 即時控制：利用序列埠帽積木，動態更新容器內的 Filter 頻率。&#10;&#10;請連接 Arduino 並遮擋光敏電阻來體驗 Wah-wah 效果！</field>
   </block>
   <block type="sb_instrument_container" id="c_wah" x="10" y="190">
     <field name="NAME">DefaultSynth</field>
@@ -164,23 +164,15 @@
                   </block>
                 </value>
                 <next>
-                  <block type="sb_container_setup_effect" id="!]9E[~3,c.^(hAerQl@*" disabled-reasons="invalid_container">
-                    <mutation effect_type="filter" filter_type_value="lowpass" filter_rolloff_value="-12"></mutation>
+                  <block type="sb_set_effect_param" id="wah_update">
+                    <field name="TARGET">DefaultSynth</field>
+                    <field name="INDEX">1</field>
                     <field name="EFFECT_TYPE">filter</field>
-                    <field name="FILTER_TYPE_VALUE">lowpass</field>
-                    <field name="FILTER_ROLLOFF_VALUE">-12</field>
-                    <value name="FILTER_FREQ">
-                      <shadow type="math_number" id="|~PCNUQ1@E8TXp0!z13@">
-                        <field name="NUM">20000</field>
-                      </shadow>
+                    <field name="PARAM_NAME">frequency</field>
+                    <value name="VALUE">
                       <block type="variables_get" id="K{/;Ve-$V$W*7/J=i-ZL">
                         <field name="VAR" id="8y6_D@qG=zLwOa*V7`|:">filterFreq</field>
                       </block>
-                    </value>
-                    <value name="FILTER_Q">
-                      <shadow type="math_number" id="^eInwvq?:iu0*xt=zyY$">
-                        <field name="NUM">5</field>
-                      </shadow>
                     </value>
                   </block>
                 </next>

@@ -465,4 +465,22 @@ export const MSG_ZH_HANT = {
     // EFFECTS
     'SB_CLEAR_EFFECTS_MESSAGE': '清除 %1 的所有效果器',
     'SB_CLEAR_EFFECTS_TOOLTIP': '移除指定音軌（樂器或 Master）上目前掛載的所有效果器鏈，恢復乾淨音色。',
+    'SB_SET_EFFECT_PARAM_MESSAGE': '設定 %1 的第 %2 個 %3 參數 %4 為 %5',
+    'SB_SET_EFFECT_PARAM_TOOLTIP': '即時更新指定音軌上已掛載的效果器參數。若有多個相同效果器，請指定序號。',
+    'LOG_EFFECT_PARAM_ERR': '警告: 效果器 "%1" 不支援參數 "%2"，設定已忽略。',
+
+    // Parameter Names (Consistent with Setup Block)
+    'SB_PARAM_FREQ': '頻率 (Frequency)',
+    'SB_PARAM_Q': 'Q值 (共振)',
+    'SB_PARAM_WET': '濕度 (Mix)',
+    'SB_PARAM_DISTORTION': '失真量 (Amount)',
+    'SB_PARAM_DECAY': '衰減率 (Decay)',
+    'SB_PARAM_DELAY_TIME': '延遲時間 (DelayTime)',
+    'SB_PARAM_FEEDBACK': '回饋量 (Feedback)',
+    'SB_PARAM_THRESHOLD': '閾值 (Threshold)',
+    'SB_PARAM_RATIO': '壓縮比 (Ratio)',
+    'SB_PARAM_ATTACK': '侵入時間 (Attack)',
+    'SB_PARAM_RELEASE': '釋放時間 (Release)',
+    'SB_PARAM_BITS': '位元深度 (Bits)',
+    'SB_PARAM_DEPTH': '深度 (Depth)',
 };

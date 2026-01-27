@@ -1,12 +1,23 @@
 import * as Tone from 'tone';
 
+/**
+ * Service responsible for managing audio effects and filter chains.
+ */
 export class EffectService {
+    /**
+     * @param {Object} audioEngine - Reference to the main AudioEngine.
+     */
     constructor(audioEngine) {
         this.audioEngine = audioEngine;
         this._activeEffects = []; // Global master effects
         this.instrumentEffects = {}; // Effects per instrument track
     }
 
+    /**
+     * Internal factory to create Tone.js effect instances from config.
+     * @param {Object} config - Effect configuration object.
+     * @returns {Tone.Effect|null}
+     */
     _createEffectInstance(config) {
         if (!config || !config.type) return null;
         let instance = null; 
@@ -43,6 +54,10 @@ export class EffectService {
         return instance;
     }
 
+    /**
+     * Rebuilds the effect chain based on a list of configurations.
+     * @param {Object[]} effectsConfig - List of effect configurations.
+     */
     rebuildEffectChain(effectsConfig = []) {
         // Dispose global effects
         this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); });
@@ -74,6 +89,10 @@ export class EffectService {
         this.audioEngine._reconnectAll();
     }
 
+    /**
+     * Adds a single effect to the chain.
+     * @param {Object} config - Effect configuration.
+     */
     addEffectToChain(config) {
         if (!config || !config.type) return;
         
@@ -94,6 +113,10 @@ export class EffectService {
         }
     }
 
+    /**
+     * Clears all effects for a specific target.
+     * @param {string} target - 'Master' or instrument name.
+     */
     clearEffects(target) {
         const cleanTarget = String(target || 'Master').replace(/^['"]|['"]$/g, '');
         
@@ -109,6 +132,10 @@ export class EffectService {
         this.audioEngine._reconnectAll();
     }
 
+    /**
+     * Updates filter parameters directly.
+     * @deprecated Use updateEffectParam instead.
+     */
     updateFilter(targetName, freq, q) {
         if (typeof targetName === 'number' && (typeof freq === 'number' || freq === undefined)) {
             q = freq;
@@ -148,6 +175,56 @@ export class EffectService {
         }
     }
 
+    /**
+     * Updates an effect parameter in real-time.
+     * @param {string} targetName - Instrument name or 'Master'.
+     * @param {string} effectType - Type of effect (e.g., 'filter').
+     * @param {string} paramName - Parameter name (e.g., 'frequency').
+     * @param {number} value - New value.
+     * @param {number} [index=0] - Index of the effect instance if multiple exist.
+     */
+    updateEffectParam(targetName, effectType, paramName, value, index = 0) {
+        const cleanTarget = String(targetName || 'Master').replace(/^['"]|['"]$/g, '');
+        let chain = (cleanTarget === 'Master') ? this._activeEffects : this.instrumentEffects[cleanTarget];
+        if (!chain) return;
+
+        const typeMap = {
+            'distortion': 'Distortion', 'reverb': 'Reverb', 'feedbackDelay': 'FeedbackDelay',
+            'filter': 'Filter', 'compressor': 'Compressor', 'limiter': 'Limiter',
+            'bitCrusher': 'BitCrusher', 'lofi': 'BitCrusher',
+            'chorus': 'Chorus', 'phaser': 'Phaser', 'autoPanner': 'AutoPanner', 'tremolo': 'Tremolo'
+        };
+        const targetClass = typeMap[effectType];
+        if (!targetClass) return;
+
+        // Find ALL matching effects
+        const matchingEffects = chain.filter(e => e.name === targetClass || (e.toString && e.toString().includes(targetClass)));
+        
+        // Pick the one at the specified index
+        const effect = matchingEffects[index];
+        
+        if (effect) {
+             const val = Number(value);
+             if (isNaN(val)) return;
+
+             let targetParam = paramName;
+             if (effectType === 'lofi' && paramName === 'bits') targetParam = 'bits'; 
+
+             if (effect[targetParam] !== undefined) {
+                 if (effect[targetParam] && effect[targetParam].value !== undefined && effect[targetParam].rampTo) {
+                     effect[targetParam].rampTo(val, 0.05);
+                 } else {
+                     effect[targetParam] = val;
+                 }
+             } else {
+                 this.audioEngine.logKey('LOG_EFFECT_PARAM_ERR', 'warning', effectType, paramName);
+             }
+        }
+    }
+
+    /**
+     * Disposes all effects.
+     */
     disposeAll() {
         this._activeEffects.forEach(e => { if (e && e.dispose) e.dispose(); });
         this._activeEffects = [];

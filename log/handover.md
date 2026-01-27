@@ -131,5 +131,21 @@
 - **已完成**：樂器定義容器化、全域變灰約束邏輯、01-15 範例更新、旋律字串支援和弦名稱 (Chord Priority Parser)。
 - **待辦事項**：
   - 實作 sb_clear_effects 積木管理容器內效果鏈。
-  - 測試多樂器環境下 locklyManager 全域掃描器的效能。
+  - 測試多樂器環境下 locklyManager 全域掃描器的效能。
 - **系統狀態**：所有產生器均已改用 getContainerTarget() 自動解析，移除名稱輸入欄位。
+
+---
+
+## 2026-01-26 重構完成交接
+- **已完成**：AudioEngine 與 BlocklyManager 的 Service 化拆解（五大模組）。
+- **關鍵組件**：
+  - `InstrumentService`: 樂器與 ADSR 管理。
+  - `EffectService`: 效果鏈管理。
+  - `SequencerService`: 旋律與排程處理。
+  - `HatBlockManager`: 事件監聽管理。
+  - `BlocklyCoreFixes`: 產生器修補與 Async 支援。
+- **PC 鍵盤系統升級**：
+  - 新增 `sb_key_action_event` 帽子積木，支援自訂按鍵觸發邏輯。
+  - 實作動態按鍵過濾，防止按鍵綁定衝突。
+- **驗證工具**：保留 `test/snapshot.html` 作為未來的迴歸測試基準。
+- **目前狀態**：合併至 master，測試穩定。

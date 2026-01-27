@@ -2,7 +2,13 @@ import * as Tone from 'tone';
 import { logKey } from '../../ui/logger.js';
 import { updateAdsrGraph } from '../../ui/adsrVisualizer.js';
 
+/**
+ * Service responsible for managing instrument lifecycle, ADSR settings, and routing.
+ */
 export class InstrumentService {
+    /**
+     * @param {Object} audioEngine - Reference to the main AudioEngine.
+     */
     constructor(audioEngine) {
         this.audioEngine = audioEngine;
         this.instruments = {};
@@ -12,6 +18,11 @@ export class InstrumentService {
         this.DEFAULT_ADSR = { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.5 };
     }
 
+    /**
+     * Creates a standard synth instrument.
+     * @param {string} name - Unique instrument name.
+     * @param {string} type - Synth type (e.g., 'PolySynth', 'AMSynth', 'FMSynth').
+     */
     createInstrument(name, type) {
         if (!name) return;
         if (this.instruments[name]) this.instruments[name].dispose();
@@ -57,6 +68,13 @@ export class InstrumentService {
         }
     }
 
+    /**
+     * Creates a custom sampler instrument.
+     * @param {string} name - Unique instrument name.
+     * @param {Object} urls - Map of note to URL.
+     * @param {string} baseUrl - Base URL for samples.
+     * @param {Object} [settings=null] - Optional settings.
+     */
     createCustomSampler(name, urls, baseUrl, settings = null) {
         if (this.instruments[name]) this.instruments[name].dispose();
         const s = new Tone.Sampler({ urls, baseUrl, onload: () => logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name) });
@@ -70,11 +88,21 @@ export class InstrumentService {
         this.audioEngine._connectInstrumentToChain(name, s);
     }
 
+    /**
+     * Creates a layered instrument (container for multiple instruments).
+     * @param {string} name - Name of the layered instrument.
+     * @param {string[]} childNames - List of child instrument names.
+     */
     createLayeredInstrument(name, childNames) {
         this.layeredInstruments[name] = childNames;
         this.instruments[name] = { type: 'Layered', children: childNames };
     }
 
+    /**
+     * Creates a custom harmonic synth instrument.
+     * @param {string} name - Instrument name.
+     * @param {number[]} partials - Array of partial amplitudes.
+     */
     createCustomWaveInstrument(name, partials) {
         if (this.instruments[name]) this.instruments[name].dispose();
         try {
@@ -97,6 +125,11 @@ export class InstrumentService {
         }
     }
 
+    /**
+     * Creates an additive synth instrument.
+     * @param {string} name - Instrument name.
+     * @param {Object[]} components - Array of oscillator configurations.
+     */
     createAdditiveInstrument(name, components) {
         if (this.instruments[name]) this.instruments[name].dispose();
         
@@ -156,6 +189,10 @@ export class InstrumentService {
         }
     }
 
+    /**
+     * Switches the current active instrument.
+     * @param {string} name - Instrument name.
+     */
     transitionToInstrument(name) {
         const cleanName = String(name).replace(/^['"]|['"]$/g, '');
         if (!this.instruments[cleanName]) {
@@ -171,6 +208,9 @@ export class InstrumentService {
         this.syncAdsrToUI();
     }
 
+    /**
+     * Syncs the current instrument's ADSR settings to the UI visualizer.
+     */
     syncAdsrToUI() {
         let settings = this.instrumentSettings[this.currentInstrumentName];
         
@@ -191,6 +231,9 @@ export class InstrumentService {
             this.currentInstrumentName && this.currentInstrumentName.toLowerCase().includes('sampler'));
     }
 
+    /**
+     * Disposes all instruments.
+     */
     disposeAll() {
         for (const name in this.instruments) {
             if (this.instruments[name] && this.instruments[name].dispose) {

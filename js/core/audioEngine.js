@@ -93,25 +93,46 @@ export const audioEngine = {
     midiPressedNotes: new Map(), midiPlayingNotes: new Map(), backgroundNoise: null,
     log, logKey, getMsg,
 
+    /**
+     * Initializes the core services (Instrument, Effect, Sequencer).
+     */
     initServices: function() {
         this.instrumentService = new InstrumentService(this);
         this.effectService = new EffectService(this);
         this.sequencerService = new SequencerService(this);
     },
 
+    /**
+     * Registers a custom action for a specific key press/release.
+     * @param {string} keyCode - The key code (e.g., 'KeyA').
+     * @param {Function} onDown - Callback for key down.
+     * @param {Function} [onUp=null] - Callback for key up.
+     */
     registerKeyAction: function(keyCode, onDown, onUp = null) {
         this.keyActionMap[keyCode] = { down: onDown, up: onUp };
         this.logKey('LOG_KEY_ACTION_REGISTERED', 'info', keyCode);
     },
 
+    /**
+     * Clears all registered key actions.
+     */
     clearKeyActions: function() {
         this.keyActionMap = {};
     },
 
+    /**
+     * Waits for Tone.js to load all samples.
+     * @returns {Promise<boolean>}
+     */
     waitForSamples: async function() { 
         return Tone.loaded(); 
     },
 
+    /**
+     * Transposes a note based on the current global semitone offset.
+     * @param {string|number} note - The input note (e.g., 'C4' or MIDI number).
+     * @returns {string|number} - The transposed note.
+     */
     getTransposedNote: function(note) {
         if (!note) return 'C4';
         if (this.currentSemitoneOffset === 0) return (typeof note === 'number') ? Tone.Midi(note).toNote() : note;
@@ -121,6 +142,13 @@ export const audioEngine = {
         } catch (e) { return note; }
     },
 
+    /**
+     * Updates the ADSR envelope settings for the current instrument and UI.
+     * @param {number} a - Attack time.
+     * @param {number} d - Decay time.
+     * @param {number} s - Sustain level.
+     * @param {number} r - Release time.
+     */
     updateADSR: function(a, d, s, r) {
         const settings = { attack: a, decay: d, sustain: s, release: r };
         this.currentADSR = { ...settings };
@@ -130,6 +158,9 @@ export const audioEngine = {
         this.updateADSRUI(a, d, s, r);
     },
 
+    /**
+     * Updates the ADSR visualizer UI.
+     */
     updateADSRUI: function(a, d, s, r) {
         const isSampler = this.currentInstrumentName && this.currentInstrumentName.toLowerCase().includes('sampler');
         updateAdsrGraph(a, d, s, r, isSampler);
@@ -193,6 +224,7 @@ export const audioEngine = {
     addEffectToChain: function(config) { this.effectService.addEffectToChain(config); },
     clearEffects: function(target) { this.effectService.clearEffects(target); },
     updateFilter: function(targetName, freq, q) { this.effectService.updateFilter(targetName, freq, q); },
+    updateEffectParam: function(target, type, param, val, index) { this.effectService.updateEffectParam(target, type, param, val, index); },
     _createEffectInstance: function(config) { return this.effectService._createEffectInstance(config); },
 
     createInstrument: function(name, type) { this.instrumentService.createInstrument(name, type); },
@@ -203,6 +235,13 @@ export const audioEngine = {
     transitionToInstrument: function(name) { this.instrumentService.transitionToInstrument(name); },
     syncAdsrToUI: function() { this.instrumentService.syncAdsrToUI(); },
 
+    /**
+     * Plays a note on the current instrument.
+     * @param {string} note - Note name (e.g., 'C4').
+     * @param {string|number} dur - Duration.
+     * @param {number} [time] - Scheduled time.
+     * @param {number} [velocity] - Velocity (0-1).
+     */
     playCurrentInstrumentNote: function(note, dur, time, velocity) {
         // Force UI sync back to real instrument state when playing (unless it's a scheduled note)
         if (time === undefined) this.syncAdsrToUI();
@@ -220,6 +259,9 @@ export const audioEngine = {
         }
     },
 
+    /**
+     * Triggers the attack phase for the current instrument.
+     */
     playCurrentInstrumentNoteAttack: function(note, velocity) {
         this.syncAdsrToUI();
         const finalNote = this.getTransposedNote(note);
@@ -232,6 +274,9 @@ export const audioEngine = {
         return null;
     },
 
+    /**
+     * Triggers the release phase for the current instrument.
+     */
     playCurrentInstrumentNoteRelease: function(note, noteId) {
         const finalNote = (typeof note === 'string' || typeof note === 'number') ? this.getTransposedNote(note) : note;
         const instr = this.instruments[this.currentInstrumentName];
@@ -267,104 +312,73 @@ export const audioEngine = {
     playRhythmSequence: function(src, steps, time, m, isChord) { this.sequencerService.playRhythmSequence(src, steps, time, m, isChord); },
     playMelodyString: async function(str) { await this.sequencerService.playMelodyString(str); },
 
-        playCountIn: async function(measures = 1, beats = 4, beatValue = 4, volume = 0.8) {
-            await ensureAudioStarted();
-            const boosted = volume * 10;
-            const dur = Tone.Time(beatValue + 'n').toSeconds();
-            for (let m = 0; m < measures; m++) {
-                for (let b = 0; b < beats; b++) {
-                    const t = Tone.now() + 0.05;
-                    if (b === 0) _coreInstruments.click.triggerAttackRelease("C6", "16n", t, boosted);
-                    else _coreInstruments.click.triggerAttackRelease("G5", "16n", t, boosted * 0.5);
-                    await new Promise(r => setTimeout(r, dur * 1000));
-                    if (!this.isExecutionActive) return;
-                }
+    /**
+     * Plays a metronome count-in.
+     */
+    playCountIn: async function(measures = 1, beats = 4, beatValue = 4, volume = 0.8) {
+        await ensureAudioStarted();
+        const boosted = volume * 10;
+        const dur = Tone.Time(beatValue + 'n').toSeconds();
+        for (let m = 0; m < measures; m++) {
+            for (let b = 0; b < beats; b++) {
+                const t = Tone.now() + 0.05;
+                if (b === 0) _coreInstruments.click.triggerAttackRelease("C6", "16n", t, boosted);
+                else _coreInstruments.click.triggerAttackRelease("G5", "16n", t, boosted * 0.5);
+                await new Promise(r => setTimeout(r, dur * 1000));
+                if (!this.isExecutionActive) return;
             }
-        },
+        }
+    },
     
-        _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
-                    const instr = this.instruments[name];
+    _playSpecificInstrumentNote: function(name, note, dur, time, velocity) {
+        const instr = this.instruments[name];
+        if (instr && instr.triggerAttackRelease) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            const t = (time !== undefined) ? time : Tone.now() + 0.05;
+            instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
+        }
+    },
 
-                    if (instr && instr.triggerAttackRelease) {
+    playSpecificInstrumentNoteAttack: function(name, note, velocity = 1) {
+        const instr = this.instruments[name];
+        if (instr && instr.triggerAttack) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return null;
+            instr.triggerAttack(this.getTransposedNote(note), Tone.now(), velocity);
+            return triggerAdsrOn();
+        }
+        return null;
+    },
 
-                        if (instr instanceof Tone.Sampler && !instr.loaded) return;
-
-                        const t = (time !== undefined) ? time : Tone.now() + 0.05;
-
-                        instr.triggerAttackRelease(this.getTransposedNote(note), dur, t, velocity);
-
-                    }
-
-                },
-
-        
-
-                playSpecificInstrumentNoteAttack: function(name, note, velocity = 1) {
-
-                    const instr = this.instruments[name];
-
-                    if (instr && instr.triggerAttack) {
-
-                        if (instr instanceof Tone.Sampler && !instr.loaded) return null;
-
-                        instr.triggerAttack(this.getTransposedNote(note), Tone.now(), velocity);
-
-                        return triggerAdsrOn();
-
-                    }
-
-                    return null;
-
-                },
-
-        
-
-                playSpecificInstrumentNoteRelease: function(name, note, noteId) {
-
-                    const instr = this.instruments[name];
-
-                    if (instr && instr.triggerRelease) {
-
-                        instr.triggerRelease(this.getTransposedNote(note), Tone.now());
-
-                        triggerAdsrOff(noteId);
-
-                    }
-
-                },
-
+    playSpecificInstrumentNoteRelease: function(name, note, noteId) {
+        const instr = this.instruments[name];
+        if (instr && instr.triggerRelease) {
+            instr.triggerRelease(this.getTransposedNote(note), Tone.now());
+            triggerAdsrOff(noteId);
+        }
+    },
             
+    playSFX: async function(url, options = {}) {
+        await ensureAudioStarted();
+        const p = new Tone.Player({ url, onload: () => { if (this.isExecutionActive) p.start(); }, onstop: () => p.dispose() });
+        p.chain(...this._activeEffects, analyser);
+    },
 
-                playSFX: async function(url, options = {}) {
+    playChordByName: function(name, dur, vel, time) {
+        const notes = this.chords[name];
+        const instr = this.instruments[this.currentInstrumentName];
+        if (notes && instr) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            const t = (time !== undefined) ? time : Tone.now() + 0.1;
+            instr.triggerAttackRelease(notes.map(n => this.getTransposedNote(n)), dur, t, vel);
+        }
+    },
 
-            await ensureAudioStarted();
-
-            const p = new Tone.Player({ url, onload: () => { if (this.isExecutionActive) p.start(); }, onstop: () => p.dispose() });
-
-            p.chain(...this._activeEffects, analyser);
-
-        },
-
-    
-
-        playChordByName: function(name, dur, vel, time) {
-
-            const notes = this.chords[name];
-
-            const instr = this.instruments[this.currentInstrumentName];
-
-            if (notes && instr) {
-
-                if (instr instanceof Tone.Sampler && !instr.loaded) return;
-
-                const t = (time !== undefined) ? time : Tone.now() + 0.1;
-
-                instr.triggerAttackRelease(notes.map(n => this.getTransposedNote(n)), dur, t, vel);
-
-            }
-
-        },
-
+    /**
+     * Handles MIDI note on events.
+     * @param {number} note - MIDI note number.
+     * @param {number} vel - Velocity (0-1).
+     * @param {number} ch - MIDI channel.
+     */
     midiAttack: async function(note, vel, ch) {
         await ensureAudioStarted();
         const chord = this.midiChordMap[note];
@@ -377,6 +391,10 @@ export const audioEngine = {
         }
     },
 
+    /**
+     * Handles MIDI note off events.
+     * @param {number} note - MIDI note number.
+     */
     midiRelease: async function(note) {
         const entry = this.midiPlayingNotes.get(note);
         if (!entry) return;

@@ -2,82 +2,14 @@
 import * as Blockly from 'blockly';
 import { getHelpUrl } from '../core/helpUtils.js';
 
-class FieldDropdownLenient extends Blockly.FieldDropdown {
-    constructor(menuGenerator, validator) {
-        super(menuGenerator, validator);
-    }
-    
-    doClassValidation_(newValue) {
-        if (typeof newValue !== 'string') return null;
-        return newValue;
-    }
-
-    getOptions(opt_useCache) {
-        const options = super.getOptions(opt_useCache);
-        const val = this.getValue();
-        if (val && typeof val === 'string') {
-            const exists = options.some(opt => opt[1] === val);
-            if (!exists) {
-                options.push([val, val]);
-            }
-        }
-        return options;
-    }
-}
-
 export function registerBlocks() {
     if (typeof Blockly === 'undefined') {
         console.error('Blockly not available');
         return false;
     }
 
-    Blockly.Blocks['sb_select_current_instrument'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg['SB_SELECT_CURRENT_INSTRUMENT_MESSAGE'].split('%1')[0])
-                .appendField(new FieldDropdownLenient(function() {
-                    let workspace = null;
-                    if (this.sourceBlock_) workspace = this.sourceBlock_.workspace;
-                    else if (this.workspace) workspace = this.workspace;
-
-                    const options = [];
-                    if (workspace) {
-                        const targetBlockTypes = [
-                            'sb_instrument_container', // New V2.1 Container
-                            'sb_create_synth_instrument', 
-                            'sb_create_harmonic_synth', 
-                            'sb_create_additive_synth', 
-                            'sb_create_layered_instrument', 
-                            'sb_create_sampler_instrument'
-                        ];
-                        targetBlockTypes.forEach(type => {
-                            workspace.getBlocksByType(type, false).forEach(block => {
-                                const name = block.getFieldValue('NAME');
-                                if (name && !options.some(opt => opt[1] === name)) options.push([name, name]);
-                            });
-                        });
-                    }
-                    if (options.length > 1) {
-                        options.sort((a, b) => a[0].localeCompare(b[0]));
-                    }
-                    
-                    if (options.length === 0) {
-                        return [["(無樂器)", "NONE"]];
-                    }
-                    
-                    const currentValue = this.getValue();
-                    if (currentValue && !options.some(opt => opt[1] === currentValue)) {
-                        options.push([currentValue, currentValue]);
-                    }
-                    return options;
-                }), "NAME");
-            
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['PERFORMANCE_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP']);
-        }
-    };
+    // NOTE: sb_select_current_instrument is now defined in instruments_blocks.js
+    // to centralize instrument management logic.
 
     Blockly.Blocks['sb_play_melody'] = {
         init: function () {

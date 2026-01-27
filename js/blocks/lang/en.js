@@ -463,4 +463,22 @@ export const MSG_EN = {
     // EFFECTS
     'SB_CLEAR_EFFECTS_MESSAGE': 'Clear all effects for %1',
     'SB_CLEAR_EFFECTS_TOOLTIP': 'Removes all active effects from the specified target (Instrument or Master).',
+    'SB_SET_EFFECT_PARAM_MESSAGE': 'Set %1 %2. %3 Parameter %4 to %5',
+    'SB_SET_EFFECT_PARAM_TOOLTIP': 'Updates a parameter of an active effect. Use the number field to specify which effect instance (e.g., 2nd Filter) to target.',
+    'LOG_EFFECT_PARAM_ERR': 'Warning: Effect "%1" does not support parameter "%2".',
+
+    // Parameter Names (Consistent with Setup Block)
+    'SB_PARAM_FREQ': 'Frequency',
+    'SB_PARAM_Q': 'Q (Resonance)',
+    'SB_PARAM_WET': 'Wet (Mix)',
+    'SB_PARAM_DISTORTION': 'Distortion Amount',
+    'SB_PARAM_DECAY': 'Decay',
+    'SB_PARAM_DELAY_TIME': 'Delay Time',
+    'SB_PARAM_FEEDBACK': 'Feedback',
+    'SB_PARAM_THRESHOLD': 'Threshold',
+    'SB_PARAM_RATIO': 'Ratio',
+    'SB_PARAM_ATTACK': 'Attack',
+    'SB_PARAM_RELEASE': 'Release',
+    'SB_PARAM_BITS': 'Bits (BitDepth)',
+    'SB_PARAM_DEPTH': 'Depth',
 };
