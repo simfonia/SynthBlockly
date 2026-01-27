@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
 import { ensureAudioStarted } from '../audioUtils.js';
+import { triggerAdsrOn, triggerAdsrOff } from '../../ui/adsrVisualizer.js';
 
 /**
  * Service responsible for sequencing, rhythm playback, and melody parsing.
@@ -12,17 +13,17 @@ export class SequencerService {
         this.audioEngine = audioEngine;
     }
 
-    playKick(v = 1, time) { 
+    playKick(v = 1, time) {
         const t = (time !== undefined) ? time : (Tone.now() + 0.05);
         if (this.audioEngine._coreInstruments.drum) {
-            this.audioEngine._coreInstruments.drum.triggerAttackRelease('C2', '8n', t, v); 
+            this.audioEngine._coreInstruments.drum.triggerAttackRelease('C2', '8n', t, v);
         }
     }
 
-    playSnare(v = 1, time) { 
+    playSnare(v = 1, time) {
         const t = (time !== undefined) ? time : (Tone.now() + 0.05);
         if (this.audioEngine._coreInstruments.snare) {
-            this.audioEngine._coreInstruments.snare.triggerAttackRelease('8n', t, v); 
+            this.audioEngine._coreInstruments.snare.triggerAttackRelease('8n', t, v);
         }
     }
 
@@ -34,29 +35,16 @@ export class SequencerService {
         }
     }
 
-    /**
-     * Plays a step sequence (rhythm).
-     * @param {string} soundSource - Source name or keyword (KICK, SNARE, HH, CLAP).
-     * @param {string} steps - The sequence string (e.g. "x . x .").
-     * @param {number} time - Start time.
-     * @param {number} measure - Measure number.
-     * @param {boolean} isChord - Whether the steps represent chords.
-     */
     playRhythmSequence(soundSource, steps, time, measure = 1, isChord = false) {
         if (!steps || !Array.isArray(steps) || time === undefined) return;
-        
         const mDur = Tone.Time('1m').toSeconds();
         const sTime = mDur / 16;
         const mStart = time + (measure - 1) * mDur;
-
-        // Use delegated properties from audioEngine
         const targetInstr = this.audioEngine.instruments[soundSource] || this.audioEngine.instruments[this.audioEngine.currentInstrumentName];
-
         for (let i = 0; i < Math.min(steps.length, 16); i++) {
             const c = steps[i]; 
             if (c === '.' || c === '-') continue;
             const t = mStart + (i * sTime) + 0.05;
-            
             if (isChord) {
                 const chordNotes = this.audioEngine.chords[c];
                 if (chordNotes && targetInstr && targetInstr.triggerAttackRelease) {
@@ -65,12 +53,10 @@ export class SequencerService {
                 }
                 continue;
             }
-
             if (this.audioEngine.chords[soundSource]) {
                  this.audioEngine.playChordByName(soundSource, '16n', 0.8, t); 
                  continue;
             }
-
             if (c.toLowerCase() === 'x') {
                 if (soundSource === 'KICK') this.playKick(1, t);
                 else if (soundSource === 'SNARE') this.playSnare(1, t);
@@ -97,53 +83,85 @@ export class SequencerService {
         }
     }
 
-    /**
-     * Parses and plays a melody string.
-     * @param {string} str - The melody string (e.g. "C4Q, D4H").
-     */
-    async playMelodyString(str) {
-            await ensureAudioStarted();
-            const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
-            const tokens = str.split(/[,\s\n\r]+/).filter(s => s.trim().length > 0);
-            
-            for (const token of tokens) {            if (!this.audioEngine.isExecutionActive) break;
-            
+    playChordByName(name, dur, vel, time, target) {
+        const notes = this.audioEngine.chords[name];
+        const finalTarget = target || this.audioEngine.currentInstrumentName;
+        const instr = this.audioEngine.instruments[finalTarget];
+        if (notes && instr) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return;
+            const t = (time !== undefined) ? time : Tone.now() + 0.1;
+            const transposed = notes.map(n => this.audioEngine.getTransposedNote(n));
+            if (instr.triggerAttackRelease) {
+                instr.triggerAttackRelease(transposed, dur, t, vel);
+                if (time === undefined) {
+                    const noteId = triggerAdsrOn();
+                    setTimeout(() => { if (this.audioEngine.isExecutionActive) triggerAdsrOff(noteId); }, Tone.Time(dur).toSeconds() * 1000);
+                }
+            }
+        }
+    }
+
+    async playMelodyString(str, target, startTime) {
+        await ensureAudioStarted();
+        const tokens = str.split(/[,\s\n\r]+/).filter(s => s.trim().length > 0);
+        const durMap = { 'W': '1m', 'H': '2n', 'Q': '4n', 'E': '8n', 'S': '16n', 'T': '32n' };
+        let currentTimeOffset = 0;
+        const isScheduled = (typeof startTime === 'number');
+
+        for (const token of tokens) {
+            if (this.audioEngine.isExecutionActive === false) break;
             let prefix = token;
             let d = '4n'; 
             const mDur = token.match(/([WHQEST])(\.?|_T)?$/i);
-            
             if (mDur) {
                 const durPart = mDur[0];
-                const durCode = mDur[1].toUpperCase();
                 const modifier = mDur[2] || '';
-                let baseDur = durMap[durCode] || '4n';
+                let baseDur = durMap[mDur[1].toUpperCase()] || '4n';
                 if (modifier === '.') baseDur += '.'; 
                 else if (modifier === '_T') baseDur = baseDur.replace('n', 't');
                 d = baseDur;
                 prefix = token.slice(0, -durPart.length);
             }
-            
-            const ms = Tone.Time(d).toMilliseconds();
+            const durSeconds = Tone.Time(d).toSeconds();
             const uprefix = prefix.toUpperCase();
 
             if (uprefix === 'R' || (prefix === '' && mDur)) {
-                await new Promise(r => setTimeout(r, ms));
+                if (isScheduled) currentTimeOffset += durSeconds;
+                else await new Promise(r => setTimeout(r, durSeconds * 1000));
             } else {
                 const isStrictNote = prefix.match(/^[A-G][#b]?[0-8]$/i);
-                
-                if (isStrictNote) {
-                    this.audioEngine.playCurrentInstrumentNote(prefix, d, undefined, 0.8);
-                } else if (this.audioEngine.chords[prefix]) {
-                    this.audioEngine.playChordByName(prefix, d, 0.8, undefined);
-                } else {
-                    const isLooseNote = prefix.match(/^[A-G][#b]?$/i);
-                    if (isLooseNote) {
-                        this.audioEngine.playCurrentInstrumentNote(prefix + "4", d, undefined, 0.8);
-                    } else {
-                         this.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', prefix);
+                const isLooseNote = prefix.match(/^[A-G][#b]?$/i);
+                const playFunc = async () => {
+                    const finalTarget = target || this.audioEngine.currentInstrumentName;
+                    const instr = this.audioEngine.instruments[finalTarget];
+                    if (!instr) return;
+                    if (instr instanceof Tone.Sampler && !instr.loaded) {
+                        let retry = 0;
+                        while (!instr.loaded && retry < 10) { 
+                            if (this.audioEngine.isExecutionActive === false) return;
+                            await new Promise(r => setTimeout(r, 50)); retry++; 
+                        }
+                        if (!instr.loaded) return;
                     }
+                    const noteTime = isScheduled ? (startTime + currentTimeOffset) : undefined;
+                    if (isStrictNote || isLooseNote) {
+                        const noteToPlay = isStrictNote ? prefix : (prefix + "4");
+                        if (target) this.audioEngine._playSpecificInstrumentNote(target, noteToPlay, d, noteTime, 0.8);
+                        else this.audioEngine.playCurrentInstrumentNote(noteToPlay, d, noteTime, 0.8);
+                    } else if (this.audioEngine.chords[prefix]) {
+                        const transposed = this.audioEngine.chords[prefix].map(n => this.audioEngine.getTransposedNote(n));
+                        if (instr.triggerAttackRelease) instr.triggerAttackRelease(transposed, d, (noteTime || Tone.now() + 0.05), 0.8);
+                    }
+                };
+
+                if (isScheduled) {
+                    playFunc(); // Fire instantly for scheduling
+                    currentTimeOffset += durSeconds;
+                } else {
+                    await playFunc();
+                    if (this.audioEngine.isExecutionActive === false) break;
+                    await new Promise(r => setTimeout(r, durSeconds * 1000));
                 }
-                await new Promise(r => setTimeout(r, ms));
             }
         }
     }

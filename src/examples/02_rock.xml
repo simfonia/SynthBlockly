@@ -4,7 +4,23 @@
     <variable id="b0Hr!s||dWB[#K-a~}5G">velocity</variable>
     <variable id="S?aA@O9)vMw$HxDYnqT,">channel</variable>
   </variables>
-  <block type="sb_instrument_container" id="setup_synth" x="10" y="10">
+  <block type="sb_comment" id="rock_guide" x="10" y="10">
+    <field name="COMMENT">此範例中的「演奏音符」積木屬於「觸發式 (Trigger)」。&amp;#10;聲音長度完全由積木設定的「時值 (例如 8n)」決定。&amp;#10;&amp;#10;範例中利用「於小節偏移[時間]處執行」積木來做時序控制編曲。&amp;#10;&amp;#10;由於示範中使用爵士鼓取樣音色，給一小節預備拍讓程式有時間下載這些聲音檔。&amp;#10;&amp;#10;Rock 的特色就是 Back-beat，二、四拍為小鼓重拍。&amp;#10;&amp;#10;使用左右方向鍵可以切換樂器，聽看看取樣器鋼琴與合成器鋼琴音色與sustain的效果。</field>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="250">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="master_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="s}S!~V@%d/2j?et/^{?n">
+            <field name="NUM">-5</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="setup_synth" x="10" y="370">
     <field name="NAME">DefaultSynth</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="main_synth">
@@ -20,7 +36,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="setup_drums" x="10" y="130">
+  <block type="sb_instrument_container" id="setup_drums" x="10" y="490">
     <field name="NAME">Piano</field>
     <statement name="STACK">
       <block type="sb_create_sampler_instrument" id="drum_sampler">
@@ -28,178 +44,160 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="230">
-    <statement name="STACK">
-      <block type="sb_container_setup_effect" id="master_limiter">
-        <mutation effect_type="limiter"></mutation>
-        <field name="EFFECT_TYPE">limiter</field>
-        <value name="THRESHOLD">
-          <shadow type="math_number" id="s}S!~V@%d/2j?et/^{?n">
-            <field name="NUM">-5</field>
-          </shadow>
-        </value>
-      </block>
-    </statement>
-  </block>
-  <block type="sb_comment" id="rock_guide" x="10" y="350">
-    <field name="COMMENT">此範例中的「演奏音符」積木屬於「觸發式 (Trigger)」。&amp;#10;聲音長度完全由積木設定的「時值 (例如 8n)」決定。&amp;#10;&amp;#10;範例中利用「於小節偏移[時間]處執行」積木來做時序控制編曲。&amp;#10;&amp;#10;由於示範中使用爵士鼓取樣音色，給一小節預備拍讓程式有時間下載這些聲音檔。&amp;#10;&amp;#10;Rock 的特色就是 Back-beat，二、四拍為小鼓重拍。&amp;#10;&amp;#10;使用左右方向鍵可以切換樂器，聽看看取樣器鋼琴與合成器鋼琴音色與sustain的效果。</field>
+  <block type="sb_toggle_pc_keyboard_midi" id="enable_kbd" x="10" y="590">
+    <field name="ACTION">ON</field>
     <next>
-      <block type="sb_toggle_pc_keyboard_midi" id="enable_kbd">
-        <field name="ACTION">ON</field>
+      <block type="sb_transport_set_bpm" id="set_bpm">
+        <field name="BPM">80</field>
         <next>
-          <block type="sb_transport_set_bpm" id="set_bpm">
-            <field name="BPM">80</field>
+          <block type="sb_transport_count_in" id="pre_count">
+            <field name="MEASURES">1</field>
+            <field name="BEATS">4</field>
+            <field name="BEAT_VALUE">4</field>
+            <value name="VOLUME">
+              <shadow type="math_number" id="Jpi^~D=U?;E5A+)O6[(W">
+                <field name="NUM">0.8</field>
+              </shadow>
+            </value>
             <next>
-              <block type="sb_transport_count_in" id="pre_count">
-                <field name="MEASURES">1</field>
-                <field name="BEATS">4</field>
-                <field name="BEAT_VALUE">4</field>
-                <value name="VOLUME">
-                  <shadow type="math_number" id="Jpi^~D=U?;E5A+)O6[(W">
-                    <field name="NUM">0.8</field>
-                  </shadow>
-                </value>
-                <next>
-                  <block type="sb_tone_loop" id="main_drum_loop">
-                    <field name="INTERVAL">1m</field>
+              <block type="sb_tone_loop" id="main_drum_loop">
+                <field name="INTERVAL">1m</field>
+                <statement name="DO">
+                  <block type="sb_schedule_at_offset" id="kick1">
+                    <field name="OFFSET">0</field>
                     <statement name="DO">
-                      <block type="sb_schedule_at_offset" id="kick1">
-                        <field name="OFFSET">0</field>
+                      <block type="jazzkit_play_drum" id="k1">
+                        <field name="DRUM_TYPE">C1</field>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="sb_schedule_at_offset" id="snare1">
+                        <field name="OFFSET">0:1</field>
                         <statement name="DO">
-                          <block type="jazzkit_play_drum" id="k1">
-                            <field name="DRUM_TYPE">C1</field>
+                          <block type="jazzkit_play_drum" id="s1">
+                            <field name="DRUM_TYPE">D1</field>
                           </block>
                         </statement>
                         <next>
-                          <block type="sb_schedule_at_offset" id="snare1">
-                            <field name="OFFSET">0:1</field>
+                          <block type="sb_schedule_at_offset" id="kick2">
+                            <field name="OFFSET">0:2</field>
                             <statement name="DO">
-                              <block type="jazzkit_play_drum" id="s1">
-                                <field name="DRUM_TYPE">D1</field>
+                              <block type="jazzkit_play_drum" id="k2">
+                                <field name="DRUM_TYPE">C1</field>
                               </block>
                             </statement>
                             <next>
-                              <block type="sb_schedule_at_offset" id="kick2">
-                                <field name="OFFSET">0:2</field>
+                              <block type="sb_schedule_at_offset" id="snare2">
+                                <field name="OFFSET">0:3</field>
                                 <statement name="DO">
-                                  <block type="jazzkit_play_drum" id="k2">
-                                    <field name="DRUM_TYPE">C1</field>
+                                  <block type="jazzkit_play_drum" id="s2">
+                                    <field name="DRUM_TYPE">D1</field>
                                   </block>
                                 </statement>
                                 <next>
-                                  <block type="sb_schedule_at_offset" id="snare2">
-                                    <field name="OFFSET">0:3</field>
+                                  <block type="sb_schedule_at_offset" id="hh1">
+                                    <field name="OFFSET">0:0:0</field>
                                     <statement name="DO">
-                                      <block type="jazzkit_play_drum" id="s2">
-                                        <field name="DRUM_TYPE">D1</field>
+                                      <block type="jazzkit_play_drum" id="5woG@Xg7N*Zb#~L*LYjx">
+                                        <field name="DRUM_TYPE">F1</field>
+                                        <value name="VELOCITY">
+                                          <block type="math_number" id="mRK8eoP%}y[|TJut%uY;">
+                                            <field name="NUM">0.2</field>
+                                          </block>
+                                        </value>
                                       </block>
                                     </statement>
                                     <next>
-                                      <block type="sb_schedule_at_offset" id="hh1">
-                                        <field name="OFFSET">0:0:0</field>
+                                      <block type="sb_schedule_at_offset" id="hh2">
+                                        <field name="OFFSET">0:0:2</field>
                                         <statement name="DO">
-                                          <block type="jazzkit_play_drum" id="5woG@Xg7N*Zb#~L*LYjx">
+                                          <block type="jazzkit_play_drum" id="S]^i2l7$W.{-aXxQ7vs#">
                                             <field name="DRUM_TYPE">F1</field>
                                             <value name="VELOCITY">
-                                              <block type="math_number" id="mRK8eoP%}y[|TJut%uY;">
+                                              <block type="math_number" id=")V/|wu^2{s4:;lI^lYdV">
                                                 <field name="NUM">0.2</field>
                                               </block>
                                             </value>
                                           </block>
                                         </statement>
                                         <next>
-                                          <block type="sb_schedule_at_offset" id="hh2">
-                                            <field name="OFFSET">0:0:2</field>
+                                          <block type="sb_schedule_at_offset" id="hh3">
+                                            <field name="OFFSET">0:1:0</field>
                                             <statement name="DO">
-                                              <block type="jazzkit_play_drum" id="S]^i2l7$W.{-aXxQ7vs#">
+                                              <block type="jazzkit_play_drum" id="#j^_Xpm%;~fBs$tlx0gp">
                                                 <field name="DRUM_TYPE">F1</field>
                                                 <value name="VELOCITY">
-                                                  <block type="math_number" id=")V/|wu^2{s4:;lI^lYdV">
+                                                  <block type="math_number" id=")XqsQQ?(hv)xNBL-2dA|">
                                                     <field name="NUM">0.2</field>
                                                   </block>
                                                 </value>
                                               </block>
                                             </statement>
                                             <next>
-                                              <block type="sb_schedule_at_offset" id="hh3">
-                                                <field name="OFFSET">0:1:0</field>
+                                              <block type="sb_schedule_at_offset" id="hh4">
+                                                <field name="OFFSET">0:1:2</field>
                                                 <statement name="DO">
-                                                  <block type="jazzkit_play_drum" id="#j^_Xpm%;~fBs$tlx0gp">
+                                                  <block type="jazzkit_play_drum" id="RM#{0vm(5p]{M-R5dAww">
                                                     <field name="DRUM_TYPE">F1</field>
                                                     <value name="VELOCITY">
-                                                      <block type="math_number" id=")XqsQQ?(hv)xNBL-2dA|">
+                                                      <block type="math_number" id="D[~$-XsK4`xl0k(`g?VF">
                                                         <field name="NUM">0.2</field>
                                                       </block>
                                                     </value>
                                                   </block>
                                                 </statement>
                                                 <next>
-                                                  <block type="sb_schedule_at_offset" id="hh4">
-                                                    <field name="OFFSET">0:1:2</field>
+                                                  <block type="sb_schedule_at_offset" id="hh5">
+                                                    <field name="OFFSET">0:2:0</field>
                                                     <statement name="DO">
-                                                      <block type="jazzkit_play_drum" id="RM#{0vm(5p]{M-R5dAww">
+                                                      <block type="jazzkit_play_drum" id="Lz.YmHl6O-`FLYT|v2wX">
                                                         <field name="DRUM_TYPE">F1</field>
                                                         <value name="VELOCITY">
-                                                          <block type="math_number" id="D[~$-XsK4`xl0k(`g?VF">
+                                                          <block type="math_number" id="d*u-}n@;mh6Q-TQdMfql">
                                                             <field name="NUM">0.2</field>
                                                           </block>
                                                         </value>
                                                       </block>
                                                     </statement>
                                                     <next>
-                                                      <block type="sb_schedule_at_offset" id="hh5">
-                                                        <field name="OFFSET">0:2:0</field>
+                                                      <block type="sb_schedule_at_offset" id="hh6">
+                                                        <field name="OFFSET">0:2:2</field>
                                                         <statement name="DO">
-                                                          <block type="jazzkit_play_drum" id="Lz.YmHl6O-`FLYT|v2wX">
+                                                          <block type="jazzkit_play_drum" id="mm0M~P!ca-;[OqJ`5LOk">
                                                             <field name="DRUM_TYPE">F1</field>
                                                             <value name="VELOCITY">
-                                                              <block type="math_number" id="d*u-}n@;mh6Q-TQdMfql">
+                                                              <block type="math_number" id=".lbxq:bbK~:3|]}1XFmZ">
                                                                 <field name="NUM">0.2</field>
                                                               </block>
                                                             </value>
                                                           </block>
                                                         </statement>
                                                         <next>
-                                                          <block type="sb_schedule_at_offset" id="hh6">
-                                                            <field name="OFFSET">0:2:2</field>
+                                                          <block type="sb_schedule_at_offset" id="hh7">
+                                                            <field name="OFFSET">0:3:0</field>
                                                             <statement name="DO">
-                                                              <block type="jazzkit_play_drum" id="mm0M~P!ca-;[OqJ`5LOk">
+                                                              <block type="jazzkit_play_drum" id="Kr_Wmhna#:(:EMoLl3eQ">
                                                                 <field name="DRUM_TYPE">F1</field>
                                                                 <value name="VELOCITY">
-                                                                  <block type="math_number" id=".lbxq:bbK~:3|]}1XFmZ">
+                                                                  <block type="math_number" id="SQL5jRC:Rq[(M.@B`1*I">
                                                                     <field name="NUM">0.2</field>
                                                                   </block>
                                                                 </value>
                                                               </block>
                                                             </statement>
                                                             <next>
-                                                              <block type="sb_schedule_at_offset" id="hh7">
-                                                                <field name="OFFSET">0:3:0</field>
+                                                              <block type="sb_schedule_at_offset" id="hh8">
+                                                                <field name="OFFSET">0:3:2</field>
                                                                 <statement name="DO">
-                                                                  <block type="jazzkit_play_drum" id="Kr_Wmhna#:(:EMoLl3eQ">
+                                                                  <block type="jazzkit_play_drum" id="@|42iN{}@N[YPo;u(~4]">
                                                                     <field name="DRUM_TYPE">F1</field>
                                                                     <value name="VELOCITY">
-                                                                      <block type="math_number" id="SQL5jRC:Rq[(M.@B`1*I">
+                                                                      <block type="math_number" id="3LGojV84n+kvCcefCz[)">
                                                                         <field name="NUM">0.2</field>
                                                                       </block>
                                                                     </value>
                                                                   </block>
                                                                 </statement>
-                                                                <next>
-                                                                  <block type="sb_schedule_at_offset" id="hh8">
-                                                                    <field name="OFFSET">0:3:2</field>
-                                                                    <statement name="DO">
-                                                                      <block type="jazzkit_play_drum" id="@|42iN{}@N[YPo;u(~4]">
-                                                                        <field name="DRUM_TYPE">F1</field>
-                                                                        <value name="VELOCITY">
-                                                                          <block type="math_number" id="3LGojV84n+kvCcefCz[)">
-                                                                            <field name="NUM">0.2</field>
-                                                                          </block>
-                                                                        </value>
-                                                                      </block>
-                                                                    </statement>
-                                                                  </block>
-                                                                </next>
                                                               </block>
                                                             </next>
                                                           </block>
@@ -221,12 +219,12 @@
                           </block>
                         </next>
                       </block>
-                    </statement>
-                    <next>
-                      <block type="sb_transport_start_stop" id="start_play">
-                        <field name="ACTION">START</field>
-                      </block>
                     </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="sb_transport_start_stop" id="start_play">
+                    <field name="ACTION">START</field>
                   </block>
                 </next>
               </block>
@@ -236,7 +234,7 @@
       </block>
     </next>
   </block>
-  <block type="sb_midi_note_received" id="midi_in" x="10" y="1470">
+  <block type="sb_midi_note_received" id="midi_in" x="10" y="1490">
     <field name="NOTE" id="j(G}u4O{4q`Zm,6aurdi">note</field>
     <field name="VELOCITY" id="b0Hr!s||dWB[#K-a~}5G">velocity</field>
     <field name="CHANNEL" id="S?aA@O9)vMw$HxDYnqT,">channel</field>

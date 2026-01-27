@@ -1,5 +1,8 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="sb_instrument_container" id="cont_guitar" x="10" y="10">
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">此範例展示如何利用「效果器」將平凡的合成器轉變為激昂的「電吉他」。&amp;#10;&amp;#10;1. 選擇音源：我們使用 FMSynth 作為基礎。&amp;#10;2. 失真效果 (Distortion)：這是音色的核心，製造出搖滾樂中典型的破音吉他聲。&amp;#10;3. 混響效果 (Reverb)：模擬吉他音箱在房間中產生的回響。&amp;#10;&amp;#10;您可以嘗試調整容器內 Distortion 的「量」！</field>
+  </block>
+  <block type="sb_instrument_container" id="cont_guitar" x="10" y="190">
     <field name="NAME">electric_guitar</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="fm1">
@@ -53,7 +56,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="350">
+  <block type="sb_master_container" id="setup_master" x="10" y="530">
     <statement name="STACK">
       <block type="sb_container_setup_effect" id="master_limiter">
         <mutation effect_type="limiter"></mutation>
@@ -66,16 +69,11 @@
       </block>
     </statement>
   </block>
-  <block type="sb_comment" id="guide" x="10" y="470">
-    <field name="COMMENT">此範例展示如何利用「效果器」將平凡的合成器轉變為激昂的「電吉他」。&amp;#10;&amp;#10;1. 選擇音源：我們使用 FMSynth 作為基礎。&amp;#10;2. 失真效果 (Distortion)：這是音色的核心，製造出搖滾樂中典型的破音吉他聲。&amp;#10;3. 混響效果 (Reverb)：模擬吉他音箱在房間中產生的回響。&amp;#10;&amp;#10;您可以嘗試調整容器內 Distortion 的「量」！</field>
+  <block type="sb_select_current_instrument" id="NFDX}iyXp,Hvo@py9Z7m" x="10" y="650">
+    <field name="NAME">electric_guitar</field>
     <next>
-      <block type="sb_select_current_instrument" id="NFDX}iyXp,Hvo@py9Z7m">
-        <field name="NAME">electric_guitar</field>
-        <next>
-          <block type="sb_toggle_pc_keyboard_midi" id="cA~o-X`m7l@9Cy4ez8M6">
-            <field name="ACTION">ON</field>
-          </block>
-        </next>
+      <block type="sb_toggle_pc_keyboard_midi" id="cA~o-X`m7l@9Cy4ez8M6">
+        <field name="ACTION">ON</field>
       </block>
     </next>
   </block>

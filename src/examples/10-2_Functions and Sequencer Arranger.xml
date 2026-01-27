@@ -132,7 +132,6 @@
         <field name="SEQUENCE">x--- --x- --x- x---</field>
         <value name="SOURCE">
           <shadow type="sb_rhythm_source_selector" id="KvopbAMPf]GB8kpJP9Yn">
-            <mutation is_custom="true"></mutation>
             <field name="TYPE">CUSTOM</field>
             <field name="CUSTOM_TYPE">JazzClap</field>
           </shadow>
@@ -148,7 +147,6 @@
             <field name="SEQUENCE">Dm7--- Dm7--- --Dm7- --Dm7-</field>
             <value name="SOURCE">
               <shadow type="sb_rhythm_source_selector" id="N2$vf|1*DJdh5CZsrwr?">
-                <mutation is_custom="true"></mutation>
                 <field name="TYPE">CUSTOM</field>
                 <field name="CUSTOM_TYPE">Piano</field>
               </shadow>
@@ -164,7 +162,6 @@
                 <field name="SEQUENCE">D2--- ---- A2--- ----</field>
                 <value name="SOURCE">
                   <shadow type="sb_rhythm_source_selector" id="P`bdXtYf%(_RrV3`x:v!">
-                    <mutation is_custom="true"></mutation>
                     <field name="TYPE">CUSTOM</field>
                     <field name="CUSTOM_TYPE">Bass</field>
                   </shadow>
@@ -180,7 +177,6 @@
                     <field name="SEQUENCE">x--- --x- --x- x---</field>
                     <value name="SOURCE">
                       <shadow type="sb_rhythm_source_selector" id="XawOzrrW9gPS=|g4ZRtM">
-                        <mutation is_custom="true"></mutation>
                         <field name="TYPE">CUSTOM</field>
                         <field name="CUSTOM_TYPE">JazzKick</field>
                       </shadow>
@@ -196,7 +192,6 @@
                         <field name="SEQUENCE">--G7- --G7- ---- G7---</field>
                         <value name="SOURCE">
                           <shadow type="sb_rhythm_source_selector" id="/v!B1q!Fgp{TAZn:I7dU">
-                            <mutation is_custom="true"></mutation>
                             <field name="TYPE">CUSTOM</field>
                             <field name="CUSTOM_TYPE">Piano</field>
                           </shadow>
@@ -212,7 +207,6 @@
                             <field name="SEQUENCE">G1--- ---- D2--- ----</field>
                             <value name="SOURCE">
                               <shadow type="sb_rhythm_source_selector" id="eHu6Y7I;CBdr%;-,JI$3">
-                                <mutation is_custom="true"></mutation>
                                 <field name="TYPE">CUSTOM</field>
                                 <field name="CUSTOM_TYPE">Bass</field>
                               </shadow>
@@ -228,7 +222,6 @@
                                 <field name="SEQUENCE">x--- --x- --x- x---</field>
                                 <value name="SOURCE">
                                   <shadow type="sb_rhythm_source_selector" id="mmLPU5p:hABrp:sEU0^Z">
-                                    <mutation is_custom="true"></mutation>
                                     <field name="TYPE">CUSTOM</field>
                                     <field name="CUSTOM_TYPE">JazzClap</field>
                                   </shadow>
@@ -244,7 +237,6 @@
                                     <field name="SEQUENCE">CM7--- CM7--- --CM7- --CM7-</field>
                                     <value name="SOURCE">
                                       <shadow type="sb_rhythm_source_selector" id="|jj;TCZrw3]5~!6^6-l}">
-                                        <mutation is_custom="true"></mutation>
                                         <field name="TYPE">CUSTOM</field>
                                         <field name="CUSTOM_TYPE">Piano</field>
                                       </shadow>
@@ -260,7 +252,6 @@
                                         <field name="SEQUENCE">C2--- ---- G2--- ----</field>
                                         <value name="SOURCE">
                                           <shadow type="sb_rhythm_source_selector" id="N?jlhsyiQPV^RtsxvhFu">
-                                            <mutation is_custom="true"></mutation>
                                             <field name="TYPE">CUSTOM</field>
                                             <field name="CUSTOM_TYPE">Bass</field>
                                           </shadow>
@@ -276,7 +267,6 @@
                                             <field name="SEQUENCE">x--- --x- --x- x---</field>
                                             <value name="SOURCE">
                                               <shadow type="sb_rhythm_source_selector" id="iE;%zik7-D*0n,@wVFNL">
-                                                <mutation is_custom="true"></mutation>
                                                 <field name="TYPE">CUSTOM</field>
                                                 <field name="CUSTOM_TYPE">JazzKick</field>
                                               </shadow>
@@ -292,7 +282,6 @@
                                                 <field name="SEQUENCE">--A7- --A7- ---- A7---</field>
                                                 <value name="SOURCE">
                                                   <shadow type="sb_rhythm_source_selector" id="|XCu;UxDt+h2$%jSC-nz">
-                                                    <mutation is_custom="true"></mutation>
                                                     <field name="TYPE">CUSTOM</field>
                                                     <field name="CUSTOM_TYPE">Piano</field>
                                                   </shadow>
@@ -308,7 +297,6 @@
                                                     <field name="SEQUENCE">A1--- ---- E2--- ----</field>
                                                     <value name="SOURCE">
                                                       <shadow type="sb_rhythm_source_selector" id="(n4/eJrR2}CVY;;*iMaL">
-                                                        <mutation is_custom="true"></mutation>
                                                         <field name="TYPE">CUSTOM</field>
                                                         <field name="CUSTOM_TYPE">Bass</field>
                                                       </shadow>
@@ -343,7 +331,7 @@
       </block>
     </statement>
   </block>
-  <block type="procedures_defnoreturn" id="func_b" x="10" y="1930">
+  <block type="procedures_defnoreturn" id="func_b" x="10" y="1610">
     <field name="NAME">演奏 B 段</field>
     <comment pinned="false" h="80" w="160">描述此函式...</comment>
     <statement name="STACK">
@@ -352,7 +340,6 @@
         <field name="SEQUENCE">Dm7--- ---- G7--- ----</field>
         <value name="SOURCE">
           <shadow type="sb_rhythm_source_selector" id="CfLxM,wB8JGuYf`vD%gy">
-            <mutation is_custom="true"></mutation>
             <field name="TYPE">CUSTOM</field>
             <field name="CUSTOM_TYPE">Piano</field>
           </shadow>
@@ -368,7 +355,6 @@
             <field name="SEQUENCE">D2--- ---- G1--- ----</field>
             <value name="SOURCE">
               <shadow type="sb_rhythm_source_selector" id="Sq.(*G[i=vC-6_6[kS;k">
-                <mutation is_custom="true"></mutation>
                 <field name="TYPE">CUSTOM</field>
                 <field name="CUSTOM_TYPE">Bass</field>
               </shadow>
@@ -384,7 +370,6 @@
                 <field name="SEQUENCE">C_End--- ---- ---- ----</field>
                 <value name="SOURCE">
                   <shadow type="sb_rhythm_source_selector" id=":7V{%S@9U]VO}I1Q|pb7">
-                    <mutation is_custom="true"></mutation>
                     <field name="TYPE">CUSTOM</field>
                     <field name="CUSTOM_TYPE">Piano</field>
                   </shadow>
@@ -400,7 +385,6 @@
                     <field name="SEQUENCE">C2--- ---- ---- ----</field>
                     <value name="SOURCE">
                       <shadow type="sb_rhythm_source_selector" id="$587|Dv[w8vVGhe4!T_)">
-                        <mutation is_custom="true"></mutation>
                         <field name="TYPE">CUSTOM</field>
                         <field name="CUSTOM_TYPE">Bass</field>
                       </shadow>
@@ -419,7 +403,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_toggle_pc_keyboard_midi" id="(0VQtHA%*~,D2x{i;Kw`" x="10" y="2250">
+  <block type="sb_toggle_pc_keyboard_midi" id="(0VQtHA%*~,D2x{i;Kw`" x="10" y="1830">
     <field name="ACTION">ON</field>
     <next>
       <block type="sb_transport_set_bpm" id="Re5f_Cp6WWqIyJD-YfAY">

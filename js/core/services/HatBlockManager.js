@@ -15,15 +15,27 @@ export class HatBlockManager {
         this.workspace = ws;
     }
 
+    /**
+     * Resets the manager's tracking state. 
+     * Called when the audio engine is reset to ensure full re-registration.
+     */
+    reset() {
+        this.blockListeners = {};
+    }
+
     updateAll(ws) {
         if (ws) this.workspace = ws;
         if (!this.workspace) return;
 
-        const serialHats = this.workspace.getBlocksByType('sb_serial_data_received', false);
-        const midiHats = this.workspace.getBlocksByType('sb_midi_note_received', false);
-        const keyActionHats = this.workspace.getBlocksByType('sb_key_action_event', false);
+        // Use getAllBlocks(false) to find nested blocks as well
+        const allBlocks = this.workspace.getAllBlocks(false);
+        const serialHats = allBlocks.filter(b => b.type === 'sb_serial_data_received');
+        const midiHats = allBlocks.filter(b => b.type === 'sb_midi_note_received');
+        const keyActionHats = allBlocks.filter(b => b.type === 'sb_key_action_event');
+        const broadcastHats = allBlocks.filter(b => b.type === 'sb_when_broadcast_received');
+        
         const registeredIds = Object.keys(this.blockListeners);
-        const allCurrentHats = [...serialHats, ...midiHats, ...keyActionHats];
+        const allCurrentHats = [...serialHats, ...midiHats, ...keyActionHats, ...broadcastHats];
         const allCurrentHatIds = allCurrentHats.map(b => b.id);
 
         // 1. Unregister hats that no longer exist
@@ -40,7 +52,9 @@ export class HatBlockManager {
                 
                 this.G.init(this.workspace);
                 syncCustomGenerators(this.G); 
-                const newCode = this.G.statementToCode(block, 'DO');
+                
+                // All hats now use the 'DO' statement input
+                let newCode = this.G.statementToCode(block, 'DO');
                 this.G.finish('');
                 
                 let changed = false;
@@ -56,6 +70,9 @@ export class HatBlockManager {
                     const newKeyCode = block.getFieldValue('KEY_CODE');
                     const newTriggerMode = block.getFieldValue('TRIGGER_MODE');
                     if (current.code !== newCode || current.keyCode !== newKeyCode || current.triggerMode !== newTriggerMode) changed = true;
+                } else if (block.type === 'sb_when_broadcast_received') {
+                    const newMsg = block.getFieldValue('MSG');
+                    if (current.code !== newCode || current.msg !== newMsg) changed = true;
                 }
 
                 if (!changed) return; 
@@ -66,6 +83,7 @@ export class HatBlockManager {
             if (block.type === 'sb_serial_data_received') this.registerSerial(block);
             else if (block.type === 'sb_midi_note_received') this.registerMidi(block);
             else if (block.type === 'sb_key_action_event') this.registerKeyAction(block);
+            else if (block.type === 'sb_when_broadcast_received') this.registerBroadcast(block);
         });
     }
 
@@ -83,6 +101,10 @@ export class HatBlockManager {
             if (this.audioEngine.keyActionMap[entry.keyCode]) {
                 delete this.audioEngine.keyActionMap[entry.keyCode];
             }
+        } else if (entry.type === 'broadcast') {
+            // Since we use a simple list in audioEngine, clearing is done via reset
+            // but for fine-grained dynamic removal, we'd need to find and splice.
+            // For SB, we usually reset the whole engine on change.
         }
         delete this.blockListeners[blockId];
     }
@@ -183,6 +205,30 @@ export class HatBlockManager {
             else if (triggerMode === 'RELEASE') this.audioEngine.registerKeyAction(keyCode, null, executeCode);
             
             this.blockListeners[block.id] = { type: 'key_action', keyCode, triggerMode, code: cleanCode };
+        } catch (e) { logKey('LOG_EXEC_ERR', 'error', e.message); }
+    }
+
+    registerBroadcast(block) {
+        if (!block || this.blockListeners[block.id]) return;
+        const msg = block.getFieldValue('MSG');
+        
+        syncCustomGenerators(this.G);
+        this.G.init(this.workspace);
+        
+        // Now using statementToCode because it's a C-block again
+        const rawCode = this.G.statementToCode(block, 'DO');
+        this.G.finish('');
+        
+        const cleanCode = this._extractAndApplyEffects(rawCode);
+        if (!cleanCode) return;
+
+        try {
+            // The generated code already contains 'await' from the custom generators
+            const functionBody = "return (async () => { try { " + cleanCode + " } catch (e) { console.error('Error executing Broadcast Code:', e); } })();";
+            const executeCode = new Function(functionBody);
+            
+            this.audioEngine.registerMessageListener(msg, executeCode);
+            this.blockListeners[block.id] = { type: 'broadcast', msg, code: cleanCode };
         } catch (e) { logKey('LOG_EXEC_ERR', 'error', e.message); }
     }
 

@@ -65,7 +65,7 @@ export function getInstrumentOptions(includeMaster = false) {
     
     // Final fallback to ensure the dropdown doesn't crash Blockly with empty options
     if (options.length === 0) {
-        options.push(['(No Instruments)', 'NONE']);
+        options.push(['DefaultSynth', 'DefaultSynth']);
     }
     return options;
 }

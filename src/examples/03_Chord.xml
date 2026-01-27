@@ -4,7 +4,23 @@
     <variable id="t_58Z%F-bzi=L0]L=~Bm">velocity</variable>
     <variable id="2ZGm|O?HgX9o`vd?7U|`">channel</variable>
   </variables>
-  <block type="sb_instrument_container" id="setup_chord_synth" x="10" y="10">
+  <block type="sb_comment" id="chord_guide" x="10" y="10">
+    <field name="COMMENT">1.展示使用MIDI按鍵的「映射 (Mapping)」功能。&amp;#10;它屬於「閘門式 (Gate)」演奏：&amp;#10;按住琴鍵時發聲 (Attack)，放開琴鍵時停止 (Release)。&amp;#10;聲音的長度完全由您的手指按壓時間控制。&amp;#10;&amp;#10;2.示範使用單鍵來觸發和弦&amp;#10;由於多個音的疊加會造成截波而產生破音，&amp;#10;此時使用Compressor可以避免這個狀況發生。</field>
+  </block>
+  <block type="sb_master_container" id="setup_master" x="10" y="210">
+    <statement name="STACK">
+      <block type="sb_container_setup_effect" id="m_limiter">
+        <mutation effect_type="limiter"></mutation>
+        <field name="EFFECT_TYPE">limiter</field>
+        <value name="THRESHOLD">
+          <shadow type="math_number" id="hj@,Ct*JOUQD?$DvX!/.">
+            <field name="NUM">-1</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="setup_chord_synth" x="10" y="330">
     <field name="NAME">DefaultSynth</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="c1">
@@ -16,7 +32,7 @@
             <field name="S">0.8</field>
             <field name="R">0.1</field>
             <next>
-              <block type="sb_container_setup_effect" id="comp1">
+              <block type="sb_container_setup_effect" id="comp1" disabled-reasons="MANUALLY_DISABLED">
                 <mutation effect_type="compressor"></mutation>
                 <field name="EFFECT_TYPE">compressor</field>
                 <value name="THRESHOLD">
@@ -46,38 +62,20 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="270">
-    <statement name="STACK">
-      <block type="sb_container_setup_effect" id="m_limiter">
-        <mutation effect_type="limiter"></mutation>
-        <field name="EFFECT_TYPE">limiter</field>
-        <value name="THRESHOLD">
-          <shadow type="math_number" id="hj@,Ct*JOUQD?$DvX!/.">
-            <field name="NUM">-1</field>
-          </shadow>
-        </value>
-      </block>
-    </statement>
-  </block>
-  <block type="sb_comment" id="chord_guide" x="10" y="390">
-    <field name="COMMENT">1.展示使用MIDI按鍵的「映射 (Mapping)」功能。&amp;#10;它屬於「閘門式 (Gate)」演奏：&amp;#10;按住琴鍵時發聲 (Attack)，放開琴鍵時停止 (Release)。&amp;#10;聲音的長度完全由您的手指按壓時間控制。&amp;#10;&amp;#10;2.示範使用單鍵來觸發和弦&amp;#10;由於多個音的疊加會造成截波而產生破音，&amp;#10;此時使用Compressor可以避免這個狀況發生。</field>
+  <block type="sb_define_chord" id="def_cm7" x="10" y="590">
+    <field name="NAME">CM7</field>
+    <field name="NOTES_STRING">C4,E4,G4,B4</field>
     <next>
-      <block type="sb_define_chord" id="def_cm7">
-        <field name="NAME">CM7</field>
-        <field name="NOTES_STRING">C4,E4,G4,B4</field>
+      <block type="sb_map_key_to_chord" id="map_key">
+        <field name="KEY_CODE">KeyA</field>
+        <field name="CHORD_NAME">CM7</field>
         <next>
-          <block type="sb_map_key_to_chord" id="map_key">
-            <field name="KEY_CODE">KeyA</field>
+          <block type="sb_map_midi_to_chord" id="map_midi">
+            <field name="MIDI_NOTE">59</field>
             <field name="CHORD_NAME">CM7</field>
             <next>
-              <block type="sb_map_midi_to_chord" id="map_midi">
-                <field name="MIDI_NOTE">59</field>
-                <field name="CHORD_NAME">CM7</field>
-                <next>
-                  <block type="sb_toggle_pc_keyboard_midi" id="enable_pc">
-                    <field name="ACTION">ON</field>
-                  </block>
-                </next>
+              <block type="sb_toggle_pc_keyboard_midi" id="enable_pc">
+                <field name="ACTION">ON</field>
               </block>
             </next>
           </block>
@@ -85,7 +83,7 @@
       </block>
     </next>
   </block>
-  <block type="sb_midi_note_received" id="midi_gate" x="10" y="690">
+  <block type="sb_midi_note_received" id="midi_gate" x="10" y="730">
     <field name="NOTE" id="943%g@1O`6M-[E3FdF/f">note</field>
     <field name="VELOCITY" id="t_58Z%F-bzi=L0]L=~Bm">velocity</field>
     <field name="CHANNEL" id="2ZGm|O?HgX9o`vd?7U|`">channel</field>

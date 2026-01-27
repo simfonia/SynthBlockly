@@ -1,0 +1,111 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="sb_comment" id="c1" x="10" y="10">
+    <field name="COMMENT">【多聲部示範】&amp;#10;使用時序排程來讓2個聲部同時演奏&amp;#10;</field>
+  </block>
+  <block type="sb_instrument_container" id="c_violin" x="10" y="110">
+    <field name="NAME">Violin</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="v1">
+        <field name="SAMPLER_TYPE">VIOLIN_SUSTAIN</field>
+        <next>
+          <block type="sb_container_volume" id="FEelx-*?VFz.;_W@fbU*">
+            <value name="VOLUME_VALUE">
+              <shadow type="math_number" id="Z)WvnJg*twhh($h4$wWM">
+                <field name="NUM">3</field>
+              </shadow>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_piano" x="10" y="250">
+    <field name="NAME">Piano</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="p1">
+        <field name="SAMPLER_TYPE">DEFAULT</field>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_transport_set_bpm" id="t1" x="10" y="350">
+    <field name="BPM">120</field>
+    <next>
+      <block type="sb_transport_start_stop" id="start1">
+        <field name="ACTION">START</field>
+        <next>
+          <block type="sb_comment" id="d,#Rp~2KWiD?efU{qCTE">
+            <field name="COMMENT">每份旋律清單的音符都是會等待播放完畢才進行下一個音</field>
+            <next>
+              <block type="sb_play_melody" id="*[_xWKl[SlGWC*4.P4L8">
+                <field name="TARGET">Violin</field>
+                <field name="MELODY_STRING">D4Q, E4Q, F4H, RH, A4Q, G4Q, F4Q, E4Q, D4H</field>
+                <next>
+                  <block type="sb_play_melody" id="ZP4Vxe(nWDUmF+%}8vsy">
+                    <field name="TARGET">Piano</field>
+                    <field name="MELODY_STRING">RW, D3Q, E3Q, F3H, G3Q, A3Q, D3H</field>
+                    <next>
+                      <block type="sb_schedule_at_offset" id="off1">
+                        <field name="OFFSET">0</field>
+                        <statement name="DO">
+                          <block type="sb_comment" id="qIP|-/n/6B(5v8ds*R:Y">
+                            <field name="COMMENT">放在&lt;於小節偏移&gt;或&lt;每時間循環&gt;積木中的演奏積木，&amp;#10;會依指定位置瞬間排程完畢並開始演奏。&amp;#10;下例即示範兩份旋律清單會同時排程於第1小節的一開始。</field>
+                            <next>
+                              <block type="sb_play_melody" id="m1">
+                                <field name="TARGET">Violin</field>
+                                <field name="MELODY_STRING">D4Q, E4Q, F4H, RH, A4Q, G4Q, F4Q, E4Q, D4H</field>
+                                <next>
+                                  <block type="sb_play_melody" id="m2">
+                                    <field name="TARGET">Piano</field>
+                                    <field name="MELODY_STRING">RW, D3Q, E3Q, F3H, G3Q, A3Q, D3H</field>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="sb_comment" id="GpotshMHtP/4C1,2Wvj-">
+                            <field name="COMMENT">主程序會在上方"排程"完後瞬間執行到此，&amp;#10;但音樂播放(Transport)才剛開始唱出第一個音，&amp;#10;所以等待3小節讓音樂跟上主程序。</field>
+                            <next>
+                              <block type="controls_repeat_ext" id="*=LVwF3He5y|F@?KP-ah">
+                                <value name="TIMES">
+                                  <shadow type="math_number" id="3.ArD;zgNWJY!ZR/ibAZ">
+                                    <field name="NUM">3</field>
+                                  </shadow>
+                                </value>
+                                <statement name="DO">
+                                  <block type="sb_comment" id="M2clW)xc:mhw}kz@xP]t">
+                                    <field name="COMMENT">本系統因經過設計，可以不加這3小節的等待，&amp;#10;因為主程序衝到這裏時，排程的音符已開始搶先幾微秒開始播放，&amp;#10;所以即使主程序結束，Tone.js也會把剩下的音樂排程唱完。&amp;#10;(餘音繞樑 :-)</field>
+                                    <next>
+                                      <block type="sb_wait_musical" id="Y$#`9(-AuilYW%e9,^8l">
+                                        <field name="DURATION">1m</field>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </statement>
+                                <next>
+                                  <block type="sb_comment" id="?_oi4xH|IBOPFGI#b{-3">
+                                    <field name="COMMENT">主程序和音樂播放(Transport)同時到達這裏，&amp;#10;結束程式與音樂播放。</field>
+                                    <next>
+                                      <block type="sb_transport_start_stop" id="}_}|!w^Hvj(}BX@-V#!E">
+                                        <field name="ACTION">STOP</field>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

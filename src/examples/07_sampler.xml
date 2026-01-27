@@ -1,5 +1,8 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="sb_instrument_container" id="cont_piano" x="10" y="10">
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">此範例展示如何使用「真實樂器錄音」來演奏（取樣合成）。&amp;#10;&amp;#10;1. 什麼是取樣 (Sampler)？取樣器是直接播放真實樂器錄好的音檔。&amp;#10;2. 小提琴技巧：&amp;#10;- 持續音 (Sustain)：傳統拉弦，悠長。&amp;#10;- 撥奏 (Pizzicato)：手指撥弦，短促。&amp;#10;&amp;#10;執行後，您可以點擊選定音源積木或用左右方向鍵切換！</field>
+  </block>
+  <block type="sb_instrument_container" id="cont_piano" x="10" y="210">
     <field name="NAME">Piano</field>
     <statement name="STACK">
       <block type="sb_create_sampler_instrument" id="s1">
@@ -15,7 +18,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="cont_violin_arco" x="10" y="130">
+  <block type="sb_instrument_container" id="cont_violin_arco" x="10" y="330">
     <field name="NAME">Violin_arco</field>
     <statement name="STACK">
       <block type="sb_create_sampler_instrument" id="s2">
@@ -31,7 +34,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="cont_violin_pizz" x="10" y="250">
+  <block type="sb_instrument_container" id="cont_violin_pizz" x="10" y="450">
     <field name="NAME">Violin_pizz</field>
     <statement name="STACK">
       <block type="sb_create_sampler_instrument" id="s3">
@@ -47,7 +50,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="370">
+  <block type="sb_master_container" id="setup_master" x="10" y="570">
     <statement name="STACK">
       <block type="sb_container_setup_effect" id="master_limiter">
         <mutation effect_type="limiter"></mutation>
@@ -60,16 +63,11 @@
       </block>
     </statement>
   </block>
-  <block type="sb_comment" id="guide" x="10" y="490">
-    <field name="COMMENT">此範例展示如何使用「真實樂器錄音」來演奏（取樣合成）。&amp;#10;&amp;#10;1. 什麼是取樣 (Sampler)？取樣器是直接播放真實樂器錄好的音檔。&amp;#10;2. 小提琴技巧：&amp;#10;- 持續音 (Sustain)：傳統拉弦，悠長。&amp;#10;- 撥奏 (Pizzicato)：手指撥弦，短促。&amp;#10;&amp;#10;執行後，您可以點擊選定音源積木或用左右方向鍵切換！</field>
+  <block type="sb_select_current_instrument" id="X?,b_RdyGOSZ{Gy,T@#E" x="10" y="690">
+    <field name="NAME">Piano</field>
     <next>
-      <block type="sb_select_current_instrument" id="X?,b_RdyGOSZ{Gy,T@#E">
-        <field name="NAME">Piano</field>
-        <next>
-          <block type="sb_toggle_pc_keyboard_midi" id="*EcQ^q{byY2W$^znpk0x">
-            <field name="ACTION">ON</field>
-          </block>
-        </next>
+      <block type="sb_toggle_pc_keyboard_midi" id="*EcQ^q{byY2W$^znpk0x">
+        <field name="ACTION">ON</field>
       </block>
     </next>
   </block>

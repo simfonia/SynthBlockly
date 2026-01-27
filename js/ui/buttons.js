@@ -1,40 +1,70 @@
 import { log, logKey, clearLogs } from './logger.js';
 import { audioEngine } from '../core/audioEngine.js';
 import { ensureAudioStarted } from '../core/audioUtils.js';
-import { getBlocksCode, resetWorkspaceAndAudio } from '../core/blocklyManager.js'; // Import resetWorkspaceAndAudio
-import * as Blockly from 'blockly'; // Import Blockly
-import { showExampleModal } from './exampleModal.js'; // Import Example Modal
-import { showHelpModal } from './helpModal.js'; // Import Help Modal
+import { getBlocksCode, resetWorkspaceAndAudio, hatBlockManager } from '../core/blocklyManager.js'; 
+import * as Blockly from 'blockly'; 
+import { showExampleModal } from './exampleModal.js'; 
+import { showHelpModal } from './helpModal.js'; 
+
+// Helper to manage Run button state
+function setRunButtonEnabled(enabled) {
+    const runBtn = document.getElementById('btnRunBlocks');
+    if (!runBtn) return;
+    runBtn.disabled = !enabled;
+    runBtn.style.opacity = enabled ? '1' : '0.5';
+    runBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+}
 
 // New function to encapsulate run logic
 async function runBlocksAction() {
-    clearLogs(); // Clear logs before running new code
-    const ok = await ensureAudioStarted();
-    if (!ok) return;
-    const code = await getBlocksCode();
-    if (!code) { logKey('LOG_NO_CODE_EXPORT', 'warning'); return; }
-    logKey('LOG_RUNNING_CODE');
-    logKey('LOG_CODE_START');
-    log(code);
-    logKey('LOG_CODE_END');
+    // 1. LOCK UI to prevent rapid double-clicks
+    setRunButtonEnabled(false);
+
     try {
-        // Correctly create an AsyncFunction to allow top-level await in the generated code
+        // 2. AWAIT FULL CLEANUP
+        // This stops old sessions and waits for the settle-down period
+        await audioEngine.panicStopAllSounds();
+        hatBlockManager.reset(); 
+
+        clearLogs(); 
+        const ok = await ensureAudioStarted();
+        if (!ok) {
+            setRunButtonEnabled(true);
+            return;
+        }
+        
+        const code = await getBlocksCode();
+        if (!code) { 
+            logKey('LOG_NO_CODE_EXPORT', 'warning'); 
+            setRunButtonEnabled(true);
+            return; 
+        }
+        
+        logKey('LOG_RUNNING_CODE');
+        logKey('LOG_CODE_START');
+        log(code);
+        logKey('LOG_CODE_END');
+        
         const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
         const runner = new AsyncFunction(code);
         
+        // 3. FORCE SYNC HATS - Ensure listeners are ready before broadcasting
+        const workspace = Blockly.getMainWorkspace();
+        if (workspace) {
+            hatBlockManager.updateAll(workspace);
+        }
+
+        // 4. START new session
         audioEngine.isExecutionActive = true; 
-        
-        // 1. Run the blocks code (this creates instruments and starts playback)
-        // We await it so that any "play and wait" blocks work correctly.
         await runner();
-        
-        // 2. Wait for samples if needed (though runner already awaited, this is an extra safety)
         await audioEngine.waitForSamples();
-        
         logKey('LOG_EXEC_DONE');
     } catch (e) {
         console.error('RunBlocks execution error', e);
-        logKey('LOG_EXEC_ERR', 'error', e);
+        logKey('LOG_EXEC_ERR', 'error', e.message || e);
+    } finally {
+        // Re-enable UI when all synchronous execution blocks are done
+        setRunButtonEnabled(true);
     }
 }
 
@@ -45,8 +75,9 @@ export function initButtons() {
     // Panic Stop Button
     const btnPanicStop = document.getElementById('btnPanicStop');
     if (btnPanicStop) {
-        btnPanicStop.addEventListener('click', () => {
-            audioEngine.panicStopAllSounds();
+        btnPanicStop.addEventListener('click', async () => {
+            await audioEngine.panicStopAllSounds();
+            setRunButtonEnabled(true); // Force re-enable UI
         });
     }
 

@@ -4,7 +4,10 @@
     <variable id="9:^.}}q,!02#XYYzHqxe">velocity</variable>
     <variable id="mJCT}0J}/8Z6sm[$fiQ=">channel</variable>
   </variables>
-  <block type="sb_instrument_container" id="cont_piano" x="10" y="10">
+  <block type="sb_comment" id="switch_guide" x="10" y="10">
+    <field name="COMMENT">此範例展示如何「在演奏中即時切換音色」。&amp;#10;&amp;#10;1. 樂器定義：&amp;#10;- 我們建立了兩個樂器：Piano (PolySynth) 與 Strings (FMSynth)。&amp;#10;2. 即時切換樂器：&amp;#10;- 彈奏 MIDI F3 (53) 時：切換到 Piano。&amp;#10;- 彈奏 MIDI G3 (55) 時：切換到 Strings。&amp;#10;- 彈奏 MIDI F#3 (54) 時：拍手聲。&amp;#10;- 彈奏 MIDI G# (56)或更高音：則會以「目前選定」的樂器發聲。&amp;#10;- 使用PC 鍵盤請用左右方向鍵切換樂器。</field>
+  </block>
+  <block type="sb_instrument_container" id="cont_piano" x="10" y="250">
     <field name="NAME">Piano</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="create_piano">
@@ -20,7 +23,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="cont_strings" x="10" y="130">
+  <block type="sb_instrument_container" id="cont_strings" x="10" y="370">
     <field name="NAME">Strings</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="create_strings">
@@ -36,7 +39,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="250">
+  <block type="sb_master_container" id="setup_master" x="10" y="490">
     <statement name="STACK">
       <block type="sb_container_setup_effect" id="master_limiter">
         <mutation effect_type="limiter"></mutation>
@@ -49,25 +52,20 @@
       </block>
     </statement>
   </block>
-  <block type="sb_comment" id="switch_guide" x="10" y="370">
-    <field name="COMMENT">此範例展示如何「在演奏中即時切換音色」。&amp;#10;&amp;#10;1. 樂器定義：&amp;#10;- 我們建立了兩個樂器：Piano (PolySynth) 與 Strings (FMSynth)。&amp;#10;2. 即時切換樂器：&amp;#10;- 彈奏 MIDI F3 (53) 時：切換到 Piano。&amp;#10;- 彈奏 MIDI G3 (55) 時：切換到 Strings。&amp;#10;- 彈奏 MIDI F#3 (54) 時：拍手聲。&amp;#10;- 彈奏 MIDI G# (56)或更高音：則會以「目前選定」的樂器發聲。&amp;#10;- 使用PC 鍵盤請用左右方向鍵切換樂器。</field>
+  <block type="sb_define_chord" id="def_cm7" x="10" y="610">
+    <field name="NAME">CM7</field>
+    <field name="NOTES_STRING">C4,E4,G4,B4</field>
     <next>
-      <block type="sb_define_chord" id="def_cm7">
-        <field name="NAME">CM7</field>
-        <field name="NOTES_STRING">C4,E4,G4,B4</field>
+      <block type="sb_toggle_pc_keyboard_midi" id="on_pc">
+        <field name="ACTION">ON</field>
         <next>
-          <block type="sb_toggle_pc_keyboard_midi" id="on_pc">
-            <field name="ACTION">ON</field>
+          <block type="sb_map_key_to_chord" id="map_a">
+            <field name="KEY_CODE">KeyA</field>
+            <field name="CHORD_NAME">CM7</field>
             <next>
-              <block type="sb_map_key_to_chord" id="map_a">
-                <field name="KEY_CODE">KeyA</field>
+              <block type="sb_map_midi_to_chord" id="map_54">
+                <field name="MIDI_NOTE">54</field>
                 <field name="CHORD_NAME">CM7</field>
-                <next>
-                  <block type="sb_map_midi_to_chord" id="map_54">
-                    <field name="MIDI_NOTE">54</field>
-                    <field name="CHORD_NAME">CM7</field>
-                  </block>
-                </next>
               </block>
             </next>
           </block>
@@ -75,7 +73,7 @@
       </block>
     </next>
   </block>
-  <block type="sb_midi_note_received" id="midi_logic" x="10" y="670">
+  <block type="sb_midi_note_received" id="midi_logic" x="10" y="750">
     <field name="NOTE" id="4kFk$B_8VRtg9#,1otIT">note</field>
     <field name="VELOCITY" id="9:^.}}q,!02#XYYzHqxe">velocity</field>
     <field name="CHANNEL" id="mJCT}0J}/8Z6sm[$fiQ=">channel</field>

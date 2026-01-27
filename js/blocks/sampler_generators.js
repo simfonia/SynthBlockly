@@ -25,19 +25,21 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         const name = G.quote_(getContainerTarget(block));
         const samplerType = block.getFieldValue('SAMPLER_TYPE');
         const violinSampleMap = `JSON.parse('{"G3":"G3.wav","A3":"A3.wav","B3":"B3.wav","D4":"D4.wav","Gb4":"Gb4.wav","A4":"A4.wav","C5":"C5.wav","E5":"E5.wav","G5":"G5.wav","B5":"B5.wav","D6":"D6.wav"}')`;
-        // const violinSampleMap = `JSON.parse('{"C5":"C5.wav"}')`;
 
-        const jkPath = `${import.meta.env.BASE_URL}samples/jazzkit/Roland_TR-909/`;
+        const baseSamplesPath = import.meta.env.BASE_URL + 'samples/';
+        const jkPath = `${baseSamplesPath}jazzkit/Roland_TR-909/`;
+        const pianoPath = `${baseSamplesPath}piano/`;
 
         switch (samplerType) {
             case 'DEFAULT':
-                return `window.audioEngine.createCustomSampler(${name}, { "C4": "C4.mp3" }, "https://tonejs.github.io/audio/salamander/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });\n`;
+                // Use local piano sample for guaranteed loading
+                return `window.audioEngine.createCustomSampler(${name}, { "C4": "C4.mp3" }, "${pianoPath}", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });\n`;
             
             case 'VIOLIN_PIZZ':
-                return `window.audioEngine.createCustomSampler(${name}, ${violinSampleMap}, '${import.meta.env.BASE_URL}samples/violin/violin-section-pizzicato/', { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 });\n`;
+                return `window.audioEngine.createCustomSampler(${name}, ${violinSampleMap}, '${baseSamplesPath}violin/violin-section-pizzicato/', { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 });\n`;
 
             case 'VIOLIN_SUSTAIN':
-                return `window.audioEngine.createCustomSampler(${name}, ${violinSampleMap}, '${import.meta.env.BASE_URL}samples/violin/violin-section-vibrato-sustain/', { attack: 0.1, decay: 0.5, sustain: 1.0, release: 3.0 });\n`;
+                return `window.audioEngine.createCustomSampler(${name}, ${violinSampleMap}, '${baseSamplesPath}violin/violin-section-vibrato-sustain/', { attack: 0.1, decay: 0.5, sustain: 1.0, release: 3.0 });\n`;
 
             case 'JK_KICK': return `window.audioEngine.createCustomSampler(${name}, { "C4": "BT0A0D0.WAV" }, "${jkPath}");\n`;
             case 'JK_SNARE': return `window.audioEngine.createCustomSampler(${name}, { "C4": "ST7T7S7.WAV" }, "${jkPath}");\n`;

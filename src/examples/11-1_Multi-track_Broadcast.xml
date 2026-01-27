@@ -1,0 +1,47 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="sb_comment" id="c1" x="10" y="10">
+    <field name="COMMENT">【多聲部示範】&amp;#10;使用廣播方式來讓2個聲部同時演奏&amp;#10;1. 廣播發送端：使用&lt;廣播訊息&gt;積木統一啟動訊號。&amp;#10;2. 廣播接收端：在&lt;當收到訊息&gt;積木中執行程式。</field>
+  </block>
+  <block type="sb_instrument_container" id="c_violin" x="10" y="130">
+    <field name="NAME">Violin</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="v1">
+        <field name="SAMPLER_TYPE">VIOLIN_SUSTAIN</field>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_instrument_container" id="c_piano" x="10" y="230">
+    <field name="NAME">Piano</field>
+    <statement name="STACK">
+      <block type="sb_create_sampler_instrument" id="p1">
+        <field name="SAMPLER_TYPE">DEFAULT</field>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_when_broadcast_received" id="h_violin" x="10" y="330">
+    <field name="MSG">play</field>
+    <statement name="DO">
+      <block type="sb_play_melody" id="m1">
+        <field name="TARGET">Violin</field>
+        <field name="MELODY_STRING">D4Q, E4Q, F4H, &amp;#10;RH,             A4Q, G4Q, &amp;#10;F4Q, E4Q, D4H</field>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_when_broadcast_received" id="h_piano" x="10" y="510">
+    <field name="MSG">play</field>
+    <statement name="DO">
+      <block type="sb_play_melody" id="m2">
+        <field name="TARGET">Piano</field>
+        <field name="MELODY_STRING">RW, &amp;#10;D3Q, E3Q, F3H, &amp;#10;G3Q, A3Q, D3H</field>
+      </block>
+    </statement>
+  </block>
+  <block type="sb_transport_set_bpm" id="t1" x="10" y="690">
+    <field name="BPM">120</field>
+    <next>
+      <block type="sb_broadcast" id="b1">
+        <field name="MSG">play</field>
+      </block>
+    </next>
+  </block>
+</xml>

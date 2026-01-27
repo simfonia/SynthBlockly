@@ -134,3 +134,33 @@
 - **積木重複註冊 Bug**：sb_rhythm_source_selector 曾因同時存在於 instruments 與 transport 檔案中導致選單失靈。已統一由 instruments_blocks.js 定義。
 - **旋律解析優先權**：playMelodyString 採用「Rest > Strict Note (C4) > Chord (Cmaj7)」順序，確保 C4Q 不會因同名和弦而失效。
 - **Blockly 禁用狀態渲染**：單純設定 block.enabled = false 可能不會觸發即時變灰。解決方案：使用 block.setDisabledReason(true, 'reason_id') 配合 block.render()，這是目前最穩健的視覺反饋方式。
+
+---
+
+# 技術細節 2026-01-27
+
+## 1. 廣播系統與執行時機 (Example 11-1)
+*   **現象**：11-1 點擊 Play 後發送廣播，接收端卻沒有反應。
+*   **成因**：主程式碼（發送端）執行速度極快，在 `HatBlockManager` 完成工作區掃描並註冊監聽器之前，廣播訊號就已經發出並石沉大海。
+*   **解法**：在 `buttons.js` 的 `runBlocksAction` 中，明確在啟動主程式碼 (`runner()`) 之前，先執行 `hatBlockManager.updateAll(workspace)`。這確保了「監聽器先就位，廣播後發出」。
+
+## 2. 跨軌道時序同步 (Example 11-2)
+*   **現象**：鋼琴軌道總是比小提琴晚一個 Loop (約 3 小節) 進入。
+*   **成因 A (阻塞)**：旋律播放採用「彈一音、等一音」模式 (`await`)。若多軌積木順序排列，第一軌會阻塞主執行緒，直到其播完才輪到下一軌排程。
+*   **成因 B (時差)**：`Transport.start()` 與 `Loop.start(0)` 的執行時差。若啟動指令位於註冊指令上方，時間軸跑過 0 的那一微秒，Loop 就會錯過第一個週期。
+*   **解決方案 (關鍵成功因素)**：
+    1.  **瞬間預約機制**：升級 `SequencerService.playMelodyString`。若接收到 `startTime` (代表處於 Loop 內)，改用「預先掛號」模式。瞬間計算整串旋律的時間偏移並一次性提交給 Tone.js，且**立即返回 (`return`)**。
+    2.  **非阻塞執行**：修改 `sb_tone_loop` 產生器，移除內部的 `await`。這讓多個 `playMelodyString` 指令能在 1 毫秒內全部完成預約，實現真正的並行啟動。
+    3.  **執行順序重組**：在 XML 中將 `sb_transport_start_stop` (START) 放在演奏定義的**最下方**。這保證了時間軸啟動前，所有的「掛號」動作都已在停止狀態下完成。
+
+## 3. 非同步清場與 UI 保護
+*   **問題**：連續快速點擊 Play 導致聲音重疊。
+*   **解法**：
+    1.  **UI 鎖定**：點擊 Play 後立即 `disable` 執行按鈕，直到重設與啟動階段結束。
+    2.  **非同步清場**：將 `panicStopAllSounds` 改為 `async`，內建 `300ms` 緩衝等待。這給予瀏覽器足夠時間處理音訊節點的 `dispose` 與釋放，確保新舊 Session 之間有乾淨的斷層。
+
+
+## 2026-01-27 關鍵技術細節 (續)
+- **Vite 與正規表達式換行 Bug**：在 SequencerService.js 中使用 str.split(/[, \s]+/) 時，若正規表達式中包含實際的換行符號，會導致 Vite 編譯失敗並報 HTTP 500 錯誤。解決方案：確保正規表達式定義在單行中。
+- **非阻塞式循環 (Non-blocking Loops)**：在處理多軌並行時，sb_tone_loop 內部的積木程式碼絕對不能帶有 wait。移除 wait 後，所有的播放積木才能在同一微秒內完成「預約排程」，達成真正的同步。
+- **瞬間返回 (Instant Return) 模式**：playMelodyString 在接收到 startTime 參數時，必須切換為「只預約、不等待」模式。若此時仍執行 wait，會阻塞主執行緒，導致後續軌道的排程被推遲一個樂句的時間。

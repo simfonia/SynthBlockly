@@ -127,6 +127,9 @@ export const TOOLBOX_XML_STRING = `
     <category name="%{BKY_MSG_TOOLS_CATEGORY}" colour="%{BKY_TOOLS_HUE}">
         <block type="sb_comment"></block>
         <block type="sb_console_log"></block>
+        <sep gap="12"></sep>
+        <block type="sb_broadcast"></block>
+        <block type="sb_when_broadcast_received"></block>
     </category>
     <sep></sep>
     

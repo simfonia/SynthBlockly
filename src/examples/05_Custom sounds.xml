@@ -1,5 +1,8 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="sb_instrument_container" id="cont_mellow" x="10" y="10">
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">此範例展示如何從零開始「設計音色」。&amp;#10;&amp;#10;1. 諧波合成音源 (Mellow)：由整數倍頻疊加而成，聲音和諧。&amp;#10;2. 自訂加法合成 (Scary)：包含非整數倍率，會產生不和諧的金屬撞擊感。&amp;#10;3. 各別樂器的 ADSR 可分別在&lt;定義樂器&gt;積木內定義。</field>
+  </block>
+  <block type="sb_instrument_container" id="cont_mellow" x="10" y="150">
     <field name="NAME">Mellow</field>
     <statement name="STACK">
       <block type="sb_create_harmonic_synth" id="h1">
@@ -30,7 +33,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="cont_scary" x="10" y="230">
+  <block type="sb_instrument_container" id="cont_scary" x="10" y="370">
     <field name="NAME">Scary</field>
     <statement name="STACK">
       <block type="sb_create_additive_synth" id="add1">
@@ -79,7 +82,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="610">
+  <block type="sb_master_container" id="setup_master" x="10" y="750">
     <statement name="STACK">
       <block type="sb_container_setup_effect" id="master_limiter">
         <mutation effect_type="limiter"></mutation>
@@ -92,16 +95,11 @@
       </block>
     </statement>
   </block>
-  <block type="sb_comment" id="guide" x="10" y="730">
-    <field name="COMMENT">此範例展示如何從零開始「設計音色」。&amp;#10;&amp;#10;1. 諧波合成音源 (Mellow)：由整數倍頻疊加而成，聲音和諧。&amp;#10;2. 自訂加法合成 (Scary)：包含非整數倍率，會產生不和諧的金屬撞擊感。&amp;#10;3. 各別樂器的 ADSR 可分別在&lt;定義樂器&gt;積木內定義。</field>
+  <block type="sb_select_current_instrument" id="I,|7tuQ9@G,Vrg)FQ@hk" x="10" y="870">
+    <field name="NAME">Scary</field>
     <next>
-      <block type="sb_select_current_instrument" id="I,|7tuQ9@G,Vrg)FQ@hk">
-        <field name="NAME">Scary</field>
-        <next>
-          <block type="sb_toggle_pc_keyboard_midi" id="yfRTX3dzu:u={lE@cKka">
-            <field name="ACTION">ON</field>
-          </block>
-        </next>
+      <block type="sb_toggle_pc_keyboard_midi" id="yfRTX3dzu:u={lE@cKka">
+        <field name="ACTION">ON</field>
       </block>
     </next>
   </block>

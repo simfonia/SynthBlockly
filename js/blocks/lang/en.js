@@ -460,6 +460,12 @@ export const MSG_EN = {
     'SB_CONSOLE_LOG_TOOLTIP': 'Logs a message to the debug panel.',
     'LOG_CONSOLE_LOG_MSG': '%1',
 
+    // BROADCAST
+    'SB_BROADCAST_MESSAGE': 'Broadcast Message %1',
+    'SB_BROADCAST_TOOLTIP': 'Triggers all "When I receive..." blocks with the same message name.',
+    'SB_WHEN_BROADCAST_RECEIVED_MESSAGE': 'When I receive %1',
+    'SB_WHEN_BROADCAST_RECEIVED_TOOLTIP': 'Starts execution when the specified message is broadcasted.',
+
     // EFFECTS
     'SB_CLEAR_EFFECTS_MESSAGE': 'Clear all effects for %1',
     'SB_CLEAR_EFFECTS_TOOLTIP': 'Removes all active effects from the specified target (Instrument or Master).',

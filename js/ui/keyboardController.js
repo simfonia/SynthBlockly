@@ -47,11 +47,10 @@ const switchInstrument = (direction) => {
     const instrumentNames = Object.keys(audioEngine.instruments);
     
     if (instrumentNames.length === 0) {
-        audioEngine.logKey('LOG_ERR_INSTR_NOT_FOUND', 'warning', 'Any');
         return;
     }
     if (instrumentNames.length < 2) {
-        audioEngine.logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', 'Alternative');
+        // If only one instrument exists, do nothing and don't log a warning.
         return; 
     }
 

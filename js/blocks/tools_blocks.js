@@ -46,4 +46,48 @@ export function registerBlocks() {
             });
         }
     };
+
+    // Broadcast Block
+    Blockly.Blocks['sb_broadcast'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_BROADCAST_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "MSG",
+                        "text": "message1"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_TOOLS_HUE}",
+                "tooltip": "%{BKY_SB_BROADCAST_TOOLTIP}"
+            });
+        }
+    };
+
+    // When Broadcast Received Block (Hat-like C-block)
+    Blockly.Blocks['sb_when_broadcast_received'] = {
+        init: function () {
+            this.jsonInit({
+                "message0": "%{BKY_SB_WHEN_BROADCAST_RECEIVED_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "MSG",
+                        "text": "message1"
+                    }
+                ],
+                "message1": "%1",
+                "args1": [{
+                    "type": "input_statement",
+                    "name": "DO"
+                }],
+                "colour": "%{BKY_TOOLS_HUE}",
+                "tooltip": "%{BKY_SB_WHEN_BROADCAST_RECEIVED_TOOLTIP}"
+            });
+            this.hat = 'cap';
+        }
+    };
 }

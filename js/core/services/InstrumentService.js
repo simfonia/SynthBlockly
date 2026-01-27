@@ -194,9 +194,20 @@ export class InstrumentService {
      * @param {string} name - Instrument name.
      */
     transitionToInstrument(name) {
-        const cleanName = String(name).replace(/^['"]|['"]$/g, '');
-        if (!this.instruments[cleanName]) {
-             logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', cleanName);
+        const cleanName = String(name || '').replace(/^['"]|['"]$/g, '');
+        
+        // Handle common invalid targets or 'NONE' from UI fallback
+        if (!cleanName || cleanName === 'NONE' || !this.instruments[cleanName]) {
+             // If we have instruments, try to pick 'DefaultSynth' or the first available one
+             const fallback = this.instruments['DefaultSynth'] ? 'DefaultSynth' : Object.keys(this.instruments)[0];
+             if (fallback && fallback !== cleanName) {
+                 this.currentInstrumentName = fallback;
+                 this.syncAdsrToUI();
+                 return;
+             }
+             if (cleanName && cleanName !== 'NONE') {
+                 logKey('LOG_SWITCH_INSTR_NOT_EXIST', 'warning', cleanName);
+             }
              return;
         }
         

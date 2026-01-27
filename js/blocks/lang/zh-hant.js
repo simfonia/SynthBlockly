@@ -462,6 +462,12 @@ export const MSG_ZH_HANT = {
     'SB_CONSOLE_LOG_TOOLTIP': '將訊息輸出至除錯面板。',
     'LOG_CONSOLE_LOG_MSG': '%1',
 
+    // BROADCAST
+    'SB_BROADCAST_MESSAGE': '廣播訊息 %1',
+    'SB_BROADCAST_TOOLTIP': '發送一個訊息，觸發所有「當收到訊息」的積木同時執行。',
+    'SB_WHEN_BROADCAST_RECEIVED_MESSAGE': '當收到訊息 %1',
+    'SB_WHEN_BROADCAST_RECEIVED_TOOLTIP': '當接收到指定的廣播訊息時，執行內部的積木。',
+
     // EFFECTS
     'SB_CLEAR_EFFECTS_MESSAGE': '清除 %1 的所有效果器',
     'SB_CLEAR_EFFECTS_TOOLTIP': '移除指定音軌（樂器或 Master）上目前掛載的所有效果器鏈，恢復乾淨音色。',

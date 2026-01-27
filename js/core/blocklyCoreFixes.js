@@ -143,10 +143,10 @@ export function syncCustomGenerators(G) {
         'sb_play_melody', 'sb_play_chord_by_name', 'sb_play_chord_notes', 'sb_get_chord_name',
         'sb_transport_set_bpm', 'sb_transport_count_in', 'sb_rhythm_sequence', 
         'sb_transport_start_stop', 'sb_wait_musical', 'sb_tone_loop', 'sb_stop_all_blockly_loops', 
-        'sb_schedule_at_offset', 'sb_container_setup_effect', 'sb_clear_effects',
+        'sb_schedule_at_offset', 'sb_container_setup_effect', 'sb_clear_effects', 'sb_set_effect_param',
         'sb_play_sfx', 'sb_play_background_noise', 'sb_stop_background_noise',
         'sb_midi_play', 'sb_map_midi_to_chord', 'sb_serial_check_key_mask',
-        'sb_comment', 'sb_console_log', 'sb_instrument_container', 'sb_master_container',
+        'sb_comment', 'sb_console_log', 'sb_broadcast', 'sb_when_broadcast_received', 'sb_instrument_container', 'sb_master_container',
         'sb_container_adsr', 'sb_container_volume', 'sb_container_vibrato', 
         'sb_container_mute', 'sb_container_solo'
     ];

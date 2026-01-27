@@ -2,7 +2,10 @@
   <variables>
     <variable id="var_i">i</variable>
   </variables>
-  <block type="sb_instrument_container" id="c_default" x="10" y="10">
+  <block type="sb_comment" id="guide" x="10" y="10">
+    <field name="COMMENT">此範例製作經典的 12 小節藍調 (12-Bar Blues)。&amp;#10;&amp;#10;1. 進行：C7 (4m) -&gt; F7 (2m) -&gt; C7 (2m) -&gt; G7 -&gt; F7 -&gt; C7 -&gt; G7.&amp;#10;2. 技術：利用計次迴圈配合音序器的「第 N 小節」參數，一次排定多個小節。&amp;#10;3. 分流：分別使用 ChordSynth 播放和弦，BassSynth 演奏低音。</field>
+  </block>
+  <block type="sb_instrument_container" id="c_default" x="10" y="150">
     <field name="NAME">DefaultSynth</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="pidh%BT#@:FYHwDxLJkJ">
@@ -18,7 +21,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="ScoqG5;Fo[RmmjfWIngB" x="10" y="130">
+  <block type="sb_instrument_container" id="ScoqG5;Fo[RmmjfWIngB" x="10" y="270">
     <field name="NAME">Sax</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="}(!-Z)-Qwfx%J_vW26gd">
@@ -43,7 +46,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="c_chord" x="10" y="290">
+  <block type="sb_instrument_container" id="c_chord" x="10" y="430">
     <field name="NAME">ChordSynth</field>
     <statement name="STACK">
       <block type="sb_create_additive_synth" id="KOsX|rM_^*#,)8-mE.$n">
@@ -73,7 +76,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="c_bass" x="10" y="550">
+  <block type="sb_instrument_container" id="c_bass" x="10" y="690">
     <field name="NAME">BassSynth</field>
     <statement name="STACK">
       <block type="sb_create_synth_instrument" id="kbCE,2M-7N-F(ZRr4I5~">
@@ -81,7 +84,7 @@
       </block>
     </statement>
   </block>
-  <block type="sb_master_container" id="setup_master" x="10" y="650">
+  <block type="sb_master_container" id="setup_master" x="10" y="790">
     <statement name="STACK">
       <block type="sb_container_setup_effect" id="8KiX5Td7el[.aTntQ!t)">
         <mutation effect_type="limiter"></mutation>
@@ -94,82 +97,129 @@
       </block>
     </statement>
   </block>
-  <block type="sb_comment" id="guide" x="10" y="770">
-    <field name="COMMENT">此範例製作經典的 12 小節藍調 (12-Bar Blues)。&amp;#10;&amp;#10;1. 進行：C7 (4m) -&gt; F7 (2m) -&gt; C7 (2m) -&gt; G7 -&gt; F7 -&gt; C7 -&gt; G7.&amp;#10;2. 技術：利用計次迴圈配合音序器的「第 N 小節」參數，一次排定多個小節。&amp;#10;3. 分流：分別使用 ChordSynth 播放和弦，BassSynth 演奏低音。</field>
+  <block type="sb_transport_set_bpm" id="ZLKDUXVfO7z?%u0Fa{]=" x="10" y="910">
+    <field name="BPM">110</field>
     <next>
-      <block type="sb_transport_set_bpm" id="ZLKDUXVfO7z?%u0Fa{]=">
-        <field name="BPM">110</field>
+      <block type="sb_define_chord" id="Ypt9BWq/SjqLKp?~kKcY">
+        <field name="NAME">C7</field>
+        <field name="NOTES_STRING">C4,E4,G4,Bb4</field>
         <next>
-          <block type="sb_define_chord" id="Ypt9BWq/SjqLKp?~kKcY">
-            <field name="NAME">C7</field>
-            <field name="NOTES_STRING">C4,E4,G4,Bb4</field>
+          <block type="sb_define_chord" id="_AUO4=~F_GKHcfNIl*/-">
+            <field name="NAME">F7</field>
+            <field name="NOTES_STRING">F4,A4,C4,Eb4</field>
             <next>
-              <block type="sb_define_chord" id="_AUO4=~F_GKHcfNIl*/-">
-                <field name="NAME">F7</field>
-                <field name="NOTES_STRING">F4,A4,C4,Eb4</field>
+              <block type="sb_define_chord" id="58y,Y:{`l6U#t2s,NO]K">
+                <field name="NAME">G7</field>
+                <field name="NOTES_STRING">G4,B4,D4,F4</field>
                 <next>
-                  <block type="sb_define_chord" id="58y,Y:{`l6U#t2s,NO]K">
-                    <field name="NAME">G7</field>
-                    <field name="NOTES_STRING">G4,B4,D4,F4</field>
+                  <block type="sb_select_current_instrument" id="cq`H[$QcytS8UGSI1%x/">
+                    <field name="NAME">Sax</field>
                     <next>
-                      <block type="sb_select_current_instrument" id="cq`H[$QcytS8UGSI1%x/">
-                        <field name="NAME">Sax</field>
+                      <block type="sb_toggle_pc_keyboard_midi" id="n-64,dPtvt,UH~g!Si+{">
+                        <field name="ACTION">ON</field>
                         <next>
-                          <block type="sb_toggle_pc_keyboard_midi" id="n-64,dPtvt,UH~g!Si+{">
-                            <field name="ACTION">ON</field>
+                          <block type="sb_transport_start_stop" id="0k8^to=%+_1$taD]nr52">
+                            <field name="ACTION">START</field>
                             <next>
-                              <block type="sb_transport_start_stop" id="0k8^to=%+_1$taD]nr52">
-                                <field name="ACTION">START</field>
-                                <next>
-                                  <block type="sb_tone_loop" id="!,jVa`lurGYdS(LUC#x3">
-                                    <field name="INTERVAL">12m</field>
+                              <block type="sb_tone_loop" id="!,jVa`lurGYdS(LUC#x3">
+                                <field name="INTERVAL">12m</field>
+                                <statement name="DO">
+                                  <block type="controls_for" id=".k1o0oUBg-32@|wh-+H(">
+                                    <field name="VAR" id="var_i">i</field>
+                                    <value name="FROM">
+                                      <shadow type="math_number" id="{+Ws/-9m;:q6gZSt;BBV">
+                                        <field name="NUM">1</field>
+                                      </shadow>
+                                    </value>
+                                    <value name="TO">
+                                      <shadow type="math_number" id="mU*8$3e;|CvJsa$x`Dy=">
+                                        <field name="NUM">4</field>
+                                      </shadow>
+                                    </value>
+                                    <value name="BY">
+                                      <shadow type="math_number" id="oz4B:+Jo(r=|%[4}]xw~">
+                                        <field name="NUM">1</field>
+                                      </shadow>
+                                    </value>
                                     <statement name="DO">
-                                      <block type="controls_for" id=".k1o0oUBg-32@|wh-+H(">
+                                      <block type="sb_rhythm_sequence" id="[lkGnWgVq0O7cX1uxfTn">
+                                        <field name="IS_CHORD">TRUE</field>
+                                        <field name="SEQUENCE">C7 . . . | . . C7 . | . . . . | . . C7 .</field>
+                                        <value name="SOURCE">
+                                          <shadow type="sb_rhythm_source_selector" id="pR(jtGqV7UWA0`B7ziS!">
+                                            <field name="TYPE">CUSTOM</field>
+                                            <field name="CUSTOM_TYPE">ChordSynth</field>
+                                          </shadow>
+                                        </value>
+                                        <value name="MEASURE">
+                                          <block type="variables_get" id=",u)o[Y6jinFn:O#HcaL?">
+                                            <field name="VAR" id="var_i">i</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="sb_rhythm_sequence" id="`SM/U(kD=[*in@NrIsum">
+                                            <field name="IS_CHORD">FALSE</field>
+                                            <field name="SEQUENCE">C2 . . . | G2 . . . | Bb2 . . . | G2 . . .</field>
+                                            <value name="SOURCE">
+                                              <shadow type="sb_rhythm_source_selector" id="G_r}d{Nty),ITug?8L7R">
+                                                <field name="TYPE">CUSTOM</field>
+                                                <field name="CUSTOM_TYPE">BassSynth</field>
+                                              </shadow>
+                                            </value>
+                                            <value name="MEASURE">
+                                              <block type="variables_get" id="`j}xiRWNfH@wq=ojX(0q">
+                                                <field name="VAR" id="var_i">i</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="controls_for" id="_##~mma|:rlwG7(Ug:N|">
                                         <field name="VAR" id="var_i">i</field>
                                         <value name="FROM">
-                                          <shadow type="math_number" id="{+Ws/-9m;:q6gZSt;BBV">
-                                            <field name="NUM">1</field>
+                                          <shadow type="math_number" id="ZtlOLw_,C13d7m.jivad">
+                                            <field name="NUM">5</field>
                                           </shadow>
                                         </value>
                                         <value name="TO">
-                                          <shadow type="math_number" id="mU*8$3e;|CvJsa$x`Dy=">
-                                            <field name="NUM">4</field>
+                                          <shadow type="math_number" id="Vfzo#1`RnG1nf/)8`!L[">
+                                            <field name="NUM">6</field>
                                           </shadow>
                                         </value>
                                         <value name="BY">
-                                          <shadow type="math_number" id="oz4B:+Jo(r=|%[4}]xw~">
+                                          <shadow type="math_number" id="?2.[O9`I5RhB66A;z24(">
                                             <field name="NUM">1</field>
                                           </shadow>
                                         </value>
                                         <statement name="DO">
-                                          <block type="sb_rhythm_sequence" id="[lkGnWgVq0O7cX1uxfTn">
+                                          <block type="sb_rhythm_sequence" id="D|e$WZk*zpiXgo=0)b0y">
                                             <field name="IS_CHORD">TRUE</field>
-                                            <field name="SEQUENCE">C7 . . . | . . C7 . | . . . . | . . C7 .</field>
+                                            <field name="SEQUENCE">F7 . . . | . . F7 . | . . . . | . . F7 .</field>
                                             <value name="SOURCE">
-                                              <shadow type="sb_rhythm_source_selector" id="pR(jtGqV7UWA0`B7ziS!">
-                                                <mutation is_custom="true"></mutation>
+                                              <shadow type="sb_rhythm_source_selector" id="m|e[ld`W;p8W2?Cmd+Td">
                                                 <field name="TYPE">CUSTOM</field>
                                                 <field name="CUSTOM_TYPE">ChordSynth</field>
                                               </shadow>
                                             </value>
                                             <value name="MEASURE">
-                                              <block type="variables_get" id=",u)o[Y6jinFn:O#HcaL?">
+                                              <block type="variables_get" id="1Qv/W8^2]Zl[xPVYjYjd">
                                                 <field name="VAR" id="var_i">i</field>
                                               </block>
                                             </value>
                                             <next>
-                                              <block type="sb_rhythm_sequence" id="`SM/U(kD=[*in@NrIsum">
+                                              <block type="sb_rhythm_sequence" id="[3|;j/YJp0}ysG9defek">
                                                 <field name="IS_CHORD">FALSE</field>
-                                                <field name="SEQUENCE">C2 . . . | G2 . . . | Bb2 . . . | G2 . . .</field>
+                                                <field name="SEQUENCE">F2 . . . | C3 . . . | Eb3 . . . | C3 . . .</field>
                                                 <value name="SOURCE">
-                                                  <shadow type="sb_rhythm_source_selector" id="G_r}d{Nty),ITug?8L7R">
-                                                    <mutation is_custom="true"></mutation>
+                                                  <shadow type="sb_rhythm_source_selector" id="yzHG-Yk~ofx#G(C1IO4V">
                                                     <field name="TYPE">CUSTOM</field>
                                                     <field name="CUSTOM_TYPE">BassSynth</field>
                                                   </shadow>
                                                 </value>
                                                 <value name="MEASURE">
-                                                  <block type="variables_get" id="`j}xiRWNfH@wq=ojX(0q">
+                                                  <block type="variables_get" id="-dOZeGxD1|~x07/aF-7[">
                                                     <field name="VAR" id="var_i">i</field>
                                                   </block>
                                                 </value>
@@ -178,52 +228,50 @@
                                           </block>
                                         </statement>
                                         <next>
-                                          <block type="controls_for" id="_##~mma|:rlwG7(Ug:N|">
+                                          <block type="controls_for" id="Hlq7zOhdHc;9PKF%Dr@]">
                                             <field name="VAR" id="var_i">i</field>
                                             <value name="FROM">
-                                              <shadow type="math_number" id="ZtlOLw_,C13d7m.jivad">
-                                                <field name="NUM">5</field>
+                                              <shadow type="math_number" id="wM;QjquY|1nZ{f.`QSP;">
+                                                <field name="NUM">7</field>
                                               </shadow>
                                             </value>
                                             <value name="TO">
-                                              <shadow type="math_number" id="Vfzo#1`RnG1nf/)8`!L[">
-                                                <field name="NUM">6</field>
+                                              <shadow type="math_number" id="he=]x^~dpbW9Im(MCSL8">
+                                                <field name="NUM">8</field>
                                               </shadow>
                                             </value>
                                             <value name="BY">
-                                              <shadow type="math_number" id="?2.[O9`I5RhB66A;z24(">
+                                              <shadow type="math_number" id="1eU!^x5Ae+*6JF}sVwTx">
                                                 <field name="NUM">1</field>
                                               </shadow>
                                             </value>
                                             <statement name="DO">
-                                              <block type="sb_rhythm_sequence" id="D|e$WZk*zpiXgo=0)b0y">
+                                              <block type="sb_rhythm_sequence" id="?Q`dm[83a3khI5m)$V/7">
                                                 <field name="IS_CHORD">TRUE</field>
-                                                <field name="SEQUENCE">F7 . . . | . . F7 . | . . . . | . . F7 .</field>
+                                                <field name="SEQUENCE">C7 . . . | . . C7 . | . . . . | . . C7 .</field>
                                                 <value name="SOURCE">
-                                                  <shadow type="sb_rhythm_source_selector" id="m|e[ld`W;p8W2?Cmd+Td">
-                                                    <mutation is_custom="true"></mutation>
+                                                  <shadow type="sb_rhythm_source_selector" id="M5]YwMYf!ZUq=p4Kj8-C">
                                                     <field name="TYPE">CUSTOM</field>
                                                     <field name="CUSTOM_TYPE">ChordSynth</field>
                                                   </shadow>
                                                 </value>
                                                 <value name="MEASURE">
-                                                  <block type="variables_get" id="1Qv/W8^2]Zl[xPVYjYjd">
+                                                  <block type="variables_get" id="VJQ1#ZJr-+z#20s9gA|3">
                                                     <field name="VAR" id="var_i">i</field>
                                                   </block>
                                                 </value>
                                                 <next>
-                                                  <block type="sb_rhythm_sequence" id="[3|;j/YJp0}ysG9defek">
+                                                  <block type="sb_rhythm_sequence" id="K5%[$ovg:xdWg|Qmiq;n">
                                                     <field name="IS_CHORD">FALSE</field>
-                                                    <field name="SEQUENCE">F2 . . . | C3 . . . | Eb3 . . . | C3 . . .</field>
+                                                    <field name="SEQUENCE">C2 . . . | G2 . . . | Bb2 . . . | G2 . . .</field>
                                                     <value name="SOURCE">
-                                                      <shadow type="sb_rhythm_source_selector" id="yzHG-Yk~ofx#G(C1IO4V">
-                                                        <mutation is_custom="true"></mutation>
+                                                      <shadow type="sb_rhythm_source_selector" id="WT@X1:fS#l0?,:Hb7Nr/">
                                                         <field name="TYPE">CUSTOM</field>
                                                         <field name="CUSTOM_TYPE">BassSynth</field>
                                                       </shadow>
                                                     </value>
                                                     <value name="MEASURE">
-                                                      <block type="variables_get" id="-dOZeGxD1|~x07/aF-7[">
+                                                      <block type="variables_get" id="9XXk(z#IfU3IDM,[%=!q">
                                                         <field name="VAR" id="var_i">i</field>
                                                       </block>
                                                     </value>
@@ -232,125 +280,65 @@
                                               </block>
                                             </statement>
                                             <next>
-                                              <block type="controls_for" id="Hlq7zOhdHc;9PKF%Dr@]">
-                                                <field name="VAR" id="var_i">i</field>
-                                                <value name="FROM">
-                                                  <shadow type="math_number" id="wM;QjquY|1nZ{f.`QSP;">
-                                                    <field name="NUM">7</field>
+                                              <block type="sb_rhythm_sequence" id="@mG29A8g!$CIm3Y`W~U_">
+                                                <field name="IS_CHORD">TRUE</field>
+                                                <field name="SEQUENCE">G7 . . . | . . G7 . | . . . . | . . G7 .</field>
+                                                <value name="SOURCE">
+                                                  <shadow type="sb_rhythm_source_selector" id="BEhXu6*TRfTI9{f#,cXY">
+                                                    <field name="TYPE">CUSTOM</field>
+                                                    <field name="CUSTOM_TYPE">ChordSynth</field>
                                                   </shadow>
                                                 </value>
-                                                <value name="TO">
-                                                  <shadow type="math_number" id="he=]x^~dpbW9Im(MCSL8">
-                                                    <field name="NUM">8</field>
+                                                <value name="MEASURE">
+                                                  <shadow type="math_number" id="tkSY,28Z4QWJ9ya;IYA8">
+                                                    <field name="NUM">9</field>
                                                   </shadow>
                                                 </value>
-                                                <value name="BY">
-                                                  <shadow type="math_number" id="1eU!^x5Ae+*6JF}sVwTx">
-                                                    <field name="NUM">1</field>
-                                                  </shadow>
-                                                </value>
-                                                <statement name="DO">
-                                                  <block type="sb_rhythm_sequence" id="?Q`dm[83a3khI5m)$V/7">
-                                                    <field name="IS_CHORD">TRUE</field>
-                                                    <field name="SEQUENCE">C7 . . . | . . C7 . | . . . . | . . C7 .</field>
-                                                    <value name="SOURCE">
-                                                      <shadow type="sb_rhythm_source_selector" id="M5]YwMYf!ZUq=p4Kj8-C">
-                                                        <mutation is_custom="true"></mutation>
-                                                        <field name="TYPE">CUSTOM</field>
-                                                        <field name="CUSTOM_TYPE">ChordSynth</field>
-                                                      </shadow>
-                                                    </value>
-                                                    <value name="MEASURE">
-                                                      <block type="variables_get" id="VJQ1#ZJr-+z#20s9gA|3">
-                                                        <field name="VAR" id="var_i">i</field>
-                                                      </block>
-                                                    </value>
-                                                    <next>
-                                                      <block type="sb_rhythm_sequence" id="K5%[$ovg:xdWg|Qmiq;n">
-                                                        <field name="IS_CHORD">FALSE</field>
-                                                        <field name="SEQUENCE">C2 . . . | G2 . . . | Bb2 . . . | G2 . . .</field>
-                                                        <value name="SOURCE">
-                                                          <shadow type="sb_rhythm_source_selector" id="WT@X1:fS#l0?,:Hb7Nr/">
-                                                            <mutation is_custom="true"></mutation>
-                                                            <field name="TYPE">CUSTOM</field>
-                                                            <field name="CUSTOM_TYPE">BassSynth</field>
-                                                          </shadow>
-                                                        </value>
-                                                        <value name="MEASURE">
-                                                          <block type="variables_get" id="9XXk(z#IfU3IDM,[%=!q">
-                                                            <field name="VAR" id="var_i">i</field>
-                                                          </block>
-                                                        </value>
-                                                      </block>
-                                                    </next>
-                                                  </block>
-                                                </statement>
                                                 <next>
-                                                  <block type="sb_rhythm_sequence" id="@mG29A8g!$CIm3Y`W~U_">
+                                                  <block type="sb_rhythm_sequence" id=",rt/~,2M1wBU2^c+53G0">
                                                     <field name="IS_CHORD">TRUE</field>
-                                                    <field name="SEQUENCE">G7 . . . | . . G7 . | . . . . | . . G7 .</field>
+                                                    <field name="SEQUENCE">F7 . . . | . . F7 . | . . . . | . . F7 .</field>
                                                     <value name="SOURCE">
-                                                      <shadow type="sb_rhythm_source_selector" id="BEhXu6*TRfTI9{f#,cXY">
-                                                        <mutation is_custom="true"></mutation>
+                                                      <shadow type="sb_rhythm_source_selector" id="sv5XyN#qaUu?M]GtpJu8">
                                                         <field name="TYPE">CUSTOM</field>
                                                         <field name="CUSTOM_TYPE">ChordSynth</field>
                                                       </shadow>
                                                     </value>
                                                     <value name="MEASURE">
-                                                      <shadow type="math_number" id="tkSY,28Z4QWJ9ya;IYA8">
-                                                        <field name="NUM">9</field>
+                                                      <shadow type="math_number" id="rakM/y?6C)48*Wpo2f4H">
+                                                        <field name="NUM">10</field>
                                                       </shadow>
                                                     </value>
                                                     <next>
-                                                      <block type="sb_rhythm_sequence" id=",rt/~,2M1wBU2^c+53G0">
+                                                      <block type="sb_rhythm_sequence" id="T}qq*a,wkcAOLY7z{vk0">
                                                         <field name="IS_CHORD">TRUE</field>
-                                                        <field name="SEQUENCE">F7 . . . | . . F7 . | . . . . | . . F7 .</field>
+                                                        <field name="SEQUENCE">C7 . . . | . . C7 . | . . . . | . . C7 .</field>
                                                         <value name="SOURCE">
-                                                          <shadow type="sb_rhythm_source_selector" id="sv5XyN#qaUu?M]GtpJu8">
-                                                            <mutation is_custom="true"></mutation>
+                                                          <shadow type="sb_rhythm_source_selector" id="R#rIM/jnaZjl+A8#rd7x">
                                                             <field name="TYPE">CUSTOM</field>
                                                             <field name="CUSTOM_TYPE">ChordSynth</field>
                                                           </shadow>
                                                         </value>
                                                         <value name="MEASURE">
-                                                          <shadow type="math_number" id="rakM/y?6C)48*Wpo2f4H">
-                                                            <field name="NUM">10</field>
+                                                          <shadow type="math_number" id="F0QI;++~]I3polb1%wcT">
+                                                            <field name="NUM">11</field>
                                                           </shadow>
                                                         </value>
                                                         <next>
-                                                          <block type="sb_rhythm_sequence" id="T}qq*a,wkcAOLY7z{vk0">
+                                                          <block type="sb_rhythm_sequence" id="dopU-aU8HWt0w/9lcHxP">
                                                             <field name="IS_CHORD">TRUE</field>
-                                                            <field name="SEQUENCE">C7 . . . | . . C7 . | . . . . | . . C7 .</field>
+                                                            <field name="SEQUENCE">G7 . . . | . . G7 . | . . . . | . . G7 .</field>
                                                             <value name="SOURCE">
-                                                              <shadow type="sb_rhythm_source_selector" id="R#rIM/jnaZjl+A8#rd7x">
-                                                                <mutation is_custom="true"></mutation>
+                                                              <shadow type="sb_rhythm_source_selector" id="BVwKUMFkeW;Kf7bj{BX6">
                                                                 <field name="TYPE">CUSTOM</field>
                                                                 <field name="CUSTOM_TYPE">ChordSynth</field>
                                                               </shadow>
                                                             </value>
                                                             <value name="MEASURE">
-                                                              <shadow type="math_number" id="F0QI;++~]I3polb1%wcT">
-                                                                <field name="NUM">11</field>
+                                                              <shadow type="math_number" id="ZSt7*eT*2h{W{SxaxLuv">
+                                                                <field name="NUM">12</field>
                                                               </shadow>
                                                             </value>
-                                                            <next>
-                                                              <block type="sb_rhythm_sequence" id="dopU-aU8HWt0w/9lcHxP">
-                                                                <field name="IS_CHORD">TRUE</field>
-                                                                <field name="SEQUENCE">G7 . . . | . . G7 . | . . . . | . . G7 .</field>
-                                                                <value name="SOURCE">
-                                                                  <shadow type="sb_rhythm_source_selector" id="BVwKUMFkeW;Kf7bj{BX6">
-                                                                    <mutation is_custom="true"></mutation>
-                                                                    <field name="TYPE">CUSTOM</field>
-                                                                    <field name="CUSTOM_TYPE">ChordSynth</field>
-                                                                  </shadow>
-                                                                </value>
-                                                                <value name="MEASURE">
-                                                                  <shadow type="math_number" id="ZSt7*eT*2h{W{SxaxLuv">
-                                                                    <field name="NUM">12</field>
-                                                                  </shadow>
-                                                                </value>
-                                                              </block>
-                                                            </next>
                                                           </block>
                                                         </next>
                                                       </block>
@@ -362,9 +350,9 @@
                                           </block>
                                         </next>
                                       </block>
-                                    </statement>
+                                    </next>
                                   </block>
-                                </next>
+                                </statement>
                               </block>
                             </next>
                           </block>
