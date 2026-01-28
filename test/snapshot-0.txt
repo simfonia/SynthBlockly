@@ -2,32 +2,29 @@
 // Variable Declarations
 
 
-
 // Other Definitions
-
 
 
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:DefaultSynth */
   window.audioEngine.createInstrument('DefaultSynth', 'PolySynth');
   (function(){ const t='DefaultSynth'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.1,sustain:0.5,release:1,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
 
 
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 window.audioEngine.Tone.Transport.bpm.value = 60;
 await window.audioEngine.playCurrentInstrumentNote(window.audioEngine.Tone.Midi('C4').toNote(), '4n', (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), Number(1));
 await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('4n').toMilliseconds()));
@@ -85,58 +82,58 @@ window.audioEngine.Tone.Transport.bpm.value = 80;
                 window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'FM7');
             }
         }
-        await window.audioEngine.playMelodyString("RQ   C4Q D4Q.   E4E \nCM7H.                 RQ\nRQ C5Q B4Q.  G4E\nDmH      FM7H");
+        await window.audioEngine.playMelodyString("RQ   C4Q D4Q.   E4E \nCM7H.                 RQ\nRQ C5Q B4Q.  G4E\nDmH      FM7H", 'DefaultSynth', (typeof scheduledTime === 'number' ? scheduledTime : undefined));
 
 
-=== SNAPSHOT: 02_Rock.xml ===
+=== SNAPSHOT: 02_rock.xml ===
 // Variable Declarations
-
 var note, velocity, channel;
 
 // Other Definitions
 
-window.blocklyLoops = window.blocklyLoops || {};
 
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:DefaultSynth */
   window.audioEngine.createInstrument('DefaultSynth', 'PolySynth');
   (function(){ const t='DefaultSynth'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.1,sustain:0.2,release:0.5,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
 
 /* INSTRUMENT_DEFINITION:Piano */
-  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "https://tonejs.github.io/audio/salamander/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
 
 
+
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
 // Setup & Configuration
-
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-5},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-5},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 window.audioEngine.enablePcKeyboardMidi();
 window.audioEngine.Tone.Transport.bpm.value = 80;
 await window.audioEngine.playCountIn(1, 4, 4, 0.8);
 
-if (window.blocklyLoops['loop_main_drum_loop']) {
-    window.blocklyLoops['loop_main_drum_loop'].dispose();
-}
-window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
-    if (!window.audioEngine.isExecutionActive) return;
-      
+{
+    if (window.blocklyLoops['main_drum_loop'])
+ {
+        window.blocklyLoops['main_drum_loop'].stop();
+        window.blocklyLoops['main_drum_loop'].dispose();
+    }
+    window.blocklyLoops['main_drum_loop'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
+        if (!window.audioEngine.isExecutionActive) return;
+          
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('C1', Number(1), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -144,10 +141,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:1')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('D1', Number(1), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -155,10 +152,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:2')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('C1', Number(1), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -166,10 +163,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:3')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('D1', Number(1), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -177,10 +174,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:0:0')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -188,10 +185,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:0:2')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -199,10 +196,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:1:0')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -210,10 +207,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:1:2')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -221,10 +218,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:2:0')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -232,10 +229,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:2:2')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -243,10 +240,10 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:3:0')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
@@ -254,50 +251,34 @@ window.blocklyLoops['loop_main_drum_loop'] = new window.audioEngine.Tone.Loop(as
   
   {
       const _calcOffset = (new window.audioEngine.Tone.Time('0:3:2')).toSeconds();
-      const _baseTime = (typeof scheduledTime !== 'undefined') ? scheduledTime : window.audioEngine.Tone.now();
+      const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
       const _newTime = _baseTime + _calcOffset;
       {
-          const scheduledTime = _newTime; // Shadow 'scheduledTime' for nested blocks
+          const scheduledTime = _newTime; 
             window.audioEngine.playJazzKitNote('F1', Number(0.2), (typeof scheduledTime !== 'undefined' ? scheduledTime : undefined));
   
       }
   }
 
-}, '1m');
-window.blocklyLoops['loop_main_drum_loop'].start(0);
+    }, '1m').start(0);
+}
 window.audioEngine.Tone.Transport.start();
 
 
 === SNAPSHOT: 03_Chord.xml ===
 // Variable Declarations
-
 var note, velocity, channel;
 
 // Other Definitions
 
 
-
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:DefaultSynth */
   window.audioEngine.createInstrument('DefaultSynth', 'PolySynth');
   (function(){ const t='DefaultSynth'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.1,sustain:0.8,release:0.1,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
-  /* EFFECT_CONFIG:{"type":"compressor","params":{"threshold":-24,"ratio":12,"attack":0.003,"release":0.25},"target":"DefaultSynth"} */window.audioEngine.addEffectToChain(Object.assign({"type":"compressor","params":{"threshold":-24,"ratio":12,"attack":0.003,"release":0.25},"target":"DefaultSynth"}, { target: 'DefaultSynth' }));
-
-
-
-// Setup & Configuration
-
-/* MASTER_DEFINITION */
-  /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
-
-
-
-// Main Execution
 
 
         {
@@ -332,21 +313,29 @@ var note, velocity, channel;
         window.audioEngine.enablePcKeyboardMidi();
 
 
-=== SNAPSHOT: 04_Switch_instrument.xml ===
-// Variable Declarations
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
+/* MASTER_DEFINITION */
+  /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
+
+
+
+// Main Execution
+
+
+=== SNAPSHOT: 04_switch_instrument.xml ===
+// Variable Declarations
 var note, velocity, channel;
 
 // Other Definitions
 
 
-
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:Piano */
   window.audioEngine.createInstrument('Piano', 'PolySynth');
   (function(){ const t='Piano'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.4,sustain:0.2,release:0.5,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
@@ -354,17 +343,6 @@ var note, velocity, channel;
 /* INSTRUMENT_DEFINITION:Strings */
   window.audioEngine.createInstrument('Strings', 'FMSynth');
   (function(){ const t='Strings'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.5,decay:1,sustain:1,release:0.2,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
-
-
-
-// Setup & Configuration
-
-/* MASTER_DEFINITION */
-  /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
-
-
-
-// Main Execution
 
 
         {
@@ -399,21 +377,29 @@ var note, velocity, channel;
         }
         
 
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
+// Setup & Configuration
+/* MASTER_DEFINITION */
+  /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
+
+
+
+// Main Execution
+
+
 === SNAPSHOT: 05_Custom sounds.xml ===
 // Variable Declarations
-
 
 
 // Other Definitions
 
 
-
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:Mellow */
   
           window.audioEngine.createCustomWaveInstrument('Mellow', [1, 0.8, 0]);
@@ -426,15 +412,16 @@ var note, velocity, channel;
 
 
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 
             (function() {
                 const targetName = 'Scary';
@@ -444,21 +431,17 @@ var note, velocity, channel;
         window.audioEngine.enablePcKeyboardMidi();
 
 
-=== SNAPSHOT: 06_Electric guitar.xml ===
+=== SNAPSHOT: 06_electric guitar.xml ===
 // Variable Declarations
-
 
 
 // Other Definitions
 
 
-
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:electric_guitar */
   window.audioEngine.createInstrument('electric_guitar', 'FMSynth');
   (function(){ const t='electric_guitar'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.2,sustain:0.5,release:0.5,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
@@ -467,15 +450,16 @@ var note, velocity, channel;
 
 
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 
             (function() {
                 const targetName = 'electric_guitar';
@@ -489,19 +473,15 @@ var note, velocity, channel;
 // Variable Declarations
 
 
-
 // Other Definitions
-
 
 
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:Piano */
-  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "https://tonejs.github.io/audio/salamander/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
   (function(){ const t='Piano'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.1,sustain:0.5,release:0.5,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
 
 /* INSTRUMENT_DEFINITION:Violin_arco */
@@ -514,15 +494,16 @@ var note, velocity, channel;
 
 
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 
             (function() {
                 const targetName = 'Piano';
@@ -536,24 +517,20 @@ var note, velocity, channel;
 // Variable Declarations
 
 
-
 // Other Definitions
 
-window.blocklyLoops = window.blocklyLoops || {};
 
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:Sax */
   window.audioEngine.createInstrument('Sax', 'SawtoothWave');
   (function(){ const t='Sax'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.2,decay:0.1,sustain:1,release:0.1,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
   (function(){ const t='Sax'; const v=Number(0.3); const db=window.audioEngine.Tone.gainToDb(v); const chan=window.audioEngine._getOrCreateChannel(t); if(chan&&chan.volume) chan.volume.value=db; })();
 
 /* INSTRUMENT_DEFINITION:Piano */
-  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "https://tonejs.github.io/audio/salamander/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
 
 /* INSTRUMENT_DEFINITION:JazzClap */
   window.audioEngine.createCustomSampler('JazzClap', { "C4": "HANDCLP2.WAV" }, "/SynthBlockly/samples/jazzkit/Roland_TR-909/");
@@ -570,15 +547,16 @@ window.blocklyLoops = window.blocklyLoops || {};
 
 
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 window.audioEngine.Tone.Transport.bpm.value = 105;
 
         {
@@ -630,81 +608,40 @@ window.audioEngine.Tone.Transport.bpm.value = 105;
 await window.audioEngine.playCountIn(1, 4, 4, 0.3);
 window.audioEngine.Tone.Transport.start();
 
-if (window.blocklyLoops['loop_oX1~e+[S@rWEX9Y4ee|E']) {
-    window.blocklyLoops['loop_oX1~e+[S@rWEX9Y4ee|E'].dispose();
-}
-window.blocklyLoops['loop_oX1~e+[S@rWEX9Y4ee|E'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
-    if (!window.audioEngine.isExecutionActive) return;
-      
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "x--- --x- --x- x---" + '"');
-              }
+{
+    if (window.blocklyLoops['oX1~e+[S@rWEX9Y4ee|E'])
+ {
+        window.blocklyLoops['oX1~e+[S@rWEX9Y4ee|E'].stop();
+        window.blocklyLoops['oX1~e+[S@rWEX9Y4ee|E'].dispose();
+    }
+    window.blocklyLoops['oX1~e+[S@rWEX9Y4ee|E'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
+        if (!window.audioEngine.isExecutionActive) return;
           window.audioEngine.playRhythmSequence('JazzClap', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "Dm7--- Dm7--- --Dm7- --Dm7-" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["Dm7","-","-","-","Dm7","-","-","-","-","-","Dm7","-","-","-","Dm7","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "D2--- ---- A2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["D2","-","-","-","-","-","-","-","A2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "x--- --x- --x- x---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('JazzKick', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "--G7- --G7- ---- G7---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["-","-","G7","-","-","-","G7","-","-","-","-","-","G7","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "G1--- ---- D2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["G1","-","-","-","-","-","-","-","D2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 3 + ': Expected 16 steps, found 16. Current sequence: "' + "CM7--- CM7--- --CM7- --CM7-" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["CM7","-","-","-","CM7","-","-","-","-","-","CM7","-","-","-","CM7","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 3 + ': Expected 16 steps, found 16. Current sequence: "' + "C2--- ---- G2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["C2","-","-","-","-","-","-","-","G2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 4 + ': Expected 16 steps, found 16. Current sequence: "' + "--A7- --A7- ---- A7---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["-","-","A7","-","-","-","A7","-","-","-","-","-","A7","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 4 + ': Expected 16 steps, found 16. Current sequence: "' + "A1--- ---- E2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["A1","-","-","-","-","-","-","-","E2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, false);
+  window.audioEngine.playRhythmSequence('Piano', ["Dm7",".",".",".","Dm7","-","-","-",".",".","Dm7",".",".",".","Dm7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, true);
+  window.audioEngine.playRhythmSequence('Bass', ["D2","-","-","-","-","-","-","-","A2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
+  window.audioEngine.playRhythmSequence('JazzKick', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
+  window.audioEngine.playRhythmSequence('Piano', [".",".","G7",".",".",".","G7",".","-","-","-","-","G7",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, true);
+  window.audioEngine.playRhythmSequence('Bass', ["G1","-","-","-","-","-","-","-","D2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
+  window.audioEngine.playRhythmSequence('Piano', ["CM7",".",".",".","CM7","-","-","-",".",".","CM7",".",".",".","CM7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, true);
+  window.audioEngine.playRhythmSequence('Bass', ["C2","-","-","-","-","-","-","-","G2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, false);
+  window.audioEngine.playRhythmSequence('Piano', [".",".","A7",".",".",".","A7",".","-","-","-","-","A7",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, true);
+  window.audioEngine.playRhythmSequence('Bass', ["A1","-","-","-","-","-","-","-","E2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, false);
 
-}, '4m');
-window.blocklyLoops['loop_oX1~e+[S@rWEX9Y4ee|E'].start(0);
+    }, '4m').start(0);
+}
 
 
 === SNAPSHOT: 09_12-bar blues.xml ===
 // Variable Declarations
-
 var i;
 
 // Other Definitions
 
-window.blocklyLoops = window.blocklyLoops || {};
 
 // Function Definitions
 
 
-
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:DefaultSynth */
   window.audioEngine.createInstrument('DefaultSynth', 'DuoSynth');
   (function(){ const t='DefaultSynth'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.1,sustain:0.5,release:0.1,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
@@ -723,15 +660,16 @@ window.blocklyLoops = window.blocklyLoops || {};
 
 
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 window.audioEngine.Tone.Transport.bpm.value = 110;
 
         {
@@ -772,83 +710,43 @@ window.audioEngine.Tone.Transport.bpm.value = 110;
         window.audioEngine.enablePcKeyboardMidi();
 window.audioEngine.Tone.Transport.start();
 
-if (window.blocklyLoops['loop_!,jVa`lurGYdS(LUC#x3']) {
-    window.blocklyLoops['loop_!,jVa`lurGYdS(LUC#x3'].dispose();
-}
-window.blocklyLoops['loop_!,jVa`lurGYdS(LUC#x3'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
-    if (!window.audioEngine.isExecutionActive) return;
-      for (i = 1; i <= 4; i++) {
-    
-                if (16 !== 16) {
-                    window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + i + ': Expected 16 steps, found 16. Current sequence: "' + "C7 . . . | . . C7 . | . . . . | . . C7 ." + '"');
-                }
-            window.audioEngine.playRhythmSequence('ChordSynth', ["C7",".",".",".",".",".","C7",".",".",".",".",".",".",".","C7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, true);
-    
-                if (16 !== 16) {
-                    window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + i + ': Expected 16 steps, found 16. Current sequence: "' + "C2 . . . | G2 . . . | Bb2 . . . | G2 . . ." + '"');
-                }
-            window.audioEngine.playRhythmSequence('BassSynth', ["C2",".",".",".","G2",".",".",".","Bb2",".",".",".","G2",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, false);
+{
+    if (window.blocklyLoops['!,jVa`lurGYdS(LUC#x3'])
+ {
+        window.blocklyLoops['!,jVa`lurGYdS(LUC#x3'].stop();
+        window.blocklyLoops['!,jVa`lurGYdS(LUC#x3'].dispose();
+    }
+    window.blocklyLoops['!,jVa`lurGYdS(LUC#x3'] = new window.audioEngine.Tone.Loop(async (scheduledTime) => {
+        if (!window.audioEngine.isExecutionActive) return;
+          for (i = 1; i <= 4; i++) {
+    window.audioEngine.playRhythmSequence('ChordSynth', ["C7",".",".",".",".",".","C7",".",".",".",".",".",".",".","C7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, true);
+    window.audioEngine.playRhythmSequence('BassSynth', ["C2",".",".",".","G2",".",".",".","Bb2",".",".",".","G2",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, false);
   }
   for (i = 5; i <= 6; i++) {
-    
-                if (16 !== 16) {
-                    window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + i + ': Expected 16 steps, found 16. Current sequence: "' + "F7 . . . | . . F7 . | . . . . | . . F7 ." + '"');
-                }
-            window.audioEngine.playRhythmSequence('ChordSynth', ["F7",".",".",".",".",".","F7",".",".",".",".",".",".",".","F7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, true);
-    
-                if (16 !== 16) {
-                    window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + i + ': Expected 16 steps, found 16. Current sequence: "' + "F2 . . . | C3 . . . | Eb3 . . . | C3 . . ." + '"');
-                }
-            window.audioEngine.playRhythmSequence('BassSynth', ["F2",".",".",".","C3",".",".",".","Eb3",".",".",".","C3",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, false);
+    window.audioEngine.playRhythmSequence('ChordSynth', ["F7",".",".",".",".",".","F7",".",".",".",".",".",".",".","F7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, true);
+    window.audioEngine.playRhythmSequence('BassSynth', ["F2",".",".",".","C3",".",".",".","Eb3",".",".",".","C3",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, false);
   }
   for (i = 7; i <= 8; i++) {
-    
-                if (16 !== 16) {
-                    window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + i + ': Expected 16 steps, found 16. Current sequence: "' + "C7 . . . | . . C7 . | . . . . | . . C7 ." + '"');
-                }
-            window.audioEngine.playRhythmSequence('ChordSynth', ["C7",".",".",".",".",".","C7",".",".",".",".",".",".",".","C7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, true);
-    
-                if (16 !== 16) {
-                    window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + i + ': Expected 16 steps, found 16. Current sequence: "' + "C2 . . . | G2 . . . | Bb2 . . . | G2 . . ." + '"');
-                }
-            window.audioEngine.playRhythmSequence('BassSynth', ["C2",".",".",".","G2",".",".",".","Bb2",".",".",".","G2",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, false);
+    window.audioEngine.playRhythmSequence('ChordSynth', ["C7",".",".",".",".",".","C7",".",".",".",".",".",".",".","C7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, true);
+    window.audioEngine.playRhythmSequence('BassSynth', ["C2",".",".",".","G2",".",".",".","Bb2",".",".",".","G2",".",".","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), i, false);
   }
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 9 + ': Expected 16 steps, found 16. Current sequence: "' + "G7 . . . | . . G7 . | . . . . | . . G7 ." + '"');
-              }
-          window.audioEngine.playRhythmSequence('ChordSynth', ["G7",".",".",".",".",".","G7",".",".",".",".",".",".",".","G7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 9, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 10 + ': Expected 16 steps, found 16. Current sequence: "' + "F7 . . . | . . F7 . | . . . . | . . F7 ." + '"');
-              }
-          window.audioEngine.playRhythmSequence('ChordSynth', ["F7",".",".",".",".",".","F7",".",".",".",".",".",".",".","F7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 10, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 11 + ': Expected 16 steps, found 16. Current sequence: "' + "C7 . . . | . . C7 . | . . . . | . . C7 ." + '"');
-              }
-          window.audioEngine.playRhythmSequence('ChordSynth', ["C7",".",".",".",".",".","C7",".",".",".",".",".",".",".","C7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 11, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 12 + ': Expected 16 steps, found 16. Current sequence: "' + "G7 . . . | . . G7 . | . . . . | . . G7 ." + '"');
-              }
-          window.audioEngine.playRhythmSequence('ChordSynth', ["G7",".",".",".",".",".","G7",".",".",".",".",".",".",".","G7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 12, true);
+  window.audioEngine.playRhythmSequence('ChordSynth', ["G7",".",".",".",".",".","G7",".",".",".",".",".",".",".","G7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 9, true);
+  window.audioEngine.playRhythmSequence('ChordSynth', ["F7",".",".",".",".",".","F7",".",".",".",".",".",".",".","F7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 10, true);
+  window.audioEngine.playRhythmSequence('ChordSynth', ["C7",".",".",".",".",".","C7",".",".",".",".",".",".",".","C7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 11, true);
+  window.audioEngine.playRhythmSequence('ChordSynth', ["G7",".",".",".",".",".","G7",".",".",".",".",".",".",".","G7","."], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 12, true);
 
-}, '12m');
-window.blocklyLoops['loop_!,jVa`lurGYdS(LUC#x3'].start(0);
+    }, '12m').start(0);
+}
 
 
 === SNAPSHOT: 10-1_Functions and Long Compositions.xml ===
 // Variable Declarations
 
 
-
 // Other Definitions
 
 
-
 // Function Definitions
-
 // 描述此函式...
 async function verse() {
   await window.audioEngine.playCurrentInstrumentNote(window.audioEngine.Tone.Midi('C4').toNote(), '4n', (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), Number(1));
@@ -878,7 +776,6 @@ async function chorus() {
 }
 
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:DefaultSynth */
   window.audioEngine.createInstrument('DefaultSynth', 'PolySynth');
   (function(){ const t='DefaultSynth'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.1,sustain:0.5,release:0.5,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
@@ -905,15 +802,16 @@ async function chorus() {
         }
         
 
-// Setup & Configuration
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
 
+// Setup & Configuration
 /* MASTER_DEFINITION */
   /* EFFECT_CONFIG:{"type":"limiter","params":{"threshold":-1},"target":"Master"} */window.audioEngine.addEffectToChain(Object.assign({"type":"limiter","params":{"threshold":-1},"target":"Master"}, { target: 'Master' }));
 
 
 
 // Main Execution
-
 window.audioEngine.Tone.Transport.bpm.value = 120;
 await verse();
 await chorus();
@@ -925,105 +823,37 @@ await chorus();
 // Variable Declarations
 
 
-
 // Other Definitions
 
 
-
 // Function Definitions
-
 // 描述此函式...
 async function _E6_BC_94_E5_A5_8F_A__E6_AE_B5() {
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "x--- --x- --x- x---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('JazzClap', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "Dm7--- Dm7--- --Dm7- --Dm7-" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["Dm7","-","-","-","Dm7","-","-","-","-","-","Dm7","-","-","-","Dm7","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "D2--- ---- A2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["D2","-","-","-","-","-","-","-","A2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "x--- --x- --x- x---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('JazzKick', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "--G7- --G7- ---- G7---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["-","-","G7","-","-","-","G7","-","-","-","-","-","G7","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "G1--- ---- D2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["G1","-","-","-","-","-","-","-","D2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 3 + ': Expected 16 steps, found 16. Current sequence: "' + "x--- --x- --x- x---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('JazzClap', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 3 + ': Expected 16 steps, found 16. Current sequence: "' + "CM7--- CM7--- --CM7- --CM7-" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["CM7","-","-","-","CM7","-","-","-","-","-","CM7","-","-","-","CM7","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 3 + ': Expected 16 steps, found 16. Current sequence: "' + "C2--- ---- G2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["C2","-","-","-","-","-","-","-","G2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 4 + ': Expected 16 steps, found 16. Current sequence: "' + "x--- --x- --x- x---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('JazzKick', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 4 + ': Expected 16 steps, found 16. Current sequence: "' + "--A7- --A7- ---- A7---" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["-","-","A7","-","-","-","A7","-","-","-","-","-","A7","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 4 + ': Expected 16 steps, found 16. Current sequence: "' + "A1--- ---- E2--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["A1","-","-","-","-","-","-","-","E2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, false);
+  window.audioEngine.playRhythmSequence('JazzClap', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
+  window.audioEngine.playRhythmSequence('Piano', ["Dm7","-","-","-","Dm7","-","-","-","-","-","Dm7","-","-","-","Dm7","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, true);
+  window.audioEngine.playRhythmSequence('Bass', ["D2","-","-","-","-","-","-","-","A2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
+  window.audioEngine.playRhythmSequence('JazzKick', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
+  window.audioEngine.playRhythmSequence('Piano', ["-","-","G7","-","-","-","G7","-","-","-","-","-","G7","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, true);
+  window.audioEngine.playRhythmSequence('Bass', ["G1","-","-","-","-","-","-","-","D2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
+  window.audioEngine.playRhythmSequence('JazzClap', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, false);
+  window.audioEngine.playRhythmSequence('Piano', ["CM7","-","-","-","CM7","-","-","-","-","-","CM7","-","-","-","CM7","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, true);
+  window.audioEngine.playRhythmSequence('Bass', ["C2","-","-","-","-","-","-","-","G2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 3, false);
+  window.audioEngine.playRhythmSequence('JazzKick', ["x","-","-","-","-","-","x","-","-","-","x","-","x","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, false);
+  window.audioEngine.playRhythmSequence('Piano', ["-","-","A7","-","-","-","A7","-","-","-","-","-","A7","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, true);
+  window.audioEngine.playRhythmSequence('Bass', ["A1","-","-","-","-","-","-","-","E2","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 4, false);
 }
 
 // 描述此函式...
 async function _E6_BC_94_E5_A5_8F_B__E6_AE_B5() {
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "Dm7--- ---- G7--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["Dm7","-","-","-","-","-","-","-","G7","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 1 + ': Expected 16 steps, found 16. Current sequence: "' + "D2--- ---- G1--- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["D2","-","-","-","-","-","-","-","G1","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "C_End--- ---- ---- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Piano', ["C_End","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, true);
-  
-              if (16 !== 16) {
-                  window.audioEngine.logKey('LOG_MELODY_PARSE_ERR', 'warning', 'Measure ' + 2 + ': Expected 16 steps, found 16. Current sequence: "' + "C2--- ---- ---- ----" + '"');
-              }
-          window.audioEngine.playRhythmSequence('Bass', ["C2","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
+  window.audioEngine.playRhythmSequence('Piano', ["Dm7","-","-","-","-","-","-","-","G7","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, true);
+  window.audioEngine.playRhythmSequence('Bass', ["D2","-","-","-","-","-","-","-","G1","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 1, false);
+  window.audioEngine.playRhythmSequence('Piano', ["C_End","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, true);
+  window.audioEngine.playRhythmSequence('Bass', ["C2","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"], (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), 2, false);
 }
 
 // Instrument Creation
-
 /* INSTRUMENT_DEFINITION:Piano */
-  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "https://tonejs.github.io/audio/salamander/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
   (function(){ const t='Piano'; const v=Number(0.5); const db=window.audioEngine.Tone.gainToDb(v); const chan=window.audioEngine._getOrCreateChannel(t); if(chan&&chan.volume) chan.volume.value=db; })();
 
 /* INSTRUMENT_DEFINITION:JazzClap */
@@ -1095,12 +925,13 @@ async function _E6_BC_94_E5_A5_8F_B__E6_AE_B5() {
         }
         
 
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
 // Setup & Configuration
 
 
-
 // Main Execution
-
 window.audioEngine.enablePcKeyboardMidi();
 window.audioEngine.Tone.Transport.bpm.value = 105;
 window.audioEngine.Tone.Transport.start();
@@ -1122,5 +953,256 @@ await _E6_BC_94_E5_A5_8F_A__E6_AE_B5();
 await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('4m').toMilliseconds()));
 if (!window.audioEngine.isExecutionActive) return;
 await _E6_BC_94_E5_A5_8F_B__E6_AE_B5();
+
+
+=== SNAPSHOT: 11-1_Multi-track_Broadcast.xml ===
+// Variable Declarations
+
+
+// Other Definitions
+
+
+// Function Definitions
+
+
+// Instrument Creation
+/* INSTRUMENT_DEFINITION:Violin */
+  window.audioEngine.createCustomSampler('Violin', JSON.parse('{"G3":"G3.wav","A3":"A3.wav","B3":"B3.wav","D4":"D4.wav","Gb4":"Gb4.wav","A4":"A4.wav","C5":"C5.wav","E5":"E5.wav","G5":"G5.wav","B5":"B5.wav","D6":"D6.wav"}'), '/SynthBlockly/samples/violin/violin-section-vibrato-sustain/', { attack: 0.1, decay: 0.5, sustain: 1.0, release: 3.0 });
+
+/* INSTRUMENT_DEFINITION:Piano */
+  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+
+
+
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
+// Setup & Configuration
+
+
+// Main Execution
+window.audioEngine.Tone.Transport.bpm.value = 120;
+window.audioEngine.broadcast('play');
+
+
+=== SNAPSHOT: 11-2_Multi-track_Scheduling.xml ===
+// Variable Declarations
+
+
+// Other Definitions
+
+
+// Function Definitions
+
+
+// Instrument Creation
+/* INSTRUMENT_DEFINITION:Violin */
+  window.audioEngine.createCustomSampler('Violin', JSON.parse('{"G3":"G3.wav","A3":"A3.wav","B3":"B3.wav","D4":"D4.wav","Gb4":"Gb4.wav","A4":"A4.wav","C5":"C5.wav","E5":"E5.wav","G5":"G5.wav","B5":"B5.wav","D6":"D6.wav"}'), '/SynthBlockly/samples/violin/violin-section-vibrato-sustain/', { attack: 0.1, decay: 0.5, sustain: 1.0, release: 3.0 });
+  (function(){ const t='Violin'; const v=Number(3); const db=window.audioEngine.Tone.gainToDb(v); const chan=window.audioEngine._getOrCreateChannel(t); if(chan&&chan.volume) chan.volume.value=db; })();
+
+/* INSTRUMENT_DEFINITION:Piano */
+  window.audioEngine.createCustomSampler('Piano', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+
+
+
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
+// Setup & Configuration
+
+
+// Main Execution
+window.audioEngine.Tone.Transport.bpm.value = 120;
+window.audioEngine.Tone.Transport.start();
+await window.audioEngine.playMelodyString("D4Q, E4Q, F4H, RH, A4Q, G4Q, F4Q, E4Q, D4H", 'Violin', (typeof scheduledTime === 'number' ? scheduledTime : undefined));
+await window.audioEngine.playMelodyString("RW, D3Q, E3Q, F3H, G3Q, A3Q, D3H", 'Piano', (typeof scheduledTime === 'number' ? scheduledTime : undefined));
+
+{
+    const _calcOffset = (new window.audioEngine.Tone.Time('0')).toSeconds();
+    const _baseTime = (typeof scheduledTime === 'number') ? scheduledTime : window.audioEngine.Tone.now();
+    const _newTime = _baseTime + _calcOffset;
+    {
+        const scheduledTime = _newTime; 
+          await window.audioEngine.playMelodyString("D4Q, E4Q, F4H, RH, A4Q, G4Q, F4Q, E4Q, D4H", 'Violin', (typeof scheduledTime === 'number' ? scheduledTime : undefined));
+  await window.audioEngine.playMelodyString("RW, D3Q, E3Q, F3H, G3Q, A3Q, D3H", 'Piano', (typeof scheduledTime === 'number' ? scheduledTime : undefined));
+
+    }
+}
+for (var count = 0; count < 3; count++) {
+  
+  await new Promise(resolve => setTimeout(resolve, window.audioEngine.Tone.Time('1m').toMilliseconds()));
+  if (!window.audioEngine.isExecutionActive) return;
+}
+window.audioEngine.Tone.Transport.stop();
+
+
+=== SNAPSHOT: 12_Serial_KICK/12_Serial_KICK.xml ===
+// Variable Declarations
+var serial_data;
+
+// Other Definitions
+
+
+// Function Definitions
+
+
+// Instrument Creation
+/* INSTRUMENT_DEFINITION:Drums */
+  window.audioEngine.createCustomSampler('Drums', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+
+
+
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
+// Setup & Configuration
+
+
+// Main Execution
+
+
+=== SNAPSHOT: 14_Chord_Pad/14_Chord_Pad.xml ===
+// Variable Declarations
+var serial_data, clean_data;
+
+// Other Definitions
+
+
+// Function Definitions
+
+
+// Instrument Creation
+/* INSTRUMENT_DEFINITION:Piano */
+  window.audioEngine.createInstrument('Piano', 'PolySynth');
+  (function(){ const t='Piano'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.02,decay:0.5,sustain:0.3,release:1.2,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
+
+
+        {
+            var chordNotesArray = 'C3,E3,G3'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['C'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'C', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'C');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'D3,F3,A3'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['Dm'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'Dm', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'Dm');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'E3,G3,B3'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['Em'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'Em', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'Em');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'F3,A3,C4'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['F'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'F', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'F');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'G3,B3,D4'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['G'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'G', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'G');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'A3,C4,E4'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['Am'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'Am', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'Am');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'B3,D4,F4'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['Bdim'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'Bdim', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'Bdim');
+            }
+        }
+        
+
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
+// Setup & Configuration
+
+
+// Main Execution
+
+
+=== SNAPSHOT: 15_Drum_Pad/15_Drum_Pad.xml ===
+// Variable Declarations
+var serial_data, clean_data;
+
+// Other Definitions
+
+
+// Function Definitions
+
+
+// Instrument Creation
+/* INSTRUMENT_DEFINITION:Piano */
+  window.audioEngine.createInstrument('Piano', 'PolySynth');
+  (function(){ const t='Piano'; const engine=window.audioEngine; const instr=engine.instruments[t]; if(instr){ const settings={attack:0.01,decay:0.3,sustain:0.4,release:1,decayCurve:'linear',releaseCurve:'linear'}; engine.instrumentSettings[t]={...settings}; if(instr.set) instr.set({envelope:settings}); if(instr.get&&instr.get().voice0) instr.set({voice0:{envelope:settings},voice1:{envelope:settings}}); if(engine.currentInstrumentName===t) engine.syncAdsrToUI(); engine.logKey('LOG_ADSR_SET_INSTR','info',t); } })();
+
+/* INSTRUMENT_DEFINITION:JazzKit */
+  window.audioEngine.createCustomSampler('JazzKit', { "C4": "C4.mp3" }, "/SynthBlockly/samples/piano/", { attack: 0.02, decay: 0.5, sustain: 0.5, release: 1.0 });
+
+
+        {
+            var chordNotesArray = 'C4,E4,G4'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['C'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'C', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'C');
+            }
+        }
+        
+        {
+            var chordNotesArray = 'F4,A4,C5'.split(',').map(note => note.trim());
+            if (chordNotesArray.length > 0 && chordNotesArray[0] !== '') {
+                window.audioEngine.chords['F'] = chordNotesArray;
+                window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', 'F', chordNotesArray.join(', '));
+            } else {
+                window.audioEngine.logKey('LOG_CHORD_ERR', 'error', 'F');
+            }
+        }
+        
+
+// Wait for all samples to load
+await window.audioEngine.waitForSamples();
+
+// Setup & Configuration
+
+
+// Main Execution
 
 

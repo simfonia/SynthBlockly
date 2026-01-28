@@ -32,7 +32,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_MELODY_TOOLTIP}"
             });
 

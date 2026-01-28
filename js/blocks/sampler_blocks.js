@@ -11,27 +11,27 @@ const samplerBlock = {
                     "type": "field_dropdown",
                     "name": "SAMPLER_TYPE",
                     "options": [
-                        ["%{BKY_SB_SAMPLER_TYPE_DEFAULT}", "DEFAULT"],
-                        ["%{BKY_SB_SAMPLER_TYPE_VIOLIN_PIZZ}", "VIOLIN_PIZZ"],
-                        ["%{BKY_SB_SAMPLER_TYPE_VIOLIN_SUSTAIN}", "VIOLIN_SUSTAIN"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_KICK}", "JK_KICK"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_SNARE}", "JK_SNARE"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_HH}", "JK_HH"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_OHH}", "JK_OHH"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_CLAP}", "JK_CLAP"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_RIM}", "JK_RIM"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_TOM_H}", "JK_TOM_H"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_TOM_M}", "JK_TOM_M"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_TOM_L}", "JK_TOM_L"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_CRASH}", "JK_CRASH"],
-                        ["%{BKY_SB_SAMPLER_TYPE_JK_RIDE}", "JK_RIDE"],
-                        ["%{BKY_SB_SAMPLER_TYPE_CUSTOM}", "CUSTOM"]
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_DEFAULT}", "DEFAULT"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_VIOLIN_PIZZ}", "VIOLIN_PIZZ"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_VIOLIN_SUSTAIN}", "VIOLIN_SUSTAIN"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_KICK}", "JK_KICK"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_SNARE}", "JK_SNARE"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_HH}", "JK_HH"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_OHH}", "JK_OHH"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_CLAP}", "JK_CLAP"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_RIM}", "JK_RIM"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_TOM_H}", "JK_TOM_H"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_TOM_M}", "JK_TOM_M"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_TOM_L}", "JK_TOM_L"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_CRASH}", "JK_CRASH"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_JK_RIDE}", "JK_RIDE"],
+                        ["%{BKY_SB_PARAM_SAMPLER_TYPE_CUSTOM}", "CUSTOM"]
                     ]
                 }
             ],
             "previousStatement": null,
             "nextStatement": null,
-            "colour": "#388E3C",
+            "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
             "tooltip": "%{BKY_SB_CREATE_SAMPLER_INSTRUMENT_TOOLTIP}",
             "helpUrl": getHelpUrl('custom_sampler_readme'),
             "mutator": "sampler_type_mutator"
@@ -48,10 +48,10 @@ const samplerTypeMutator = {
         const sampleMapExists = this.getInput('SAMPLE_MAP_JSON');
         if (samplerType === 'CUSTOM') {
             if (!baseUrlExists) {
-                this.appendValueInput("BASE_URL").setCheck("String").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_SAMPLER_BASE_URL}");
+                this.appendValueInput("BASE_URL").setCheck("String").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_SAMPLER_BASE_URL}");
             }
             if (!sampleMapExists) {
-                this.appendDummyInput("SAMPLE_MAP_JSON").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_SAMPLER_MAP}").appendField(new Blockly.FieldTextInput('{"C4": "C4.mp3"}'), "SAMPLE_MAP_JSON_FIELD");
+                this.appendDummyInput("SAMPLE_MAP_JSON").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_SAMPLER_MAP}").appendField(new Blockly.FieldTextInput('{"C4": "C4.mp3"}'), "SAMPLE_MAP_JSON_FIELD");
             }
         } else {
             if (baseUrlExists) this.removeInput('BASE_URL');

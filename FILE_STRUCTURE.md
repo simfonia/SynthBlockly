@@ -18,13 +18,15 @@
     - `samples/`: 音訊樣本庫（包含爵士鼓、小提琴與特殊音效 SFX）。
   - `src/`: 原始碼與資料。
     - `examples/`: **(V2.1) 範例專案庫**。
-      - `*.xml`: 純軟體範例 (01-09, 15)。
+      - `*.xml`: 純軟體範例 (01-09)。
       - `10-1_Functions...xml`: 函式模組化編曲。
-      - `10-2_Sequencer...xml`: 音序器編曲技巧。
-      - `11_Serial_KICK/`: Arduino 觸發大鼓範例。
-      - `12_wah-wah/`: Arduino 光敏電阻動態效果範例。
-      - `13_Chord_Pad/`: TTP229 和弦觸發板範例。
-      - `14_Drum_Pad/`: TTP229 觸控打擊墊範例。
+      - `10-2_Functions...xml`: 音序器編曲技巧。
+      - `11-1_Multi-track_Broadcast.xml`: 廣播系統示範。
+      - `11-2_Multi-track_Scheduling.xml`: 瞬間預約與同步示範。
+      - `12_Serial_KICK/`: Arduino 觸發大鼓範例。
+      - `13_wah-wah/`: Arduino 光敏電阻動態效果範例。
+      - `14_Chord_Pad/`: TTP229 和弦觸發板範例。
+      - `15_Drum_Pad/`: TTP229 觸控打擊墊範例。
   - `js/`: 核心 JavaScript 代碼。
     - `app.js`: 應用程式啟動中心，負責初始化所有模組。
     - `core/`: 核心引擎與管理。

@@ -164,3 +164,24 @@
 - **Vite 與正規表達式換行 Bug**：在 SequencerService.js 中使用 str.split(/[, \s]+/) 時，若正規表達式中包含實際的換行符號，會導致 Vite 編譯失敗並報 HTTP 500 錯誤。解決方案：確保正規表達式定義在單行中。
 - **非阻塞式循環 (Non-blocking Loops)**：在處理多軌並行時，sb_tone_loop 內部的積木程式碼絕對不能帶有 wait。移除 wait 後，所有的播放積木才能在同一微秒內完成「預約排程」，達成真正的同步。
 - **瞬間返回 (Instant Return) 模式**：playMelodyString 在接收到 startTime 參數時，必須切換為「只預約、不等待」模式。若此時仍執行 wait，會阻塞主執行緒，導致後續軌道的排程被推遲一個樂句的時間。
+
+## 技術細節 2026-01-28
+
+### 1. Blockly v12 停用積木 API
+- **問題**：`block.setEnabled(false)` 報錯 `is not a function`。
+- **原因**：Blockly 新版本移除了此方法。
+- **解法**：改用 `block.setDisabledReason(true, \"REASON_ID\")`。要恢復啟用則傳入 `false`。
+
+### 2. Snapshot 載入子資料夾 XML 失敗
+- **問題**：`fetch` 子資料夾檔案時報 `DOMParser` 錯誤（404）。
+- **原因**：`encodeURIComponent` 將 `/` 轉換為 `%2F`，導致 Vite 無法正確解析路徑。
+- **解法**：移除編碼，直接使用原始路徑字串進行 `fetch`。
+
+### 3. 日誌語系載入時機 (Bootstrap Race Condition)
+- **問題**：`LOG_DOM_LOADED` 等訊息在啟動時顯示原始 Key。
+- **解法**：將核心樂器初始化（包含 Sampler 的 `onload`）移出 `AudioEngine` 的 `constructor`。改在 `app.js` 中於 `await initBlocklyManager()`（語系載入點）之後才顯式呼叫 `audioEngine.initCoreInstruments()`。
+
+### 4. 步進音序器延音演算法
+- **實作**：在 `playRhythmSequence` 的迴圈中，遇到音符時使用內層迴圈向後計算持續的 `-` 數量。
+- **時值計算**：`noteDur = (16n 的秒數 * (1 + 延音格數))`。這確保了聲音能在正確的時間點釋放，而不是被下一格切斷。
+

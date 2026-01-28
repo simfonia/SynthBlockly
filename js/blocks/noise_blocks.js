@@ -16,9 +16,9 @@ export function registerBlocks() {
                         "type": "field_dropdown",
                         "name": "NOISE_TYPE",
                         "options": [
-                            ["%{BKY_SB_NOISE_TYPE_WHITE}", "white"],
-                            ["%{BKY_SB_NOISE_TYPE_PINK}", "pink"],
-                            ["%{BKY_SB_NOISE_TYPE_BROWN}", "brown"]
+                            ["%{BKY_SB_PARAM_NOISE_WHITE}", "white"],
+                            ["%{BKY_SB_PARAM_NOISE_PINK}", "pink"],
+                            ["%{BKY_SB_PARAM_NOISE_BROWN}", "brown"]
                         ]
                     },
                     {
@@ -30,7 +30,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SFX_HUE}",
+                "colour": "%{BKY_SB_CAT_SFX_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_BACKGROUND_NOISE_TOOLTIP}",
                 "helpUrl": ""
             });
@@ -47,7 +47,7 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_STOP_BACKGROUND_NOISE_MESSAGE}",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SFX_HUE}",
+                "colour": "%{BKY_SB_CAT_SFX_HUE}",
                 "tooltip": "%{BKY_SB_STOP_BACKGROUND_NOISE_TOOLTIP}",
                 "helpUrl": ""
             });

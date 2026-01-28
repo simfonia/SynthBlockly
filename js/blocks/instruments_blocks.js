@@ -23,7 +23,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('performance_readme'));
@@ -42,7 +42,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_NOTE_AND_WAIT_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('performance_readme'));
@@ -63,7 +63,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_DRUM_TOOLTIP}"
             });
         }
@@ -72,17 +72,17 @@ export function registerBlocks() {
     Blockly.Blocks['jazzkit_play_drum'] = {
         init: function () {
             this.jsonInit({
-                "message0": "%{BKY_JAZZKIT_PLAY_DRUM_MESSAGE_WITH_VELOCITY}",
+                "message0": "%{BKY_SB_SAMPLER_JK_PLAY_DRUM_MESSAGE}",
                 "args0": [
                     {
                         "type": "field_dropdown", "name": "DRUM_TYPE",
                         "options": [
-                            ['%{BKY_JAZZKIT_DRUM_KICK}', 'C1'], ['%{BKY_JAZZKIT_DRUM_SNARE}', 'D1'],
-                            ['%{BKY_JAZZKIT_DRUM_RIMSHOT}', 'C#1'], ['%{BKY_JAZZKIT_DRUM_CLOSED_HIHAT}', 'F1'],
-                            ['%{BKY_JAZZKIT_DRUM_OPEN_HIHAT}', 'A1'], ['%{BKY_JAZZKIT_DRUM_HIGH_TOM}', 'G1'],
-                            ['%{BKY_JAZZKIT_DRUM_MID_TOM}', 'F#1'], ['%{BKY_JAZZKIT_DRUM_LOW_TOM}', 'E1'],
-                            ['%{BKY_JAZZKIT_DRUM_CRASH_CYMBAL}', 'G#1'], ['%{BKY_JAZZKIT_DRUM_RIDE_CYMBAL}', 'A#1'],
-                            ['%{BKY_JAZZKIT_DRUM_HANDCLAP}', 'D#1']
+                            ['%{BKY_SB_PARAM_JK_DRUM_KICK}', 'C1'], ['%{BKY_SB_PARAM_JK_DRUM_SNARE}', 'D1'],
+                            ['%{BKY_SB_PARAM_JK_DRUM_RIMSHOT}', 'C#1'], ['%{BKY_SB_PARAM_JK_DRUM_CLOSED_HIHAT}', 'F1'],
+                            ['%{BKY_SB_PARAM_JK_DRUM_OPEN_HIHAT}', 'A1'], ['%{BKY_SB_PARAM_JK_DRUM_HIGH_TOM}', 'G1'],
+                            ['%{BKY_SB_PARAM_JK_DRUM_MID_TOM}', 'F#1'], ['%{BKY_SB_PARAM_JK_DRUM_LOW_TOM}', 'E1'],
+                            ['%{BKY_SB_PARAM_JK_DRUM_CRASH_CYMBAL}', 'G#1'], ['%{BKY_SB_PARAM_JK_DRUM_RIDE_CYMBAL}', 'A#1'],
+                            ['%{BKY_SB_PARAM_JK_DRUM_HANDCLAP}', 'D#1']
                         ]
                     }, 
                     { "type": "input_value", "name": "VELOCITY", "check": "Number" }
@@ -90,8 +90,8 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
-                "tooltip": "%{BKY_JAZZKIT_PLAY_DRUM_TOOLTIP}"
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
+                "tooltip": "%{BKY_SB_SAMPLER_JK_PLAY_DRUM_TOOLTIP}"
             });
         }
     };
@@ -113,7 +113,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SOUND_SOURCES_HUE}",
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
                 "tooltip": "%{BKY_SB_CREATE_SYNTH_INSTRUMENT_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('instrument_readme'));
@@ -124,88 +124,112 @@ export function registerBlocks() {
     // --- V2.1 Containers ---
     Blockly.Blocks['sb_instrument_container'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg['SB_INSTRUMENT_CONTAINER_MESSAGE'].split('%1')[0])
-                .appendField(new Blockly.FieldTextInput("MyInstrument"), "NAME");
-            this.appendStatementInput("STACK").setCheck(null);
-            this.setInputsInline(true);
-            this.setColour(Blockly.Msg['SYNTHBLOCKLY_HUE']);
-            this.setTooltip(Blockly.Msg['SB_INSTRUMENT_CONTAINER_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_INSTRUMENT_CONTAINER_MESSAGE}",
+                "args0": [
+                    { "type": "field_input", "name": "NAME", "text": "MyInstrument" },
+                    { "type": "input_statement", "name": "STACK" }
+                ],
+                "inputsInline": true,
+                "colour": "%{BKY_SB_CAT_SYNTHBLOCKLY_HUE}",
+                "tooltip": "%{BKY_SB_INSTRUMENT_CONTAINER_TOOLTIP}"
+            });
             this.hat = 'cap';
         }
     };
 
     Blockly.Blocks['sb_master_container'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg['SB_MASTER_CONTAINER_MESSAGE'].split('%1')[0]);
-            this.appendStatementInput("STACK").setCheck(null);
-            this.setInputsInline(true);
-            this.setColour(Blockly.Msg['TOOLS_HUE']);
-            this.setTooltip(Blockly.Msg['SB_MASTER_CONTAINER_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_MASTER_CONTAINER_MESSAGE}",
+                "args0": [
+                    { "type": "input_statement", "name": "STACK" }
+                ],
+                "inputsInline": true,
+                "colour": "%{BKY_SB_CAT_TOOLS_HUE}",
+                "tooltip": "%{BKY_SB_MASTER_CONTAINER_TOOLTIP}"
+            });
             this.hat = 'cap';
         }
     };
 
     Blockly.Blocks['sb_container_adsr'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField(Blockly.Msg['SB_CONTAINER_ADSR_LABEL'].split('%1')[0])
-                .appendField(new Blockly.FieldNumber(0.01, 0, 60, 0.01), "A")
-                .appendField(Blockly.Msg['SB_CONTAINER_ADSR_LABEL'].split('%2')[0].split('%1')[1] || "D")
-                .appendField(new Blockly.FieldNumber(0.1, 0, 60, 0.01), "D")
-                .appendField(Blockly.Msg['SB_CONTAINER_ADSR_LABEL'].split('%3')[0].split('%2')[1] || "S")
-                .appendField(new Blockly.FieldNumber(0.5, 0, 1, 0.01), "S")
-                .appendField(Blockly.Msg['SB_CONTAINER_ADSR_LABEL'].split('%4')[0].split('%3')[1] || "R")
-                .appendField(new Blockly.FieldNumber(1.0, 0, 60, 0.01), "R");
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['SOUND_SOURCES_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SET_ADSR_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_CONTAINER_ADSR_LABEL}",
+                "args0": [
+                    { "type": "field_number", "name": "A", "value": 0.01, "min": 0, "max": 60, "precision": 0.01 },
+                    { "type": "field_number", "name": "D", "value": 0.1, "min": 0, "max": 60, "precision": 0.01 },
+                    { "type": "field_number", "name": "S", "value": 0.5, "min": 0, "max": 1, "precision": 0.01 },
+                    { "type": "field_number", "name": "R", "value": 1.0, "min": 0, "max": 60, "precision": 0.01 }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
+                "tooltip": "%{BKY_SB_SET_ADSR_TOOLTIP}"
+            });
         }
     };
 
     Blockly.Blocks['sb_container_volume'] = {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg['SB_CONTAINER_VOLUME_LABEL'].split('%1')[0]);
-            this.appendValueInput("VOLUME_VALUE").setCheck("Number");
-            this.setInputsInline(true);
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['SOUND_SOURCES_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SET_INSTRUMENT_VOLUME_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_CONTAINER_VOLUME_LABEL}",
+                "args0": [
+                    { "type": "input_value", "name": "VOLUME_VALUE", "check": "Number" }
+                ],
+                "inputsInline": true,
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
+                "tooltip": "%{BKY_SB_SET_INSTRUMENT_VOLUME_TOOLTIP}"
+            });
         }
     };
 
     Blockly.Blocks['sb_container_vibrato'] = {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg['SB_CONTAINER_VIBRATO_LABEL'].split('%1')[0]);
-            this.appendValueInput("DETUNE_VALUE").setCheck("Number");
-            this.setInputsInline(true);
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['SOUND_SOURCES_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SET_INSTRUMENT_VIBRATO_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_CONTAINER_VIBRATO_LABEL}",
+                "args0": [
+                    { "type": "input_value", "name": "DETUNE_VALUE", "check": "Number" }
+                ],
+                "inputsInline": true,
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
+                "tooltip": "%{BKY_SB_SET_INSTRUMENT_VIBRATO_TOOLTIP}"
+            });
         }
     };
 
     Blockly.Blocks['sb_container_mute'] = {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg['SB_CONTAINER_MUTE_LABEL'].split('%1')[0]).appendField(new Blockly.FieldCheckbox("TRUE"), "MUTE");
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['SOUND_SOURCES_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SET_INSTRUMENT_MUTE_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_CONTAINER_MUTE_LABEL}",
+                "args0": [
+                    { "type": "field_checkbox", "name": "MUTE", "checked": true }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
+                "tooltip": "%{BKY_SB_SET_INSTRUMENT_MUTE_TOOLTIP}"
+            });
         }
     };
 
     Blockly.Blocks['sb_container_solo'] = {
         init: function () {
-            this.appendDummyInput().appendField(Blockly.Msg['SB_CONTAINER_SOLO_LABEL'].split('%1')[0]).appendField(new Blockly.FieldCheckbox("TRUE"), "SOLO");
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['SOUND_SOURCES_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SET_INSTRUMENT_SOLO_TOOLTIP']);
+            this.jsonInit({
+                "message0": "%{BKY_SB_CONTAINER_SOLO_LABEL}",
+                "args0": [
+                    { "type": "field_checkbox", "name": "SOLO", "checked": true }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
+                "tooltip": "%{BKY_SB_SET_INSTRUMENT_SOLO_TOOLTIP}"
+            });
         }
     };
 
@@ -227,7 +251,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_DEFINE_CHORD_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('step_sequencer_readme'));
@@ -256,7 +280,7 @@ export function registerBlocks() {
                     }
                 ],
                 "output": "String",
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_GET_CHORD_NAME_TOOLTIP}"
             });
         }
@@ -288,7 +312,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_CHORD_BY_NAME_TOOLTIP}"
             });
         }
@@ -305,7 +329,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_CHORD_NOTES_TOOLTIP}"
             });
         }
@@ -321,7 +345,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SOUND_SOURCES_HUE}",
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
                 "tooltip": "%{BKY_SB_CREATE_LAYERED_INSTRUMENT_TOOLTIP}"
             });
         }
@@ -330,16 +354,20 @@ export function registerBlocks() {
     // 選定目前發聲音源 (正確實作)
     Blockly.Blocks['sb_select_current_instrument'] = {
         init: function () {
-            const dropdown = new FieldDropdownLenient(function() {
-                return getInstrumentOptions(false);
+            this.jsonInit({
+                "message0": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_MESSAGE}",
+                "args0": [
+                    {
+                        "type": "field_dropdown_lenient",
+                        "name": "NAME",
+                        "options": function() { return getInstrumentOptions(false); }
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
+                "tooltip": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP}"
             });
-            this.appendDummyInput()
-                .appendField(Blockly.Msg['SB_SELECT_CURRENT_INSTRUMENT_MESSAGE'].split('%1')[0])
-                .appendField(dropdown, "NAME");
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['SOUND_SOURCES_HUE']);
-            this.setTooltip(Blockly.Msg['SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP']);
         }
     };
 
@@ -347,9 +375,9 @@ export function registerBlocks() {
     Blockly.Blocks['sb_rhythm_source_selector'] = {
         init: function () {
             const typeDropdown = new Blockly.FieldDropdown([
-                [Blockly.Msg['SB_RHYTHM_SOURCE_KICK'] || "Kick (Synth)", "KICK"],
-                [Blockly.Msg['SB_RHYTHM_SOURCE_SNARE'] || "Snare (Synth)", "SNARE"],
-                [Blockly.Msg['SB_RHYTHM_SOURCE_HH'] || "Hi-Hat (Synth)", "HH"],
+                ["%{BKY_SB_PARAM_RHYTHM_SOURCE_KICK}", "KICK"],
+                ["%{BKY_SB_PARAM_RHYTHM_SOURCE_SNARE}", "SNARE"],
+                ["%{BKY_SB_PARAM_RHYTHM_SOURCE_HH}", "HH"],
                 ["---", "SEP"],
                 ["Custom Instrument...", "CUSTOM"]
             ], (val) => {
@@ -366,7 +394,7 @@ export function registerBlocks() {
                 .appendField(customDropdown, "CUSTOM_TYPE");
 
             this.setOutput(true, "String");
-            this.setColour(Blockly.Msg['TRANSPORT_HUE']);
+            this.setColour("%{BKY_SB_CAT_TRANSPORT_HUE}");
             this.updateShape_(false); // Default hide
         },
         updateShape_: function(isCustom) {
@@ -392,7 +420,7 @@ export function registerBlocks() {
             });
             this.appendDummyInput().appendField(dropdown, "NAME");
             this.setOutput(true, "String");
-            this.setColour(Blockly.Msg['TOOLS_HUE']);
+            this.setColour(Blockly.Msg['SB_CAT_TOOLS_HUE']);
         }
     };
 }

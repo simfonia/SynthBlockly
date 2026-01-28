@@ -36,11 +36,11 @@
 
         const examples = [
             '01_Melody and Chord.xml', 
-            '02_Rock.xml', 
+            '02_rock.xml', 
             '03_Chord.xml', 
-            '04_Switch_instrument.xml', 
+            '04_switch_instrument.xml', 
             '05_Custom sounds.xml', 
-            '06_Electric guitar.xml',
+            '06_electric guitar.xml',
             '07_sampler.xml', 
             '08_Step Sequencer.xml', 
             '09_12-bar blues.xml',
@@ -130,7 +130,7 @@
                 resultsDiv.appendChild(itemDiv);
 
                 try {
-                    const response = await fetch(`../src/examples/${encodeURIComponent(name)}`);
+                    const response = await fetch(`../src/examples/${name}`);
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     
                     const xmlText = await response.text();

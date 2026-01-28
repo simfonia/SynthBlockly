@@ -28,6 +28,8 @@
     <h2>Step 1: Prepare Your Samples</h2>
     <ol>
         <li><strong>Find Samples</strong>: Search for single-note audio files (<code>.wav</code>, <code>.mp3</code>). Sites like <code>Freesound.org</code> are great resources.</li>
+        <li><strong>Recommended Resource</strong>: You can find a wide variety of instrument samples at this GitHub repository:<br>
+            <a href="https://github.com/nbrosowsky/tonejs-instruments/tree/master/samples" target="_blank">nbrosowsky/tonejs-instruments Samples</a></li>
         <li><strong>Check License</strong>: Ensure the files are free to use (e.g., CC0 or Public Domain).</li>
     </ol>
 
@@ -50,8 +52,22 @@
     </ul>
 
     <div class="important">
-        <p><strong>Example Format</strong>: <code>'{"A4": "violin-a4.wav", "C5": "violin-c5.wav"}'</code></p>
-        <p><strong>Note</strong>: The entire string must be wrapped in <strong>single quotes</strong>, while keys and values inside must use <strong>double quotes</strong>.</p>
+        <p><strong>💡 Two Ways to use the Sample Map</strong>:</p>
+        
+        <p><strong>Method A: Direct JSON Content (Recommended for a few samples)</strong></p>
+        <p>Manually enter the mapping string in this format:</p>
+        <code style="display: block; white-space: pre; margin: 10px 0;">{"A1": "A1.mp3", "C2": "C2.mp3", "Ds3": "Ds3.mp3"}</code>
+        
+        <p><strong>Method B: JSON File URL (Recommended for full instruments)</strong></p>
+        <p>You can host a JSON file alongside your samples (e.g., on GitHub) and paste the URL directly:</p>
+        <code style="display: block; white-space: pre; margin: 10px 0;">https://user.github.io/my-samples/piano.json</code>
+        
+        <p><strong>⚠️ Important Notes</strong>:</p>
+        <ul>
+            <li>If using a <strong>URL</strong>, ensure the server allows Cross-Origin Resource Sharing (CORS).</li>
+            <li>In both methods, keys (note names) and values (filenames) must use <strong>double quotes</strong>.</li>
+            <li>If filenames contain <code>#</code>, it is recommended to use <code>s</code> (e.g., <code>Ds3.mp3</code>) in the JSON to avoid URL encoding issues.</li>
+        </ul>
     </div>
 
     <div class="type-box">

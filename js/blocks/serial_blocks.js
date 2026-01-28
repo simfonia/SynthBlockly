@@ -28,7 +28,7 @@ export function registerBlocks() {
                     }
                 ],
                 "inputsInline": false,
-                "colour": "%{BKY_SERIAL_HUE}",
+                "colour": "%{BKY_SB_CAT_SERIAL_HUE}",
                 "tooltip": "%{BKY_SB_SERIAL_DATA_RECEIVED_TOOLTIP}",
                 "hat": "cap"
             });
@@ -55,7 +55,7 @@ export function registerBlocks() {
                     }
                 ],
                 "output": "Boolean",
-                "colour": "%{BKY_SERIAL_HUE}",
+                "colour": "%{BKY_SB_CAT_SERIAL_HUE}",
                 "tooltip": "%{BKY_SB_SERIAL_CHECK_KEY_MASK_TOOLTIP}"
             });
         }

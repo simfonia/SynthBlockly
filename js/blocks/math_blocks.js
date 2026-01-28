@@ -10,7 +10,7 @@ export function registerBlocks(Blockly) {
     Blockly.Blocks['math_map'] = {
         init: function() {
             this.jsonInit({
-                "message0": "%{BKY_MATH_MAP_MESSAGE}",
+                "message0": "%{BKY_SB_MATH_MAP_MESSAGE}",
                 "args0": [
                     { "type": "input_value", "name": "VALUE", "check": "Number" },
                     { "type": "input_value", "name": "FROM_LOW", "check": "Number" },
@@ -20,8 +20,8 @@ export function registerBlocks(Blockly) {
                 ],
                 "inputsInline": true,
                 "output": "Number",
-                "colour": "%{BKY_MATH_HUE}",
-                "tooltip": "%{BKY_MATH_MAP_TOOLTIP}",
+                "colour": "%{BKY_SB_CAT_MATH_HUE}",
+                "tooltip": "%{BKY_SB_MATH_MAP_TOOLTIP}",
                 "helpUrl": ""
             });
         }
@@ -31,7 +31,7 @@ export function registerBlocks(Blockly) {
     Blockly.Blocks['math_constrain'] = {
         init: function () {
             this.jsonInit({
-                "message0": "%{BKY_MATH_CONSTRAIN_MESSAGE}",
+                "message0": "%{BKY_SB_MATH_CONSTRAIN_MESSAGE}",
                 "args0": [
                     {
                         "type": "input_value",
@@ -51,8 +51,8 @@ export function registerBlocks(Blockly) {
                 ],
                 "output": "Number",
                 "inputsInline": true,
-                "colour": "%{BKY_MATH_HUE}",
-                "tooltip": "%{BKY_MATH_CONSTRAIN_TOOLTIP}"
+                "colour": "%{BKY_SB_CAT_MATH_HUE}",
+                "tooltip": "%{BKY_SB_MATH_CONSTRAIN_TOOLTIP}"
             });
         }
     };

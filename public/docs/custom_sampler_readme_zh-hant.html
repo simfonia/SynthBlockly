@@ -17,8 +17,8 @@
     <p>這個積木讓你從自己的音訊樣本中，打造一個獨一無二的全新樂器。</p>
 
     <div class="type-box">
-        <h2>運作原理：重新取樣 (Resampling)</h2>
-        <p>這個積木的核心是基於 Tone.js 強大的 <code>Sampler</code> 功能，其運作依賴「數位音訊重新取樣」技術：</p>
+        <h2>運作原理：重新採樣 (Resampling)</h2>
+        <p>這個積木的核心是基於 Tone.js 強大的 <code>Sampler</code> 功能，其運作依賴「數位音訊重新採樣」技術：</p>
         <ul>
             <li><strong>單一樣本</strong>：如果你只提供一個音訊樣本（例如 C4 錄音），取樣器就能產生完整的音高範圍。播高音時會加速，播低音時則會放慢。</li>
             <li><strong>多重樣本 (Multisampling)</strong>：為了獲得更真實、高品質的聲音，你可以提供多個不同音高的樣本。取樣器會聰明地選取最接近的原始樣本進行微調，減少音質劣化。</li>
@@ -28,6 +28,8 @@
     <h2>步驟一：準備音訊樣本</h2>
     <ol>
         <li><strong>尋找樣本</strong>：在網路上尋找單音符檔案 (<code>.wav</code>, <code>.mp3</code>)。例如 <code>Freesound.org</code>。</li>
+        <li><strong>推薦資源</strong>：您可以參考這個 GitHub 儲存庫獲取多種樂器的完整取樣點：<br>
+            <a href="https://github.com/nbrosowsky/tonejs-instruments/tree/master/samples" target="_blank">nbrosowsky/tonejs-instruments Samples</a></li>
         <li><strong>檢查授權</strong>：確保檔案允許自由使用 (如 CC0 授權)。</li>
     </ol>
 
@@ -35,23 +37,37 @@
     <p>為了讓積木能夠讀取樣本，檔案必須存放在公開網址上。<strong>GitHub Pages</strong> 是最推薦的免費方法：</p>
     <ol>
         <li>建立新的公開 GitHub 儲存庫（如 <code>my-samples</code>）。</li>
-        <li>上傳你的檔案並提交。</li>
+        <li>上傳您的檔案並提交。</li>
         <li>在 <code>Settings > Pages</code> 中啟用 GitHub Pages。</li>
-        <li>獲取你的基礎網址，例如：<code>https://user.github.io/my-samples/</code></li>
+        <li>獲取您的基礎網址，例如：<code>https://user.github.io/my-samples/</code></li>
     </ol>
 
     <h2>步驟三：配置積木</h2>
-    <p>從<strong>「創建樂器」</strong>分類中拖出「定義音源樂器」容器並命名，接著在內部放入「建立取樣音源」積木：</p>
+    <p>從<strong>「創建樂器」</strong>分類中拖出「定義樂器」容器並命名，接著在內部放入「建立取樣音源」積木：</p>
     <ul>
         <li><strong>容器名稱</strong>：為樂器命名 (如 <code>MyViolin</code>)。</li>
         <li><strong>型態</strong>：選擇預設音色或「自訂樣本 URL...」。</li>
-        <li><strong>基礎網址</strong>：貼上你的 GitHub Pages 網址（若選自訂）。</li>
+        <li><strong>基礎網址</strong>：貼上您的 GitHub Pages 網址（若選自訂）。</li>
         <li><strong>樣本映射</strong>：使用 JSON 格式將音符對應到檔案（若選自訂）。</li>
     </ul>
 
     <div class="important">
-        <p><strong>格式範例</strong>：<code>'{"A4": "violin-a4.wav", "C5": "violin-c5.wav"}'</code></p>
-        <p><strong>注意</strong>：整個字串必須用<strong>單引號</strong>包裹，內部的音高與檔名則必須使用<strong>雙引號</strong>。</p>
+        <p><strong>💡 樣本映射 (Sample Map) 的兩種用法</strong>：</p>
+        
+        <p><strong>方法 A：直接填寫 JSON 內容 (推薦用於少量樣本)</strong></p>
+        <p>手動輸入映射字串，格式如下：</p>
+        <code style="display: block; white-space: pre; margin: 10px 0;">{"A1": "A1.mp3", "C2": "C2.mp3", "Ds3": "Ds3.mp3"}</code>
+        
+        <p><strong>方法 B：提供 JSON 檔案網址 (推薦用於完整樂器)</strong></p>
+        <p>您可以將 JSON 檔案放在與取樣檔相同的網路上（例如 GitHub），並直接填入網址：</p>
+        <code style="display: block; white-space: pre; margin: 10px 0;">https://user.github.io/my-samples/piano.json</code>
+        
+        <p><strong>⚠️ 注意事項</strong>：</p>
+        <ul>
+            <li>如果使用<strong>網址</strong>，請確保該伺服器允許跨網域存取 (CORS)。</li>
+            <li>無論哪種方式，Key (音高) 與 Value (檔名) 內部都必須使用<strong>雙引號</strong>。</li>
+            <li>若檔名包含 <code>#</code> 字號，建議在 JSON 中將其寫為 <code>s</code> (如 <code>Ds3.mp3</code>) 以確保網址解析正確。</li>
+        </ul>
     </div>
 
     <div class="type-box">

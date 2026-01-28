@@ -55,21 +55,30 @@ export function registerGenerators(Blockly, javascriptGenerator) {
 
             case 'CUSTOM': {
                 const baseUrl = G.valueToCode(block, 'BASE_URL', G.ORDER_ATOMIC) || "''";
-                const sampleMapJson = block.getFieldValue('SAMPLE_MAP_JSON_FIELD'); // Note the field name change
+                const sampleMapInput = block.getFieldValue('SAMPLE_MAP_JSON_FIELD') || '{}';
 
-                const escapedSampleMapJson = (sampleMapJson || '{}')
-                    .replace(/\\/g, '\\\\')
-                    .replace(/'/g, "\\'")
-                    .replace(/\n/g, '\\n');
+                let mappingCode;
+                // Check if it's a URL or path
+                if (sampleMapInput.trim().startsWith('http') || sampleMapInput.trim().endsWith('.json')) {
+                    mappingCode = `'${sampleMapInput.trim()}'`;
+                } else {
+                    // It's a JSON string, escape it for the generated code
+                    const escaped = sampleMapInput
+                        .replace(/\\/g, '\\\\')
+                        .replace(/'/g, "\\'")
+                        .replace(/\n/g, '\\n');
+                    mappingCode = `JSON.parse('${escaped}')`;
+                }
 
                 const code = `
 try {
-    const sampleMap = JSON.parse('${escapedSampleMapJson}');
-    // No specific envelope settings passed for CUSTOM, will use default in createCustomSampler
-    window.audioEngine.createCustomSampler(${name}, sampleMap, ${baseUrl}, null);
+    const mapping = ${mappingCode};
+    // Note: createCustomSampler is now async, but we don't necessarily need to await it here
+    // unless we want to block the entire execution flow.
+    window.audioEngine.createCustomSampler(${name}, mapping, ${baseUrl}, null);
 } catch (e) {
     window.audioEngine.logKey('LOG_SAMPLER_JSON_ERR', 'error', e.message);
-    console.error('Failed to parse sampler JSON:', e);
+    console.error('Failed to process sampler mapping:', e);
 }
 `;
                 return code;

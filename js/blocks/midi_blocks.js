@@ -38,7 +38,7 @@ export function registerBlocks() {
                     }
                 ],
                 "inputsInline": false,
-                "colour": "%{BKY_MIDI_HUE}",
+                "colour": "%{BKY_SB_CAT_MIDI_HUE}",
                 "tooltip": "%{BKY_SB_MIDI_NOTE_RECEIVED_TOOLTIP}",
                 "hat": "cap"
             });
@@ -71,7 +71,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_MIDI_HUE}",
+                "colour": "%{BKY_SB_CAT_MIDI_HUE}",
                 "tooltip": "%{BKY_SB_MIDI_PLAY_TOOLTIP}"
             });
             // Add shadow blocks for variables
@@ -109,7 +109,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_MIDI_HUE}",
+                "colour": "%{BKY_SB_CAT_MIDI_HUE}",
                 "tooltip": "%{BKY_SB_MAP_MIDI_TO_CHORD_TOOLTIP}"
             });
         }

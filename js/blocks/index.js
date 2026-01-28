@@ -80,6 +80,8 @@ async function loadBlocklyLocale(currentLang) {
         // Merge base Blockly and custom SynthBlockly locales
         const finalLocale = { ...baseLocaleData, ...customLocaleData };
         Blockly.setLocale(finalLocale);
+        // Explicitly update Blockly.Msg to ensure command-style blocks get the latest strings
+        Object.assign(Blockly.Msg, finalLocale);
 
         console.log(`Successfully fetched, merged, and set locale: ${blocklyLocaleCode} (custom: ${blocklyLocaleCode})`);
 

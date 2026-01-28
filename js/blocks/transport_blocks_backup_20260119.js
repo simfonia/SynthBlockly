@@ -24,7 +24,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TRANSPORT_SET_BPM_TOOLTIP}"
             });
         }
@@ -46,7 +46,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TRANSPORT_START_STOP_TOOLTIP}"
             });
         }
@@ -74,7 +74,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_WAIT_MUSICAL_TOOLTIP}"
             });
         }
@@ -97,7 +97,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TONE_LOOP_TOOLTIP}",
                 "hat": true // Often used for top-level event listeners / continuous processes
             });
@@ -121,7 +121,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null, // It can be chained within a loop callback
                 "nextStatement": null,     // It can be chained within a loop callback
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_SCHEDULE_AT_OFFSET_TOOLTIP}"
             });
 
@@ -135,7 +135,7 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE}",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP}"
             });
         }
@@ -180,7 +180,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TRANSPORT_COUNT_IN_TOOLTIP}"
             });
         }
@@ -296,7 +296,7 @@ export function registerBlocks() {
 
             this.appendDummyInput()
                 .appendField(new Blockly.FieldCheckbox("FALSE"), "IS_CHORD")
-                .appendField("%{BKY_SB_RHYTHM_IS_CHORD_LABEL}");
+                .appendField("%{BKY_SB_PARAM_RHYTHM_IS_CHORD}");
 
             this.appendValueInput('MEASURE')
                 .setCheck('Number')

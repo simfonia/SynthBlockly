@@ -37,10 +37,16 @@ export class InstrumentService {
             case 'TriangleWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } }); break;
             case 'SawtoothWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' } }); break;
             case 'Sampler': 
-                // Use a local sample as default to avoid external SSL issues
+                // Enhanced Piano Sampler with full multisampling (A, C, Ds, Fs)
                 i = new Tone.Sampler({ 
-                    urls: { "C1": "BT0A0D0.WAV" }, 
-                    baseUrl: import.meta.env.BASE_URL + "samples/jazzkit/Roland_TR-909/" 
+                    urls: { 
+                        "A1": "A1.mp3", "A2": "A2.mp3", "A3": "A3.mp3", "A4": "A4.mp3", "A5": "A5.mp3", "A6": "A6.mp3", "A7": "A7.mp3",
+                        "C1": "C1.mp3", "C2": "C2.mp3", "C3": "C3.mp3", "C4": "C4.mp3", "C5": "C5.mp3", "C6": "C6.mp3", "C7": "C7.mp3",
+                        "D#1": "Ds1.mp3", "D#2": "Ds2.mp3", "D#3": "Ds3.mp3", "D#4": "Ds4.mp3", "D#5": "Ds5.mp3", "D#6": "Ds6.mp3",
+                        "F#1": "Fs1.mp3", "F#2": "Fs2.mp3", "F#3": "Fs3.mp3", "F#4": "Fs4.mp3", "F#5": "Fs5.mp3", "F#6": "Fs6.mp3"
+                    }, 
+                    baseUrl: import.meta.env.BASE_URL + "samples/piano/",
+                    onload: () => console.log("Piano multisamples loaded successfully.")
                 }); 
                 break;
         }
@@ -71,13 +77,34 @@ export class InstrumentService {
     /**
      * Creates a custom sampler instrument.
      * @param {string} name - Unique instrument name.
-     * @param {Object} urls - Map of note to URL.
+     * @param {Object|string} urls - Map of note to URL, or a URL pointing to a JSON file.
      * @param {string} baseUrl - Base URL for samples.
      * @param {Object} [settings=null] - Optional settings.
      */
-    createCustomSampler(name, urls, baseUrl, settings = null) {
+    async createCustomSampler(name, urls, baseUrl, settings = null) {
         if (this.instruments[name]) this.instruments[name].dispose();
-        const s = new Tone.Sampler({ urls, baseUrl, onload: () => logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name) });
+        
+        let finalUrls = urls;
+        
+        // If urls is a string and starts with http or looks like a path, fetch it
+        if (typeof urls === 'string' && (urls.startsWith('http') || urls.endsWith('.json'))) {
+            try {
+                const response = await fetch(urls);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                finalUrls = await response.json();
+                logKey('LOG_SAMPLER_LOADED', 'info', name);
+            } catch (e) {
+                logKey('LOG_SAMPLER_JSON_ERR', 'error', e.message);
+                return;
+            }
+        }
+
+        const s = new Tone.Sampler({ 
+            urls: finalUrls, 
+            baseUrl, 
+            onload: () => logKey('LOG_SAMPLER_SAMPLES_LOADED', 'info', name) 
+        });
+        
         if (settings) s.set(settings);
         this.instruments[name] = s;
         this.instrumentSettings[name] = { ...(this.audioEngine.currentADSR || this.DEFAULT_ADSR) };
