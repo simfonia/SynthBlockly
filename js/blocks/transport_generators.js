@@ -113,7 +113,7 @@ if (window.blocklyLoops) {
         var measure = G.valueToCode(block, 'MEASURE', G.ORDER_ATOMIC) || "1";
         var sequence = block.getFieldValue('SEQUENCE') || "";
         var isChord = block.getFieldValue('IS_CHORD') === 'TRUE';
-        const steps = sequence.match(/([A-Za-z0-9#b_]+|[xX]|[.])/g) || [];
+        const steps = sequence.match(/([A-Za-z0-9#b_]+|[xX]|[.\-])/g) || [];
         const stepsJson = JSON.stringify(steps);
         return `window.audioEngine.playRhythmSequence(${soundType}, ${stepsJson}, (typeof scheduledTime !== 'undefined' ? scheduledTime : window.audioEngine.Tone.now()), ${measure}, ${isChord});\n`;
     }.bind(G);

@@ -50,6 +50,47 @@ function processXmlString(xmlString) {
     return xmlString.replace(/%{BKY_([^}]+)}/g, (match, key) => Blockly.Msg[key] || match);
 }
 
+/**
+ * Automatically disables/enables blocks based on their context (e.g., must be inside a container).
+ */
+function updateContextualBlocks(ws) {
+    if (!ws) return;
+    const blocks = ws.getAllBlocks(false);
+    // Types that MUST be inside sb_instrument_container or sb_master_container
+    const containerRequiredTypes = [
+        'sb_create_synth_instrument', 
+        'sb_create_harmonic_synth', 
+        'sb_create_additive_synth', 
+        'sb_create_sampler_instrument', 
+        'sb_create_layered_instrument',
+        'sb_container_adsr', 
+        'sb_container_volume', 
+        'sb_container_vibrato', 
+        'sb_container_mute', 
+        'sb_container_solo',
+        'sb_container_setup_effect'
+    ];
+    
+    blocks.forEach(block => {
+        if (containerRequiredTypes.includes(block.type)) {
+            let parent = block.getSurroundParent();
+            let inContainer = false;
+            while (parent) {
+                if (parent.type === 'sb_instrument_container' || parent.type === 'sb_master_container') {
+                    inContainer = true;
+                    break;
+                }
+                parent = parent.getSurroundParent();
+            }
+            if (block.isEnabled() !== inContainer) {
+                // Use setDisabledReason for modern Blockly compatibility
+                // (disabled: boolean, reason: string)
+                block.setDisabledReason(!inContainer, 'NOT_IN_CONTAINER');
+            }
+        }
+    });
+}
+
 let workspace = null; 
 let hatUpdateTimer = null;
 
@@ -85,6 +126,7 @@ function setupDefaultWorkspace() {
     try {
         const dom = BlocklyModule.utils.xml.textToDom(defaultXml);
         BlocklyModule.Xml.domToWorkspace(dom, workspace);
+        updateContextualBlocks(workspace);
     } catch (e) { console.warn("Default template failed:", e); }
 }
 
@@ -101,8 +143,16 @@ export async function initBlocklyManager() {
             media: import.meta.env.BASE_URL + 'blockly/media/'
         });
         workspace.addChangeListener((event) => {
+            // Update Hat Blocks (Events)
             if (hatUpdateTimer) clearTimeout(hatUpdateTimer);
             hatUpdateTimer = setTimeout(() => hatBlockManager.updateAll(workspace), 150);
+
+            // Update Context (Graying out)
+            if (event.type === BlocklyModule.Events.BLOCK_MOVE || 
+                event.type === BlocklyModule.Events.BLOCK_CREATE ||
+                event.type === BlocklyModule.Events.BLOCK_CHANGE) {
+                updateContextualBlocks(workspace);
+            }
         });
         setupDefaultWorkspace();
     } catch (e) { logKey('LOG_BLOCKLY_INIT_FAIL', 'error', e.message); }

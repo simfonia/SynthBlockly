@@ -39,7 +39,8 @@
             <tr><td><strong>觸發符</strong></td><td><code>x</code></td><td>播放預設音色（鼓組或 C4）。</td></tr>
             <tr><td><strong>單一音符</strong></td><td><code>C4</code>, <code>Bb2</code></td><td>字母 + (選填#b) + 數字。</td></tr>
             <tr><td><strong>和弦名稱</strong></td><td><code>Dm7</code>, <code>Cmin_aug</code></td><td>支援字母、數字、<code>#</code>、<code>b</code> 以及底線 <code>_</code>。</td></tr>
-            <tr><td><strong>休止/延續</strong></td><td><code>.</code> 或 <code>-</code></td><td><code>.</code> 代表靜音，<code>-</code> 代表延續上一個音（視音源支援而定）。</td></tr>
+            <tr><td><strong>休止 (Rest)</strong></td><td><code>.</code></td><td>代表靜音（休止符），該格不發出聲音。</td></tr>
+            <tr><td><strong>延續 (Sustain)</strong></td><td><code>-</code></td><td>代表<strong>延續上一個音</strong>。會自動延長前一個音符的時值，使其跨越格線（視音源支援而定）。</td></tr>
         </table>
         <p class="important">注意：符號中間不可有空格。若需要分隔複雜名稱，請使用底線 <code>_</code> (例如：<code>Am7_b5</code> 而非 <code>Am7-5</code>)。</p>
     </div>

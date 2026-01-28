@@ -39,7 +39,8 @@
             <tr><td><strong>Trigger</strong></td><td><code>x</code></td><td>Triggers default sound (Drum kit or C4 note).</td></tr>
             <tr><td><strong>Single Note</strong></td><td><code>C4</code>, <code>Bb2</code></td><td>Letter + (optional #b) + Number.</td></tr>
             <tr><td><strong>Chord Name</strong></td><td><code>Dm7</code>, <code>Cmin_aug</code></td><td>Supports letters, numbers, <code>#</code>, <code>b</code>, and underscores <code>_</code>.</td></tr>
-            <tr><td><strong>Rest/Sustain</strong></td><td><code>.</code> or <code>-</code></td><td><code>.</code> for silence, <code>-</code> to sustain the previous sound (if supported).</td></tr>
+            <tr><td><strong>Rest</strong></td><td><code>.</code></td><td>Represents silence (Rest). No sound is triggered at this step.</td></tr>
+            <tr><td><strong>Sustain</strong></td><td><code>-</code></td><td>Represents <strong>Sustain</strong>. It extends the duration of the previous note, allowing it to hold across steps.</td></tr>
         </table>
         <p class="important">Warning: No spaces allowed within symbols. Use underscores <code>_</code> for complex names (e.g., <code>Am7_b5</code> instead of <code>Am7-5</code>).</p>
     </div>

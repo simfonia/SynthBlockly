@@ -59,6 +59,8 @@ export const MSG_EN = {
     'MIDI_HUE': '#5B67E7',
     'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
     'PC_KEYBOARD_HUE': '#F0B429',
+    'MSG_MESSAGES_CATEGORY': 'Messages',
+    'MESSAGES_HUE': '#FF9800',
     'MSG_SERIAL_CATEGORY': 'Serial',
     'SERIAL_HUE': '#607D8B', // Blue Grey
     'MSG_TOOLS_CATEGORY': 'Tools',
@@ -472,6 +474,7 @@ export const MSG_EN = {
     'SB_SET_EFFECT_PARAM_MESSAGE': 'Set %1 %2. %3 Parameter %4 to %5',
     'SB_SET_EFFECT_PARAM_TOOLTIP': 'Updates a parameter of an active effect. Use the number field to specify which effect instance (e.g., 2nd Filter) to target.',
     'LOG_EFFECT_PARAM_ERR': 'Warning: Effect "%1" does not support parameter "%2".',
+    'LOG_RESERVED_NAME_ERR': 'Error: Name "%1" is a system reserved keyword. Please rename.',
 
     // Parameter Names (Consistent with Setup Block)
     'SB_PARAM_FREQ': 'Frequency',

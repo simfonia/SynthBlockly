@@ -61,6 +61,8 @@ export const MSG_ZH_HANT = {
     'MIDI_HUE': '#5B67E7',
     'MSG_PC_KEYBOARD_CATEGORY': 'PC Keyboard',
     'PC_KEYBOARD_HUE': '#F0B429',
+    'MSG_MESSAGES_CATEGORY': '訊息 (Messages)',
+    'MESSAGES_HUE': '#FF9800',
     'MSG_SERIAL_CATEGORY': 'Serial',
     'SERIAL_HUE': '#607D8B', // Blue Grey
     'MSG_TOOLS_CATEGORY': '工具',
@@ -474,6 +476,7 @@ export const MSG_ZH_HANT = {
     'SB_SET_EFFECT_PARAM_MESSAGE': '設定 %1 的第 %2 個 %3 參數 %4 為 %5',
     'SB_SET_EFFECT_PARAM_TOOLTIP': '即時更新指定音軌上已掛載的效果器參數。若有多個相同效果器，請指定序號。',
     'LOG_EFFECT_PARAM_ERR': '警告: 效果器 "%1" 不支援參數 "%2"，設定已忽略。',
+    'LOG_RESERVED_NAME_ERR': '錯誤: 名稱 "%1" 是系統保留字，請使用其他名稱。',
 
     // Parameter Names (Consistent with Setup Block)
     'SB_PARAM_FREQ': '頻率 (Frequency)',

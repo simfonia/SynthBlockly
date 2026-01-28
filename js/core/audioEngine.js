@@ -25,7 +25,7 @@ const _coreInstruments = {
     drum: null, hh: null, snare: null, click: null, jazzKit: null, synth: null
 };
 
-function createCoreInstruments() {
+function initCoreInstruments() {
     if (_coreInstruments.drum) _coreInstruments.drum.dispose(); 
     if (_coreInstruments.hh) _coreInstruments.hh.dispose(); 
     if (_coreInstruments.snare) _coreInstruments.snare.dispose();
@@ -62,8 +62,6 @@ function createCoreInstruments() {
     }).connect(analyser);
 }
 
-createCoreInstruments();
-
 export const audioEngine = {
     isExecutionActive: false,
     currentADSR: { ...DEFAULT_ADSR },
@@ -71,6 +69,7 @@ export const audioEngine = {
     analyser: analyser,
     fftAnalyser: fftAnalyser,
     _coreInstruments: _coreInstruments,
+    initCoreInstruments: initCoreInstruments,
     
     effects: {}, 
     activeSFXPlayers: [],
@@ -326,7 +325,7 @@ export const audioEngine = {
             if (instr && instr.releaseAll) instr.releaseAll();
         }
         this.currentADSR = { ...DEFAULT_ADSR };
-        createCoreInstruments(); 
+        initCoreInstruments(); 
         if (this.instrumentService) { this.instrumentService.disposeAll(); }
         for (const name in this.channels) { if (this.channels[name] && this.channels[name].dispose) this.channels[name].dispose(); }
         this.channels = {};

@@ -41,20 +41,30 @@ export class SequencerService {
         const sTime = mDur / 16;
         const mStart = time + (measure - 1) * mDur;
         const targetInstr = this.audioEngine.instruments[soundSource] || this.audioEngine.instruments[this.audioEngine.currentInstrumentName];
+        
         for (let i = 0; i < Math.min(steps.length, 16); i++) {
             const c = steps[i]; 
             if (c === '.' || c === '-') continue;
+
+            // Calculate sustain duration
+            let sustainSteps = 1;
+            for (let j = i + 1; j < Math.min(steps.length, 16); j++) {
+                if (steps[j] === '-') sustainSteps++;
+                else break;
+            }
+            const noteDur = (Tone.Time('16n').toSeconds() * sustainSteps);
+
             const t = mStart + (i * sTime) + 0.05;
             if (isChord) {
                 const chordNotes = this.audioEngine.chords[c];
                 if (chordNotes && targetInstr && targetInstr.triggerAttackRelease) {
                     if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
-                    targetInstr.triggerAttackRelease(chordNotes.map(n => this.audioEngine.getTransposedNote(n)), '16n', t, 0.8);
+                    targetInstr.triggerAttackRelease(chordNotes.map(n => this.audioEngine.getTransposedNote(n)), noteDur, t, 0.8);
                 }
                 continue;
             }
             if (this.audioEngine.chords[soundSource]) {
-                 this.audioEngine.playChordByName(soundSource, '16n', 0.8, t); 
+                 this.audioEngine.playChordByName(soundSource, noteDur, 0.8, t); 
                  continue;
             }
             if (c.toLowerCase() === 'x') {
@@ -65,7 +75,7 @@ export class SequencerService {
                 }
                 else if (soundSource === 'CLAP') { this.playJazzKitNote('D#1', 1, t); }
                 else if (targetInstr && targetInstr.triggerAttackRelease) {
-                    targetInstr.triggerAttackRelease(this.audioEngine.getTransposedNote('C4'), '16n', t, 0.8);
+                    targetInstr.triggerAttackRelease(this.audioEngine.getTransposedNote('C4'), noteDur, t, 0.8);
                 }
             } else {
                 if (['KICK','SNARE','HH','CLAP'].includes(soundSource)) {
@@ -77,7 +87,7 @@ export class SequencerService {
                     else if (soundSource === 'CLAP') { this.playJazzKitNote('D#1', 1, t); } 
                 } else if (targetInstr && targetInstr.triggerAttackRelease) {
                     if (targetInstr instanceof Tone.Sampler && !targetInstr.loaded) continue;
-                    targetInstr.triggerAttackRelease(this.audioEngine.getTransposedNote(c), '16n', t, 0.8);
+                    targetInstr.triggerAttackRelease(this.audioEngine.getTransposedNote(c), noteDur, t, 0.8);
                 }
             }
         }

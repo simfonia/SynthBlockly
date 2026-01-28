@@ -62,15 +62,36 @@ export function registerGenerators(Blockly, javascriptGenerator) {
     try { G.forBlock['jazzkit_play_drum'] = G['jazzkit_play_drum']; } catch (e) { }
 
     G['sb_create_synth_instrument'] = function (block) {
-        const name = G.quote_(getContainerTarget(block));
+        const name = getContainerTarget(block);
+        const nameQuote = G.quote_(name);
         const type = G.quote_(block.getFieldValue('TYPE') || 'PolySynth');
-        return `window.audioEngine.createInstrument(${name}, ${type});\n`;
+        const reserved = ['KICK', 'SNARE', 'HH', 'CLAP'];
+        if (reserved.includes(name.toUpperCase())) {
+            return `window.audioEngine.logKey('LOG_RESERVED_NAME_ERR', 'error', '${name}');\n`;
+        }
+        return `window.audioEngine.createInstrument(${nameQuote}, ${type});\n`;
     }.bind(G);
     try { G.forBlock['sb_create_synth_instrument'] = G['sb_create_synth_instrument']; } catch (e) { }
+
+    G['sb_create_layered_instrument'] = function (block) {
+        const name = block.getFieldValue('NAME') || 'MyLayered';
+        const layers = block.getFieldValue('LAYER_LIST') || "";
+        const layersArray = JSON.stringify(layers.split(',').map(s => s.trim()).filter(s => s.length > 0));
+        const reserved = ['KICK', 'SNARE', 'HH', 'CLAP'];
+        if (reserved.includes(name.toUpperCase())) {
+            return `window.audioEngine.logKey('LOG_RESERVED_NAME_ERR', 'error', '${name}');\n`;
+        }
+        return `window.audioEngine.createLayeredInstrument('${name}', ${layersArray});\n`;
+    }.bind(G);
+    try { G.forBlock['sb_create_layered_instrument'] = G['sb_create_layered_instrument']; } catch (e) { }
 
     // --- V2.1 Containers Generators ---
     G['sb_instrument_container'] = function (block) {
         const name = block.getFieldValue('NAME') || 'MyInstrument';
+        const reserved = ['KICK', 'SNARE', 'HH', 'CLAP'];
+        if (reserved.includes(name.toUpperCase())) {
+            return `window.audioEngine.logKey('LOG_RESERVED_NAME_ERR', 'error', '${name}');\n`;
+        }
         const branch = G.statementToCode(block, 'STACK');
         return `/* INSTRUMENT_DEFINITION:${name} */\n${branch}\n`;
     }.bind(G);
@@ -121,6 +142,10 @@ export function registerGenerators(Blockly, javascriptGenerator) {
         var name = block.getFieldValue('NAME');
         var notesStr = block.getFieldValue('NOTES_STRING') || "";
         var notesJson = JSON.stringify(notesStr.split(',').map(s => s.trim()).filter(s => s.length > 0));
+        const reserved = ['KICK', 'SNARE', 'HH', 'CLAP'];
+        if (reserved.includes(name.toUpperCase())) {
+            return `window.audioEngine.logKey('LOG_RESERVED_NAME_ERR', 'error', '${name}');\n`;
+        }
         return `(function(){ window.audioEngine.chords['${name}'] = ${notesJson}; window.audioEngine.logKey('LOG_CHORD_DEFINED', 'info', '${name}', '${notesStr}'); })();\n`;
     }.bind(G);
     try { G.forBlock['sb_define_chord'] = G['sb_define_chord']; } catch (e) { }

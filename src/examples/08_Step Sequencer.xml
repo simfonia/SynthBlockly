@@ -146,7 +146,7 @@
                                             <next>
                                               <block type="sb_rhythm_sequence" id="zlrFA)/G@V}CEBwli,!1">
                                                 <field name="IS_CHORD">TRUE</field>
-                                                <field name="SEQUENCE">Dm7--- Dm7--- --Dm7- --Dm7-</field>
+                                                <field name="SEQUENCE">Dm7... Dm7--- ..Dm7. ..Dm7.</field>
                                                 <value name="SOURCE">
                                                   <shadow type="sb_rhythm_source_selector" id="DQIQ9VssJs]El?S5a3Ba">
                                                     <field name="TYPE">CUSTOM</field>
@@ -191,7 +191,7 @@
                                                         <next>
                                                           <block type="sb_rhythm_sequence" id="]?#:1JX7Q7P.m_JlwvyQ">
                                                             <field name="IS_CHORD">TRUE</field>
-                                                            <field name="SEQUENCE">--G7- --G7- ---- G7---</field>
+                                                            <field name="SEQUENCE">..G7. ..G7. ---- G7...</field>
                                                             <value name="SOURCE">
                                                               <shadow type="sb_rhythm_source_selector" id="TR^iVm99t7Y=/Do8C!#/">
                                                                 <field name="TYPE">CUSTOM</field>
@@ -221,7 +221,7 @@
                                                                 <next>
                                                                   <block type="sb_rhythm_sequence" id="d1q%t.QF1d:LEwMD[/~}">
                                                                     <field name="IS_CHORD">TRUE</field>
-                                                                    <field name="SEQUENCE">CM7--- CM7--- --CM7- --CM7-</field>
+                                                                    <field name="SEQUENCE">CM7... CM7--- ..CM7. ..CM7.</field>
                                                                     <value name="SOURCE">
                                                                       <shadow type="sb_rhythm_source_selector" id="ALj%DesMo+TPwcb$t6B-">
                                                                         <field name="TYPE">CUSTOM</field>
@@ -251,7 +251,7 @@
                                                                         <next>
                                                                           <block type="sb_rhythm_sequence" id="z,ej;W6k}u#}6WV9~:B,">
                                                                             <field name="IS_CHORD">TRUE</field>
-                                                                            <field name="SEQUENCE">--A7- --A7- ---- A7---</field>
+                                                                            <field name="SEQUENCE">..A7. ..A7. ---- A7...</field>
                                                                             <value name="SOURCE">
                                                                               <shadow type="sb_rhythm_source_selector" id="IOP;Lq=?,Ons!5If7/x2">
                                                                                 <field name="TYPE">CUSTOM</field>

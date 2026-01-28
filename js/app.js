@@ -19,18 +19,28 @@ log("Logger module loaded.");
 log("Audio Engine loaded. Window.audioEngine is now available.");
 
 document.addEventListener('DOMContentLoaded', async () => {
-    logKey("LOG_DOM_LOADED");
+    // 1. Initialize Logger UI
     initLogger();
+
+    // 2. Initialize Blockly Manager first to load languages (Blockly.Msg)
+    await initBlocklyManager();
+    
+    // 3. Initialize Core Instruments (Now safe to log keys)
+    audioEngine.initCoreInstruments();
+
+    // 4. Now it's safe to use logKey
+    logKey("LOG_DOM_LOADED");
     logKey("LOG_LOGGER_INIT");
+    
     initResizer();
     logKey("LOG_RESIZER_INIT");
+    
     initMidi();
     logKey("LOG_MIDI_INIT");
+    
     initSerial();
     logKey("LOG_SERIAL_INIT");
     
-    // Initialize Blockly after all core engines are set up
-    await initBlocklyManager();
     logKey("LOG_BLOCKLY_MGR_INIT");
 
     initUIManager();
@@ -42,8 +52,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     initAdsrVisualizer();
     initSpectrumVisualizer();
 
-    startAudioOnFirstInteraction(); // Start audio context on first interaction
+    startAudioOnFirstInteraction();
     logKey("LOG_AUDIO_STARTER_INIT");
-    
-    // Other initializations will go here as modules are moved
 });
