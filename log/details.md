@@ -3,17 +3,17 @@
 ## 1. 巢狀 Shadow Block 與複製 Bug
 *   **問題**：複製包含音序器的迴圈積木時，內部的「來源」和「小節」影子積木消失。
 *   **嘗試方案**：
-    1. 移除 `init` 中的手動 `setShadowDom`，改用 Toolbox XML 定義。 -> **無效**。
-    2. 下拉選單改回 `FieldTextInput` 以減少渲染負擔。 -> **無效**。
-    3. 加入 `try-catch` 防止 `getBlocksByType`報錯。 -> **無效**。
+    1.  移除 `init` 中的手動 `setShadowDom`，改用 Toolbox XML 定義。 -> **無效**。
+    2.  下拉選單改回 `FieldTextInput` 以減少渲染負擔。 -> **無效**。
+    3.  加入 `try-catch` 防止 `getBlocksByType`報錯。 -> **無效**。
 *   **結論**：這是 Blockly 核心在處理 Deep Copy 與 Shadow Block 狀態恢復時的佈局計算錯誤。目前的臨時對策是拖入一個新積木再拉開，即可強制重新渲染。
 
 ## 2. 刪除積木觸發全域捲動 (Scroll to Top)
 *   **現象**：刪除任一積木後，頁面捲動到最上方，且有時第一個積木會被選取。
 *   **排查**：
-    1. 懷疑 `onWorkspaceChanged` 的 `updateADSR` 觸發 DOM 重繪。 -> 隔離後 **無效**。
-    2. 懷疑 `javascriptGenerator.init` 導致 Workspace 狀態重置。 -> 在 DELETE 事件中跳過 init，**無效**。
-    3. 實作 Scroll Restoration Hack (記錄座標並 setTimeout 還原)。 -> 能取消選取，但擋不住瀏覽器層級的 Scroll 跳動。
+    1.  懷疑 `onWorkspaceChanged` 的 `updateADSR` 觸發 DOM 重繪。 -> 隔離後 **無效**。
+    2.  懷疑 `javascriptGenerator.init` 導致 Workspace 狀態重置。 -> 在 DELETE 事件中跳過 init，**無效**。
+    3.  實作 Scroll Restoration Hack (記錄座標並 setTimeout 還原)。 -> 能取消選取，但擋不住瀏覽器層級的 Scroll 跳動。
 *   **潛在因素**：可能是 `#blocklyDiv` 父容器的 Flexbox `height: 100vh` 配合 `flex-grow: 1`，在 SVG 大小變動時觸發了瀏覽器的「捲動錨定 (Scroll Anchoring)」異常。
 
 ## 3. 音序器與全域樂器衝突 (解決方案)
@@ -64,9 +64,9 @@
 ## 2. ADSR 視覺預覽與引擎狀態衝突
 *   **問題**：點選 ADSR 積木預覽會覆蓋 `audioEngine.currentADSR`，導致後續切換樂器或發聲時參數被污染。
 *   **解法**：
-    1. 拆分 `updateADSR` 為 `updateADSR` (全域) 與 `updateADSRUI` (純繪圖)。
-    2. Blockly 選取事件僅呼叫 `updateADSRUI`。
-    3. `playCurrentInstrumentNote` 內部加入 `syncAdsrToUI()` 呼叫，確保發聲時 UI 自動跳回真實參數。
+    1.  拆分 `updateADSR` 為 `updateADSR` (全域) 與 `updateADSRUI` (純繪圖)。
+    2.  Blockly 選取事件僅呼叫 `updateADSRUI`。
+    3.  `playCurrentInstrumentNote` 內部加入 `syncAdsrToUI()` 呼叫，確保發聲時 UI 自動跳回真實參數。
 
 ## 3. Serial Port 占用與連線狀態
 *   **報錯**：`InvalidStateError: The port is already closed.`。
@@ -75,7 +75,7 @@
 
 ## 4. 參數容錯 (safeNum)
 *   **坑點**：參數使用變數名時，傳入 `new Tone.Filter("filterFreq")` 導致崩潰。
-*   **修正**：所有建構子參數封裝 `safeNum(val, def)`，若 `Number(val)` 為 `NaN` 則回傳預設值。這確保了 Filter 節點能先「占位」成功，等待後續 `updateFilter` 傳入正確數值。
+*   **修正**：所有建構子參數封裝 `safeNum(val, def)`，若 `Number(val)` 為 `NaN`則回傳預設值。這確保了 Filter 節點能先「占位」成功，等待後續 `updateFilter` 傳入正確數值。
 
 ---
 
@@ -141,7 +141,7 @@
 
 ## 1. 廣播系統與執行時機 (Example 11-1)
 *   **現象**：11-1 點擊 Play 後發送廣播，接收端卻沒有反應。
-*   **成因**：主程式碼（發送端）執行速度極快，在 `HatBlockManager` 完成工作區掃描並註冊監聽器之前，廣播訊號就已經發出並石沉大海。
+*   **成進**：主程式碼（發送端）執行速度極快，在 `HatBlockManager` 完成工作區掃描並註冊監聽器之前，廣播訊號就已經發出並石沈大海。
 *   **解法**：在 `buttons.js` 的 `runBlocksAction` 中，明確在啟動主程式碼 (`runner()`) 之前，先執行 `hatBlockManager.updateAll(workspace)`。這確保了「監聽器先就位，廣播後發出」。
 
 ## 2. 跨軌道時序同步 (Example 11-2)
@@ -162,5 +162,44 @@
 
 ## 2026-01-27 關鍵技術細節 (續)
 - **Vite 與正規表達式換行 Bug**：在 SequencerService.js 中使用 str.split(/[, \s]+/) 時，若正規表達式中包含實際的換行符號，會導致 Vite 編譯失敗並報 HTTP 500 錯誤。解決方案：確保正規表達式定義在單行中。
-- **非阻塞式循環 (Non-blocking Loops)**：在處理多軌並行時，sb_tone_loop 內部的積木程式碼絕對不能帶有 wait。移除 wait 後，所有的播放積木才能在同一微秒內完成「預約排程」，達成真正的同步。
-- **瞬間返回 (Instant Return) 模式**：playMelodyString 在接收到 startTime 參數時，必須切換為「只預約、不等待」模式。若此時仍執行 wait，會阻塞主執行緒，導致後續軌道的排程被推遲一個樂句的時間。
+- **非阻塞式循環 (Non-blocking Loops)**：在處理多軌並行時，sb_tone_loop 內部的積木程式碼絕對不能帶有 `await`。移除 `await` 後，所有的播放積木才能在同一微秒內完成「預約排程」，達成真正的同步。
+- **瞬間返回 (Instant Return) 模式**：playMelodyString 在接收到 startTime 參數時，必須切換為「只預約、不等待」模式。若此時仍執行 `await`，會阻塞主執行緒，導致後續軌道的排程被推遲一個樂句的時間。
+
+## 技術細節 2026-01-28
+
+### 1. Blockly v12 停用積木 API
+- **問題**：`block.setEnabled(false)` 報錯 `is not a function`。
+- **原因**：Blockly 新版本移除了此方法。
+- **解法**：改用 `block.setDisabledReason(true, "REASON_ID")`。要恢復啟用則傳入 `false`。
+
+### 2. Snapshot 載入子資料夾 XML 失敗
+- **問題**：`fetch` 子資料夾檔案時報 `DOMParser` 錯誤（404）。
+- **原因**：`encodeURIComponent` 將 `/` 轉換為 `%2F`，導致 Vite 無法正確解析路徑。
+- **解法**：移除編碼，直接使用原始路徑字串進行 `fetch`。
+
+### 3. 日誌語系載入時機 (Bootstrap Race Condition)
+*   **問題**：`LOG_DOM_LOADED` 等訊息在啟動時顯示原始 Key。
+*   **解法**：將核心樂器初始化（包含 Sampler 的 `onload`）移出 `AudioEngine` 的 `constructor`。改在 `app.js` 中於 `await initBlocklyManager()`（語系載入點）之後才顯式呼叫 `audioEngine.initCoreInstruments()`。
+
+### 4. 步進音序器延音演算法
+*   **實作**：在 `playRhythmSequence` 的迴圈中，遇到音符時使用內層迴圈向後計算持續的 `-` 數量。
+*   **時值計算**：`noteDur = (16n 的秒數 * (1 + 延音格數))`。這確保了聲音能在正確的時間點釋放，而不是被下一格切斷。
+
+---
+
+# 技術細節 2026-01-29
+
+## 1. 語系載入時序與 jsonInit
+* **問題**：在異步載入語系 JSON 檔時，若積木使用 `appendField(Blockly.Msg['...'])`，在載入完成前執行 `registerBlocks` 會導致文字為 `undefined`。
+* **解法**：全面改用 `jsonInit` 並將文字欄位設為 `%{BKY_KEY_NAME}`。Blockly 核心會延遲到渲染時才去查詢 `Blockly.Msg`，避開時序衝突。
+
+## 2. 鋼琴多重採樣 (Multisampling) 配置
+* **實作**：在 `InstrumentService.js` 中擴充了 `Sampler` 的 `urls` 字典。
+* **規範**：採用每隔 3-4 個半音一個採樣點的策略 (A, C, Ds, Fs)，這能讓插值運算的失真降到最低。
+
+## 3. JSON Mapping URL 支援
+* **邏輯**：在 `createCustomSampler` 中加入檢查，若 `urls` 字串以 `http` 開頭或 `.json` 結尾，則執行 `async fetch`。
+* **注意**：這要求後端（如 GitHub Pages）必須支援 CORS，否則瀏覽器會攔截請求。
+
+## 4. 跨專案 XML 互通基準 (Spec)
+* **核心要點**：匯入 XML 時最容易報測的是「找不到 Block Type」。因此在 `spec.md` 中強制規範了 `sb_` 前綴積木 ID 在 Web 與 Desktop 版必須完全一致。

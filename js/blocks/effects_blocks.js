@@ -53,7 +53,7 @@ export function registerBlocks() {
                 "inputsInline": false,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_EFFECTS_HUE}",
+                "colour": "%{BKY_SB_CAT_EFFECTS_HUE}",
                 "tooltip": "%{BKY_SB_SETUP_EFFECT_TOOLTIP}"
             });
 
@@ -73,68 +73,68 @@ export function registerBlocks() {
                 dynamicInputs.forEach(inputName => { if (this.getInput(inputName)) this.removeInput(inputName); });
 
                 if (['distortion', 'reverb', 'feedbackDelay', 'lofi', 'chorus', 'phaser', 'autoPanner', 'tremolo'].includes(effectType)) {
-                    this.appendValueInput('WET').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_WET_FIELD}");
+                    this.appendValueInput('WET').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_WET}");
                     this.getInput('WET').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.5</field></shadow>'));
                 }
 
                 if (effectType === 'distortion') {
-                    this.appendValueInput('DISTORTION_AMOUNT').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_DISTORTION_AMOUNT_FIELD}");
+                    this.appendValueInput('DISTORTION_AMOUNT').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_DISTORTION}");
                     this.getInput('DISTORTION_AMOUNT').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.4</field></shadow>'));
                     this.appendDummyInput('OVERSAMPLE').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_OVERSAMPLE_FIELD}").appendField(new Blockly.FieldDropdown([["none", "none"], ["2x", "2x"], ["4x", "4x"]]), "OVERSAMPLE_VALUE");
                 } else if (effectType === 'reverb') {
-                    this.appendValueInput('DECAY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_DECAY_FIELD}");
+                    this.appendValueInput('DECAY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_DECAY}");
                     this.getInput('DECAY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">1.5</field></shadow>'));
                     this.appendValueInput('PREDELAY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_PREDELAY_FIELD}");
                     this.getInput('PREDELAY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.01</field></shadow>'));
                 } else if (effectType === 'feedbackDelay') {
-                    this.appendValueInput('DELAY_TIME').setCheck("String").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_DELAY_TIME_FIELD}");
+                    this.appendValueInput('DELAY_TIME').setCheck("String").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_DELAY_TIME}");
                     this.getInput('DELAY_TIME').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="text"><field name="TEXT">8n</field></shadow>'));
-                    this.appendValueInput('FEEDBACK').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_FEEDBACK_FIELD}");
+                    this.appendValueInput('FEEDBACK').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_FEEDBACK}");
                     this.getInput('FEEDBACK').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.25</field></shadow>'));
                 } else if (effectType === 'filter') {
-                    this.appendDummyInput('FILTER_TYPE').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_FILTER_INTERNAL_TYPE_FIELD}").appendField(new Blockly.FieldDropdown([["lowpass", "lowpass"], ["highpass", "highpass"], ["bandpass", "bandpass"], ["lowshelf", "lowshelf"], ["highshelf", "highshelf"], ["notch", "notch"], ["allpass", "allpass"], ["peaking", "peaking"]]), "FILTER_TYPE_VALUE");
-                    this.appendValueInput('FILTER_FREQ').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_FILTER_FREQ_FIELD}");
+                    this.appendDummyInput('FILTER_TYPE').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_FILTER_MODE}").appendField(new Blockly.FieldDropdown([["lowpass", "lowpass"], ["highpass", "highpass"], ["bandpass", "bandpass"], ["lowshelf", "lowshelf"], ["highshelf", "highshelf"], ["notch", "notch"], ["allpass", "allpass"], ["peaking", "peaking"]]), "FILTER_TYPE_VALUE");
+                    this.appendValueInput('FILTER_FREQ').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_FILTER_FREQ}");
                     this.getInput('FILTER_FREQ').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">20000</field></shadow>'));
-                    this.appendValueInput('FILTER_Q').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_FILTER_Q_FIELD}");
+                    this.appendValueInput('FILTER_Q').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_Q}");
                     this.getInput('FILTER_Q').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">1</field></shadow>'));
-                    this.appendDummyInput('FILTER_ROLLOFF').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_ROLLOFF_FIELD}").appendField(new Blockly.FieldDropdown([["-12", "-12"], ["-24", "-24"], ["-48", "-48"]]), "FILTER_ROLLOFF_VALUE");
+                    this.appendDummyInput('FILTER_ROLLOFF').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_ROLLOFF}").appendField(new Blockly.FieldDropdown([["-12", "-12"], ["-24", "-24"], ["-48", "-48"]]), "FILTER_ROLLOFF_VALUE");
                 } else if (effectType === 'compressor') {
-                    this.appendValueInput('THRESHOLD').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_THRESHOLD_FIELD}");
+                    this.appendValueInput('THRESHOLD').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_THRESHOLD}");
                     this.getInput('THRESHOLD').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">-24</field></shadow>'));
-                    this.appendValueInput('RATIO').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_RATIO_FIELD}");
+                    this.appendValueInput('RATIO').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_RATIO}");
                     this.getInput('RATIO').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">12</field></shadow>'));
-                    this.appendValueInput('ATTACK').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_ATTACK_FIELD}");
+                    this.appendValueInput('ATTACK').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_ATTACK}");
                     this.getInput('ATTACK').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.003</field></shadow>'));
-                    this.appendValueInput('RELEASE').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_RELEASE_FIELD}");
+                    this.appendValueInput('RELEASE').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_RELEASE}");
                     this.getInput('RELEASE').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.25</field></shadow>'));
                 } else if (effectType === 'limiter') {
-                    this.appendValueInput('THRESHOLD').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_THRESHOLD_FIELD}");
+                    this.appendValueInput('THRESHOLD').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_THRESHOLD}");
                     this.getInput('THRESHOLD').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">-6</field></shadow>'));
                 } else if (effectType === 'lofi') {
-                    this.appendDummyInput('BITDEPTH').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_BITDEPTH_FIELD}").appendField(new Blockly.FieldDropdown([["4", "4"], ["8", "8"], ["12", "12"], ["16", "16"]]), "BITDEPTH_VALUE");
+                    this.appendDummyInput('BITDEPTH').setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_BITS}").appendField(new Blockly.FieldDropdown([["4", "4"], ["8", "8"], ["12", "12"], ["16", "16"]]), "BITDEPTH_VALUE");
                 } else if (effectType === 'chorus') {
-                    this.appendValueInput('CHORUS_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_CHORUS_FREQUENCY_FIELD}");
+                    this.appendValueInput('CHORUS_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_CHORUS_FREQ}");
                     this.getInput('CHORUS_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">1.5</field></shadow>'));
-                    this.appendValueInput('CHORUS_DELAY_TIME').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_DELAY_TIME_FIELD}");
+                    this.appendValueInput('CHORUS_DELAY_TIME').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_DELAY_TIME}");
                     this.getInput('CHORUS_DELAY_TIME').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">3.5</field></shadow>'));
-                    this.appendValueInput('CHORUS_DEPTH').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_DEPTH_FIELD}");
+                    this.appendValueInput('CHORUS_DEPTH').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_DEPTH}");
                     this.getInput('CHORUS_DEPTH').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.7</field></shadow>'));
                 } else if (effectType === 'phaser') {
-                    this.appendValueInput('PHASER_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_PHASER_FREQUENCY_FIELD}");
+                    this.appendValueInput('PHASER_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_PHASER_FREQ}");
                     this.getInput('PHASER_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">15</field></shadow>'));
                     this.appendValueInput('PHASER_OCTAVES').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_OCTAVES_FIELD}");
                     this.getInput('PHASER_OCTAVES').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">3</field></shadow>'));
-                    this.appendValueInput('PHASER_BASE_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_BASE_FREQUENCY_FIELD}");
+                    this.appendValueInput('PHASER_BASE_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_BASE_FREQ}");
                     this.getInput('PHASER_BASE_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">200</field></shadow>'));
                 } else if (effectType === 'autoPanner') {
-                    this.appendValueInput('AUTOPANNER_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_AUTOPANNER_FREQUENCY_FIELD}");
+                    this.appendValueInput('AUTOPANNER_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_AUTOPANNER_FREQ}");
                     this.getInput('AUTOPANNER_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">1</field></shadow>'));
-                    this.appendValueInput('AUTOPANNER_DEPTH').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_AUTOPANNER_DEPTH_FIELD}");
+                    this.appendValueInput('AUTOPANNER_DEPTH').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_AUTOPANNER_DEPTH}");
                     this.getInput('AUTOPANNER_DEPTH').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.5</field></shadow>'));
                 } else if (effectType === 'tremolo') {
-                    this.appendValueInput('TREMOLO_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_TREMOLO_FREQUENCY_FIELD}");
+                    this.appendValueInput('TREMOLO_FREQUENCY').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_TREMOLO_FREQ}");
                     this.getInput('TREMOLO_FREQUENCY').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">10</field></shadow>'));
-                    this.appendValueInput('TREMOLO_DEPTH').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_EFFECT_TREMOLO_DEPTH_FIELD}");
+                    this.appendValueInput('TREMOLO_DEPTH').setCheck("Number").setAlign(Blockly.ALIGN_RIGHT).appendField("%{BKY_SB_PARAM_DEPTH}");
                     this.getInput('TREMOLO_DEPTH').setShadowDom(Blockly.utils.xml.textToDom('<shadow type="math_number"><field name="NUM">0.5</field></shadow>'));
                 }
             };
@@ -195,7 +195,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_EFFECTS_HUE}",
+                "colour": "%{BKY_SB_CAT_EFFECTS_HUE}",
                 "tooltip": "%{BKY_SB_CLEAR_EFFECTS_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('effect_readme'));
@@ -282,7 +282,7 @@ export function registerBlocks() {
                     options = [
                         [getMsg("SB_PARAM_FREQ"), "frequency"],
                         [getMsg("SB_EFFECT_OCTAVES_FIELD"), "octaves"],
-                        [getMsg("SB_EFFECT_BASE_FREQUENCY_FIELD"), "baseFrequency"],
+                        [getMsg("SB_PARAM_BASE_FREQ"), "baseFrequency"],
                         wetOpt
                     ];
                     break;
@@ -360,7 +360,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_EFFECTS_HUE}",
+                "colour": "%{BKY_SB_CAT_EFFECTS_HUE}",
                 "tooltip": "%{BKY_SB_SET_EFFECT_PARAM_TOOLTIP}",
                 "extensions": ["dynamic_effect_param_extension"]
             });

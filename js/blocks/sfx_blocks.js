@@ -38,9 +38,9 @@ function getSfxOptions() {
     options.sort((a, b) => a[0].localeCompare(b[0]));
     
     // Always add the Custom option at the end
-    options.push(["%{BKY_SB_SF_CUSTOM_OPTION}", "CUSTOM"]);
+    options.push(["%{BKY_SB_PARAM_SFX_CUSTOM_OPTION}", "CUSTOM"]);
     
-    return options.length > 1 ? options : [["(No sounds found)", "NONE"], ["%{BKY_SB_SF_CUSTOM_OPTION}", "CUSTOM"]];
+    return options.length > 1 ? options : [["(No sounds found)", "NONE"], ["%{BKY_SB_PARAM_SFX_CUSTOM_OPTION}", "CUSTOM"]];
 }
 
 export function registerBlocks() {
@@ -62,7 +62,7 @@ export function registerBlocks() {
                         "options": sfxOptions
                     }
                 ],
-                "message1": "%{BKY_SB_SFX_CUSTOM_URL_LABEL} %1",
+                "message1": "%{BKY_SB_PARAM_SFX_CUSTOM_URL} %1",
                 "args1": [
                     {
                         "type": "input_value",
@@ -70,7 +70,7 @@ export function registerBlocks() {
                         "check": "String"
                     }
                 ],
-                "message2": "%{BKY_SB_PLAY_SFX_REVERSE_FIELD}",
+                "message2": "%{BKY_SB_PARAM_REVERSE}",
                 "args2": [
                     {
                         "type": "field_checkbox",
@@ -78,7 +78,7 @@ export function registerBlocks() {
                         "checked": false
                     }
                 ],
-                "message3": "%{BKY_SB_PLAY_SFX_SPEED_FIELD}",
+                "message3": "%{BKY_SB_PARAM_SFX_SPEED}",
                 "args3": [
                     {
                         "type": "input_value",
@@ -86,7 +86,7 @@ export function registerBlocks() {
                         "check": "Number"
                     }
                 ],
-                "message4": "%{BKY_SB_PLAY_SFX_VOLUME_FIELD}",
+                "message4": "%{BKY_SB_PARAM_SFX_VOLUME}",
                 "args4": [
                     {
                         "type": "input_value",
@@ -96,7 +96,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SFX_HUE}",
+                "colour": "%{BKY_SB_CAT_SFX_HUE}",
                 "tooltip": "%{BKY_SB_PLAY_SFX_TOOLTIP}"
             });
 

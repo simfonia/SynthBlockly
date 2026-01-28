@@ -86,7 +86,7 @@
 - [x] **目標音源效果器 (Targeted Effects)**: 為 `sb_setup_effect` 增加「指定目標音源 (Target Instrument)」參數，實現分軌混音。
 - [x] **V2.0架構重構 (Definition vs Execution)**: 實現定義類積木與執行類積木分離，確保系統初始化順序正確。
 - [x] **分軌 Channel 管理與音量控制**: 實作 `Tone.Channel` 路由，新增靜音 (Mute) 與獨奏 (Solo) 積木。
-- [ ] **動態效果器管理**: 提供 `sb_clear_effects` 或類似機制，讓使用者能更精確控制效果器的生命週期。
+- [x] **動態效果器管理**: 提供 `sb_clear_effects` 或類似機制，讓使用者能更精確控制效果器的生命週期。
 - [x] **和弦清單擴充**: 讓 `sb_play_melody` 直接支援解析和弦名稱字串。
 
 ## V2.1 系統重構與自動化驗證 (Refactoring)

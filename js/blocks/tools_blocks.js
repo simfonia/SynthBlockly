@@ -21,7 +21,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TOOLS_HUE}",
+                "colour": "%{BKY_SB_CAT_TOOLS_HUE}",
                 "tooltip": "%{BKY_SB_COMMENT_TOOLTIP}"
             });
         }
@@ -40,7 +40,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TOOLS_HUE}",
+                "colour": "%{BKY_SB_CAT_TOOLS_HUE}",
                 "tooltip": "%{BKY_SB_CONSOLE_LOG_TOOLTIP}",
                 "helpUrl": ""
             });
@@ -61,7 +61,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TOOLS_HUE}",
+                "colour": "%{BKY_SB_CAT_TOOLS_HUE}",
                 "tooltip": "%{BKY_SB_BROADCAST_TOOLTIP}"
             });
         }
@@ -84,7 +84,7 @@ export function registerBlocks() {
                     "type": "input_statement",
                     "name": "DO"
                 }],
-                "colour": "%{BKY_TOOLS_HUE}",
+                "colour": "%{BKY_SB_CAT_TOOLS_HUE}",
                 "tooltip": "%{BKY_SB_WHEN_BROADCAST_RECEIVED_TOOLTIP}"
             });
             this.hat = 'cap';

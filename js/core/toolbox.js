@@ -5,7 +5,7 @@
  */
 export const TOOLBOX_XML_STRING = `
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-    <category name="%{BKY_MSG_LOGIC_CATEGORY}" colour="%{BKY_LOGIC_HUE}">
+    <category name="%{BKY_SB_CAT_LOGIC}" colour="%{BKY_SB_CAT_LOGIC_HUE}">
         <block type="controls_if"></block>
         <block type="logic_compare"></block>
         <block type="logic_operation"></block>
@@ -14,7 +14,7 @@ export const TOOLBOX_XML_STRING = `
         <block type="logic_null"></block>
         <block type="logic_ternary"></block>
     </category>
-    <category name="%{BKY_MSG_LOOPS_CATEGORY}" colour="%{BKY_LOOPS_HUE}">
+    <category name="%{BKY_SB_CAT_LOOPS}" colour="%{BKY_SB_CAT_LOOPS_HUE}">
         <block type="controls_repeat_ext">
             <value name="TIMES">
                 <shadow type="math_number">
@@ -43,7 +43,7 @@ export const TOOLBOX_XML_STRING = `
         <block type="controls_forEach"></block>
         <block type="controls_flow_statements"></block>
     </category>
-    <category name="%{BKY_MSG_MATH_CATEGORY}" colour="%{BKY_MATH_HUE}">
+    <category name="%{BKY_SB_CAT_MATH}" colour="%{BKY_SB_CAT_MATH_HUE}">
         <block type="math_number"></block>
         <block type="math_arithmetic">
             <value name="A">
@@ -83,7 +83,7 @@ export const TOOLBOX_XML_STRING = `
             </value>
         </block>
     </category>
-    <category name="%{BKY_MSG_TEXT_CATEGORY}" colour="%{BKY_TEXT_HUE}">
+    <category name="%{BKY_SB_CAT_TEXT}" colour="%{BKY_SB_CAT_TEXT_HUE}">
         <block type="text"></block>
         <block type="text_join"></block>
         <block type="text_append">
@@ -101,7 +101,7 @@ export const TOOLBOX_XML_STRING = `
         <block type="text_print"></block>
         <block type="text_prompt_ext"></block>
     </category>
-    <category name="%{BKY_MSG_LISTS_CATEGORY}" colour="%{BKY_LISTS_HUE}">
+    <category name="%{BKY_SB_CAT_LISTS}" colour="%{BKY_SB_CAT_LISTS_HUE}">
         <block type="lists_create_empty"></block>
         <block type="lists_create_with"></block>
         <block type="lists_repeat">
@@ -122,16 +122,16 @@ export const TOOLBOX_XML_STRING = `
         <block type="lists_reverse"></block>
     </category>
     <sep></sep>
-    <category name="%{BKY_MSG_VARIABLES_CATEGORY}" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
-    <category name="%{BKY_MSG_FUNCTIONS_CATEGORY}" colour="%{BKY_FUNCTIONS_HUE}" custom="PROCEDURE"></category>
-    <category name="%{BKY_MSG_TOOLS_CATEGORY}" colour="%{BKY_TOOLS_HUE}">
+    <category name="%{BKY_SB_CAT_VARIABLES}" colour="%{BKY_SB_CAT_VARIABLES_HUE}" custom="VARIABLE"></category>
+    <category name="%{BKY_SB_CAT_FUNCTIONS}" colour="%{BKY_SB_CAT_FUNCTIONS_HUE}" custom="PROCEDURE"></category>
+    <category name="%{BKY_SB_CAT_TOOLS}" colour="%{BKY_SB_CAT_TOOLS_HUE}">
         <block type="sb_comment"></block>
         <block type="sb_console_log"></block>
     </category>
     <sep></sep>
     
     <!-- SynthBlockly Core Categories -->
-    <category name="%{BKY_MSG_SOUND_SOURCES_CATEGORY}" colour="%{BKY_SOUND_SOURCES_HUE}">
+    <category name="%{BKY_SB_CAT_INSTRUMENTS}" colour="%{BKY_SB_CAT_INSTRUMENTS_HUE}">
         <label text="架構容器 (Containers)"></label>
         <block type="sb_instrument_container"></block>
         <block type="sb_master_container"></block>
@@ -160,7 +160,7 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_container_solo"></block>
     </category>
 
-    <category name="%{BKY_MSG_PERFORMANCE_CATEGORY}" colour="%{BKY_PERFORMANCE_HUE}">
+    <category name="%{BKY_SB_CAT_PERFORMANCE}" colour="%{BKY_SB_CAT_PERFORMANCE_HUE}">
         <block type="sb_select_current_instrument"></block>
         <block type="sb_play_note">
             <value name="NOTE">
@@ -201,7 +201,7 @@ export const TOOLBOX_XML_STRING = `
         </block>
     </category>
 
-    <category name="%{BKY_MSG_TRANSPORT_CATEGORY}" colour="%{BKY_TRANSPORT_HUE}">
+    <category name="%{BKY_SB_CAT_TRANSPORT}" colour="%{BKY_SB_CAT_TRANSPORT_HUE}">
         <block type="sb_transport_set_bpm"></block>
         <block type="sb_transport_count_in">
             <value name="VOLUME">
@@ -224,7 +224,7 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_schedule_at_offset"></block>
     </category>
 
-    <category name="%{BKY_MSG_EFFECTS_CATEGORY}" colour="%{BKY_EFFECTS_HUE}">
+    <category name="%{BKY_SB_CAT_EFFECTS}" colour="%{BKY_SB_CAT_EFFECTS_HUE}">
         <block type="sb_container_setup_effect"></block>
         <block type="sb_clear_effects">
             <value name="TARGET">
@@ -238,7 +238,7 @@ export const TOOLBOX_XML_STRING = `
         </block>
     </category>
 
-    <category name="%{BKY_MSG_SFX_CATEGORY}" colour="%{BKY_SFX_HUE}">
+    <category name="%{BKY_SB_CAT_SFX}" colour="%{BKY_SB_CAT_SFX_HUE}">
         <block type="sb_play_sfx">
             <value name="SPEED">
                 <shadow type="math_number"><field name="NUM">1</field></shadow>
@@ -258,12 +258,12 @@ export const TOOLBOX_XML_STRING = `
         <block type="sb_stop_background_noise"></block>
     </category>
 
-    <category name="%{BKY_MSG_MESSAGES_CATEGORY}" colour="%{BKY_MESSAGES_HUE}">
+    <category name="%{BKY_SB_CAT_MESSAGES}" colour="%{BKY_SB_CAT_MESSAGES_HUE}">
         <block type="sb_broadcast"></block>
         <block type="sb_when_broadcast_received"></block>
     </category>
 
-    <category name="%{BKY_MSG_PC_KEYBOARD_CATEGORY}" colour="%{BKY_PC_KEYBOARD_HUE}">
+    <category name="%{BKY_SB_CAT_PC_KEYBOARD}" colour="%{BKY_SB_CAT_PC_KEYBOARD_HUE}">
         <block type="sb_toggle_pc_keyboard_midi"></block>
         <block type="sb_map_key_to_chord"></block>
         <block type="sb_key_action_event"></block>
@@ -274,13 +274,13 @@ export const TOOLBOX_XML_STRING = `
         </block>
     </category>
 
-    <category name="%{BKY_MSG_MIDI_CATEGORY}" colour="%{BKY_MIDI_HUE}">
+    <category name="%{BKY_SB_CAT_MIDI}" colour="%{BKY_SB_CAT_MIDI_HUE}">
         <block type="sb_midi_note_received"></block>
         <block type="sb_midi_play"></block>
         <block type="sb_map_midi_to_chord"></block>
     </category>
 
-    <category name="%{BKY_MSG_SERIAL_CATEGORY}" colour="%{BKY_SERIAL_HUE}">
+    <category name="%{BKY_SB_CAT_SERIAL}" colour="%{BKY_SB_CAT_SERIAL_HUE}">
         <block type="sb_serial_data_received"></block>
         <block type="sb_serial_check_key_mask"></block>
     </category>

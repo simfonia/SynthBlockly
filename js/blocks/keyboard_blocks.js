@@ -65,7 +65,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PC_KEYBOARD_HUE}",
+                "colour": "%{BKY_SB_CAT_PC_KEYBOARD_HUE}",
                 "tooltip": "%{BKY_SB_MAP_KEY_TO_CHORD_TOOLTIP}"
             });
         }
@@ -99,7 +99,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PC_KEYBOARD_HUE}",
+                "colour": "%{BKY_SB_CAT_PC_KEYBOARD_HUE}",
                 "tooltip": "%{BKY_SB_KEY_ACTION_EVENT_TOOLTIP}"
             });
         }
@@ -127,7 +127,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PC_KEYBOARD_HUE}",
+                "colour": "%{BKY_SB_CAT_PC_KEYBOARD_HUE}",
                 "tooltip": "%{BKY_SB_MAP_KEY_TO_NOTE_TOOLTIP}"
             });
         }
@@ -149,7 +149,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_PC_KEYBOARD_HUE}",
+                "colour": "%{BKY_SB_CAT_PC_KEYBOARD_HUE}",
                 "tooltip": "%{BKY_SB_TOGGLE_PC_KEYBOARD_MIDI_TOOLTIP}"
             });
         }

@@ -1,55 +1,74 @@
-# SynthBlockly - 視覺化音樂合成器
+# SynthBlockly (V2.1)
 
-SynthBlockly 是一個基於 Blockly 視覺化程式設計的音樂合成器，它結合了 p5.js 進行即時波形視覺化，並利用 Tone.js 驅動音訊引擎。使用者可以透過積木組合來創作音樂、控制合成器參數，並與外部 MIDI 鍵盤或 Arduino 等序列裝置互動。
+一個基於 Blockly、Tone.js 與 p5.js 的現代化視覺化音樂創作平台。
 
-## 專案特色
+**🚀 立即體驗：[https://simfonia.github.io/SynthBlockly/](https://simfonia.github.io/SynthBlockly/)**
 
-*   **Blockly 視覺化編程**：透過拖曳積木，輕鬆創作音樂邏輯。
-*   **強大音訊引擎**：基於 Tone.js，支援 PolySynth、AM/FM 合成、取樣器 (Sampler) 及加法合成。
-*   **全域移調系統**：支援即時半音調整與八度位移，同步作用於 MIDI、電腦鍵盤與積木演奏。
-*   **軟硬體深度整合**：
-    *   **Web MIDI**：連接 MIDI 裝置，支援和弦映射。
-    *   **Web Serial**：與 Arduino 互動，支援 Bitmask 高效傳輸協議 (例如 4x4 觸控板)。
-*   **動態資源載入**：音效檔與範例專案支援動態掃描載入，無需手動更新清單。
-*   **專業視覺化**：整合即時示波器與 ADSR 包絡線動態預覽。
+---
 
-## 本機開發與執行
+## 🌟 專案特色
 
-本專案使用 Vite 作為建置工具，請確保您已安裝 [Node.js](https://nodejs.org/)。
+### 1. 核心架構 V2.1 (Container-Based)
+- **樂器容器化**：採用「定義樂器」與「總輸出控制」容器，確保系統初始化與執行順序正確。
+- **異步產碼**：支援 `async/await` 編曲邏輯，實現精準的長篇樂曲播放與等待機制。
+- **瞬間預約系統**：演奏積木支援瞬間預約模式，達成多軌道（如鋼琴與小提琴）的完美同步。
 
-1.  **安裝依賴**：
-    ```bash
-    npm install
-    ```
-2.  **啟動開發伺服器**：
-    ```bash
-    npm run dev
-    ```
-3.  **編譯正式版本**：
-    ```bash
-    npm run build
-    ```
+### 2. 強大的音訊引擎
+- **多重採樣 (Multisampling)**：內建高品質鋼琴音源，涵蓋 A1-A7 全音域，解決高低音失真問題。
+- **自訂取樣器**：支援透過 JSON 映射表建立專屬樂器，並支援直接從 URL 載入配置檔。
+- **專業效果器鏈**：包含失真 (Distortion)、濾波器 (Filter)、混響 (Reverb) 等多種效果，支援局部與全域掛載。
+- **高階編曲工具**：支援 16 格步進音序器、複雜和弦名稱解析、延音 (`-`) 與三連音符號。
 
-推薦使用支援 Web MIDI 和 Web Serial 的瀏覽器 (例如 Google Chrome)。
+### 3. 硬體與互動整合
+- **即時事件驅動**：透過「帽子積木」即時響應 MIDI 設備與 Arduino (Serial) 訊號，無需點擊執行即可互動。
+- **PC 鍵盤演奏**：將電腦鍵盤轉化為即興演奏工具，支援 ADSR 即時預覽。
+- **雙視覺化系統**：整合即時示波器 (Oscilloscope) 與 ADSR 包絡線圖表。
 
-## 範例專案擴充規範
+---
 
-您可以透過在 `src/examples` 目錄下新增檔案來擴充範例清單。
+## 🛠️ 開發與建置
 
-*   **軟體範例**：直接放置 `.xml` 檔案至 `src/examples/`。
-*   **硬體範例**：建立資料夾 (如 `MyProject/`)，包含：
-    *   `MyProject.xml` (或 `main.xml`): 積木主程式。
-    *   `*.ino`: Arduino 程式碼 (自動偵測)。
-    *   `*.md`: 操作說明 (自動顯示於硬體指引視窗)。
+本專案使用 **Vite** 作為前端建置工具。
 
-## 開發資訊
+### 環境需求
+- Node.js (建議 v18 以上)
+- NPM
 
-*   **核心框架**：Blockly, Tone.js, p5.js
-*   **建置工具**：Vite
-*   **主要開發語言**：JavaScript (ES6+)
+### 快速開始
+1. **安裝依賴**
+   ```bash
+   npm install
+   ```
+2. **啟動開發伺服器**
+   ```bash
+   npm run dev
+   ```
+3. **正式建置**
+   ```bash
+   npm run build
+   ```
 
-## 許可證
+---
 
-本專案使用 [MIT 許可證](https://opensource.org/licenses/MIT)。
+## 📂 檔案結構簡介
+- `js/core/`: 包含音訊引擎、各類 Service 與 Blockly 核心邏輯。
+- `js/blocks/`: 積木定義與產生器 (JavaScript)。
+- `public/samples/`: 音訊取樣資源庫。
+- `public/docs/`: 積木使用說明文件 (中英雙語)。
+- `src/examples/`: 內建範例專案庫 (XML)。
 
-Copyright (c) 2025-2026 simfonia
+---
+
+## 🎵 音訊取樣來源 (Audio Samples)
+本專案使用的取樣資源來自以下開源專案與社群：
+
+- **Piano**: 引用自 [nbrosowsky/tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments)
+- **Jazz Kit (TR-909)**: 引用自 [fluid-music/tr-909](https://www.npmjs.com/package/@fluid-music/tr-909)
+- **Violin**: 引用自 Freesound 使用者 sgossner 之取樣包：
+  - [Violin Section Pizzicato](https://freesound.org/people/sgossner/packs/21062/)
+  - [Violin Section Vibrato Sustain](https://freesound.org/people/sgossner/packs/21060/)
+
+---
+
+## 📄 授權說明
+本專案採 MIT 授權。音訊取樣資源之詳細授權請參考各來源網頁。

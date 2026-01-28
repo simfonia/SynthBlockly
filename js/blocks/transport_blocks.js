@@ -24,7 +24,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TRANSPORT_SET_BPM_TOOLTIP}"
             });
         }
@@ -39,14 +39,14 @@ export function registerBlocks() {
                         "type": "field_dropdown",
                         "name": "ACTION",
                         "options": [
-                            ['%{BKY_SB_TRANSPORT_ACTION_START}', 'START'],
-                            ['%{BKY_SB_TRANSPORT_ACTION_STOP}', 'STOP']
+                            ['%{BKY_SB_PARAM_TRANSPORT_START}', 'START'],
+                            ['%{BKY_SB_PARAM_TRANSPORT_STOP}', 'STOP']
                         ]
                     }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TRANSPORT_START_STOP_TOOLTIP}"
             });
         }
@@ -74,7 +74,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_WAIT_MUSICAL_TOOLTIP}"
             });
         }
@@ -97,7 +97,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TONE_LOOP_TOOLTIP}",
                 "hat": true
             });
@@ -121,7 +121,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_SCHEDULE_AT_OFFSET_TOOLTIP}"
             });
             this.setHelpUrl(getHelpUrl('transport_readme'));
@@ -134,7 +134,7 @@ export function registerBlocks() {
                 "message0": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_MESSAGE}",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_STOP_ALL_BLOCKLY_LOOPS_TOOLTIP}"
             });
         }
@@ -153,7 +153,7 @@ export function registerBlocks() {
                 "inputsInline": true,
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_TRANSPORT_HUE}",
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
                 "tooltip": "%{BKY_SB_TRANSPORT_COUNT_IN_TOOLTIP}"
             });
         }
@@ -161,26 +161,24 @@ export function registerBlocks() {
 
     Blockly.Blocks['sb_rhythm_sequence'] = {
         init: function () {
-            this.appendValueInput('SOURCE')
-                .setCheck('String')
-                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%1')[0]);
+            this.jsonInit({
+                "message0": "%{BKY_SB_RHYTHM_SEQUENCE_MESSAGE}",
+                "args0": [
+                    { "type": "input_value", "name": "SOURCE", "check": "String" },
+                    { "type": "input_value", "name": "MEASURE", "check": "Number" },
+                    { "type": "field_input", "name": "SEQUENCE", "text": "x--- x--- x--- x---" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "%{BKY_SB_CAT_TRANSPORT_HUE}",
+                "tooltip": "%{BKY_SB_RHYTHM_SEQUENCE_TOOLTIP}"
+            });
 
-            this.appendDummyInput()
+            // Add the chord toggle as a dummy input
+            this.appendDummyInput("CHORD_ROW")
                 .appendField(new Blockly.FieldCheckbox("FALSE"), "IS_CHORD")
-                .appendField("%{BKY_SB_RHYTHM_IS_CHORD_LABEL}");
+                .appendField("%{BKY_SB_PARAM_RHYTHM_IS_CHORD}");
 
-            this.appendValueInput('MEASURE')
-                .setCheck('Number')
-                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%2')[0].split('%1')[1] || "第");
-
-            this.appendDummyInput('MAIN_ROW')
-                .appendField(Blockly.Msg['SB_RHYTHM_SEQUENCE_MESSAGE'].split('%3')[0].split('%2')[1] || "小節 序列")
-                .appendField(new Blockly.FieldTextInput("x--- x--- x--- x---"), "SEQUENCE");
-
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(Blockly.Msg['TRANSPORT_HUE']);
-            this.setTooltip(Blockly.Msg['SB_RHYTHM_SEQUENCE_TOOLTIP']);
             this.setInputsInline(true);
             this.setHelpUrl(getHelpUrl('step_sequencer_readme'));
         }
