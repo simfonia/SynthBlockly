@@ -93,6 +93,7 @@ function updateContextualBlocks(ws) {
 
 let workspace = null; 
 let hatUpdateTimer = null;
+let contextUpdateTimer = null; // 用於 updateContextualBlocks 的防抖
 
 function setupDefaultWorkspace() {
     if (!workspace || workspace.getAllBlocks(false).length > 0) return;
@@ -143,18 +144,42 @@ export async function initBlocklyManager() {
             media: import.meta.env.BASE_URL + 'blockly/media/'
         });
         workspace.addChangeListener((event) => {
+            // --- 效能優化：過濾無意義事件 ---
+            if (event.isUiEvent) return;
+            if (event.type === BlocklyModule.Events.CHANGE && event.element === 'disabled') return;
+
+            // 關鍵效能優化：正在拖曳時跳過邏輯檢查，確保動畫流暢
+            if (workspace && workspace.isDragging()) return;
+
             // Update Hat Blocks (Events)
             if (hatUpdateTimer) clearTimeout(hatUpdateTimer);
             hatUpdateTimer = setTimeout(() => hatBlockManager.updateAll(workspace), 150);
 
-            // Update Context (Graying out)
+            // Update Context (Graying out) - 加入防抖優化效能
             if (event.type === BlocklyModule.Events.BLOCK_MOVE || 
                 event.type === BlocklyModule.Events.BLOCK_CREATE ||
                 event.type === BlocklyModule.Events.BLOCK_CHANGE) {
-                updateContextualBlocks(workspace);
+                
+                if (contextUpdateTimer) clearTimeout(contextUpdateTimer);
+                contextUpdateTimer = setTimeout(() => {
+                    updateContextualBlocks(workspace);
+                }, 100);
             }
         });
         setupDefaultWorkspace();
+
+        // Add a blur event listener to handle cases where a drag is released outside the window.
+        window.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (workspace && workspace.isDragging() && BlocklyModule.Gesture.inProgress()) {
+                    try {
+                        BlocklyModule.Gesture.clearForced();
+                    } catch (e) {
+                        console.warn('[Gesture] Clear failed:', e);
+                    }
+                }
+            }, 10);
+        });
     } catch (e) { logKey('LOG_BLOCKLY_INIT_FAIL', 'error', e.message); }
 }
 

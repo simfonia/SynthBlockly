@@ -14,15 +14,41 @@
         <next>
           <block type="sb_container_adsr" id="iiOl5(jI9Qwk@ig]lGJ6">
             <field name="A">0.02</field>
-            <field name="D">0.5</field>
+            <field name="D">0.1</field>
             <field name="S">0.3</field>
-            <field name="R">1.2</field>
+            <field name="R">0.2</field>
+            <next>
+              <block type="sb_container_setup_effect" id="2Gs1b/Czf6B2_3VAeT`:">
+                <mutation effect_type="compressor"></mutation>
+                <field name="EFFECT_TYPE">compressor</field>
+                <value name="THRESHOLD">
+                  <shadow type="math_number" id="EXdGRa]N=%(.H1bwS;I(">
+                    <field name="NUM">-24</field>
+                  </shadow>
+                </value>
+                <value name="RATIO">
+                  <shadow type="math_number" id="abRW/~wS%Gg{7EjUfca_">
+                    <field name="NUM">12</field>
+                  </shadow>
+                </value>
+                <value name="ATTACK">
+                  <shadow type="math_number" id="(kEQ8Cjzlo@|3P3j[(g0">
+                    <field name="NUM">0.003</field>
+                  </shadow>
+                </value>
+                <value name="RELEASE">
+                  <shadow type="math_number" id="zN2[5CSZ$AGiMtcetM85">
+                    <field name="NUM">0.25</field>
+                  </shadow>
+                </value>
+              </block>
+            </next>
           </block>
         </next>
       </block>
     </statement>
   </block>
-  <block type="sb_define_chord" id="c_c" x="10" y="310">
+  <block type="sb_define_chord" id="c_c" x="10" y="430">
     <field name="NAME">C</field>
     <field name="NOTES_STRING">C3,E3,G3</field>
     <next>
@@ -49,6 +75,11 @@
                           <block type="sb_define_chord" id="c_bdim">
                             <field name="NAME">Bdim</field>
                             <field name="NOTES_STRING">B3,D4,F4</field>
+                            <next>
+                              <block type="sb_select_current_instrument" id="sel_piano">
+                                <field name="NAME">Piano</field>
+                              </block>
+                            </next>
                           </block>
                         </next>
                       </block>
@@ -62,7 +93,7 @@
       </block>
     </next>
   </block>
-  <block type="sb_serial_data_received" id="serial_gate" x="10" y="530">
+  <block type="sb_serial_data_received" id="serial_gate" x="10" y="670">
     <field name="DATA" id="%O$8`4%3bnA}gAPggU#:">serial_data</field>
     <statement name="DO">
       <block type="variables_set" id="v1">
@@ -98,7 +129,7 @@
             <statement name="DO0">
               <block type="sb_play_chord_by_name" id=")XB+JkLYzaSHkvD7}C6I">
                 <field name="CHORD_NAME">C</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
             <value name="IF1">
@@ -119,7 +150,7 @@
             <statement name="DO1">
               <block type="sb_play_chord_by_name" id="345$8(.*_odkC4.OA^,:">
                 <field name="CHORD_NAME">Dm</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
             <value name="IF2">
@@ -140,7 +171,7 @@
             <statement name="DO2">
               <block type="sb_play_chord_by_name" id="DrMA|%5A55TKHIavtD8F">
                 <field name="CHORD_NAME">Em</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
             <value name="IF3">
@@ -161,7 +192,7 @@
             <statement name="DO3">
               <block type="sb_play_chord_by_name" id="knWoS9;,4JrQXbp7YC(Y">
                 <field name="CHORD_NAME">F</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
             <value name="IF4">
@@ -182,7 +213,7 @@
             <statement name="DO4">
               <block type="sb_play_chord_by_name" id="iWwIVD@Q9X]ZaYaTsp%)">
                 <field name="CHORD_NAME">G</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
             <value name="IF5">
@@ -203,7 +234,7 @@
             <statement name="DO5">
               <block type="sb_play_chord_by_name" id=";3*Uw7.};SZwXQ:WvN?z">
                 <field name="CHORD_NAME">Am</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
             <value name="IF6">
@@ -224,7 +255,7 @@
             <statement name="DO6">
               <block type="sb_play_chord_by_name" id="U}PTC|d|dy$BN/x%ztG?">
                 <field name="CHORD_NAME">Bdim</field>
-                <field name="DUR">4n</field>
+                <field name="DUR">8n</field>
               </block>
             </statement>
           </block>

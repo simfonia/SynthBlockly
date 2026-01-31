@@ -131,10 +131,9 @@ const handleKeyDown = async (e) => {
         if (audioEngine.chords[chordName]) {
             if (!audioEngine.pressedKeys.has(e.code)) {
                 await ensureAudioStarted();
-                // Store ID if chord attack returns one (currently chords logic might not return ID properly, handled separately or TODO)
-                // For now, assume chords don't interfere with single note visualizer logic as heavily or are handled globally
-                audioEngine.playChordByNameAttack(chordName, 0.7);
-                audioEngine.pressedKeys.set(e.code, { type: 'chord', name: chordName });
+                // Store ID if chord attack returns one
+                const noteId = audioEngine.playChordByNameAttack(chordName, 0.7);
+                audioEngine.pressedKeys.set(e.code, { type: 'chord', name: chordName, noteId: noteId });
             }
         } else {
             audioEngine.logKey('LOG_CHORD_UNDEFINED', 'error', chordName);
@@ -180,7 +179,7 @@ const handleKeyUp = async (e) => {
         }
 
         if (playedInfo.type === 'chord') {
-            audioEngine.playChordByNameRelease(playedInfo.name);
+            audioEngine.playChordByNameRelease(playedInfo.name, playedInfo.noteId);
         } else {
             audioEngine.playCurrentInstrumentNoteRelease(playedInfo.name, playedInfo.noteId); // Pass noteId
         }

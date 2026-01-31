@@ -16,21 +16,13 @@
             <field name="A">0.01</field>
             <field name="D">0.3</field>
             <field name="S">0.4</field>
-            <field name="R">1</field>
+            <field name="R">0.5</field>
           </block>
         </next>
       </block>
     </statement>
   </block>
-  <block type="sb_instrument_container" id="c_drums" x="10" y="350">
-    <field name="NAME">JazzKit</field>
-    <statement name="STACK">
-      <block type="sb_create_sampler_instrument" id="]it99R_c)b_Mn3Yu`A,z">
-        <field name="SAMPLER_TYPE">DEFAULT</field>
-      </block>
-    </statement>
-  </block>
-  <block type="sb_define_chord" id="c_c" x="10" y="450">
+  <block type="sb_define_chord" id="c_c" x="10" y="350">
     <field name="NAME">C</field>
     <field name="NOTES_STRING">C4,E4,G4</field>
     <next>
@@ -40,7 +32,7 @@
       </block>
     </next>
   </block>
-  <block type="sb_serial_data_received" id="serial_in" x="10" y="530">
+  <block type="sb_serial_data_received" id="serial_in" x="10" y="430">
     <field name="DATA" id="ha,_*1.4{#wE5_3p{f1)">serial_data</field>
     <statement name="DO">
       <block type="variables_set" id="wn2sA%YU;xbCT~W3aG5L">
@@ -114,9 +106,14 @@
               </block>
             </value>
             <statement name="DO2">
-              <block type="sb_play_chord_by_name" id="m376{ZXRp;%:N_-KMgN#">
-                <field name="CHORD_NAME">C</field>
-                <field name="DUR">8n</field>
+              <block type="sb_select_current_instrument" id="T{YXq}Air(sRPX}spz{N">
+                <field name="NAME">Piano</field>
+                <next>
+                  <block type="sb_play_chord_by_name" id="m376{ZXRp;%:N_-KMgN#">
+                    <field name="CHORD_NAME">C</field>
+                    <field name="DUR">8n</field>
+                  </block>
+                </next>
               </block>
             </statement>
             <value name="IF3">
@@ -135,9 +132,14 @@
               </block>
             </value>
             <statement name="DO3">
-              <block type="sb_play_chord_by_name" id="T8#%imt(4[%b?JLHGGy.">
-                <field name="CHORD_NAME">F</field>
-                <field name="DUR">8n</field>
+              <block type="sb_select_current_instrument" id="R5:sJ,~k)Sx-D3onok5f">
+                <field name="NAME">Piano</field>
+                <next>
+                  <block type="sb_play_chord_by_name" id="T8#%imt(4[%b?JLHGGy.">
+                    <field name="CHORD_NAME">F</field>
+                    <field name="DUR">8n</field>
+                  </block>
+                </next>
               </block>
             </statement>
           </block>

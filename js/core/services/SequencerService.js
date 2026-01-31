@@ -99,13 +99,15 @@ export class SequencerService {
         const instr = this.audioEngine.instruments[finalTarget];
         if (notes && instr) {
             if (instr instanceof Tone.Sampler && !instr.loaded) return;
-            const t = (time !== undefined) ? time : Tone.now() + 0.1;
+            const t = (time !== undefined) ? time : Tone.now();
             const transposed = notes.map(n => this.audioEngine.getTransposedNote(n));
             if (instr.triggerAttackRelease) {
-                instr.triggerAttackRelease(transposed, dur, t, vel);
+                const v = (vel !== undefined) ? vel : 0.8;
+                instr.triggerAttackRelease(transposed, dur, t, v);
                 if (time === undefined) {
                     const noteId = triggerAdsrOn();
-                    setTimeout(() => { if (this.audioEngine.isExecutionActive) triggerAdsrOff(noteId); }, Tone.Time(dur).toSeconds() * 1000);
+                    const durSeconds = Tone.Time(dur).toSeconds();
+                    setTimeout(() => { if (this.audioEngine.isExecutionActive) triggerAdsrOff(noteId); }, durSeconds * 1000);
                 }
             }
         }
@@ -120,27 +122,49 @@ export class SequencerService {
 
         for (const token of tokens) {
             if (this.audioEngine.isExecutionActive === false) break;
-            let prefix = token;
-            let d = '4n'; 
-            const mDur = token.match(/([WHQEST])(\.?|_T)?$/i);
-            if (mDur) {
-                const durPart = mDur[0];
-                const modifier = mDur[2] || '';
-                let baseDur = durMap[mDur[1].toUpperCase()] || '4n';
-                if (modifier === '.') baseDur += '.'; 
-                else if (modifier === '_T') baseDur = baseDur.replace('n', 't');
-                d = baseDur;
-                prefix = token.slice(0, -durPart.length);
-            }
-            const durSeconds = Tone.Time(d).toSeconds();
-            const uprefix = prefix.toUpperCase();
+            
+            // Handle Ties (+) e.g. C4Q+E
+            const subtokens = token.split('+');
+            let totalDurSeconds = 0;
+            let firstPrefix = "";
+            let isRest = false;
 
-            if (uprefix === 'R' || (prefix === '' && mDur)) {
-                if (isScheduled) currentTimeOffset += durSeconds;
-                else await new Promise(r => setTimeout(r, durSeconds * 1000));
+            for (let i = 0; i < subtokens.length; i++) {
+                const sub = subtokens[i].trim();
+                if (!sub) continue;
+                
+                let currentPrefix = sub;
+                let d = '4n';
+                const mDur = sub.match(/([WHQEST])(\.?|_T)?$/i);
+                if (mDur) {
+                    const durPart = mDur[0];
+                    const modifier = mDur[2] || '';
+                    let baseDur = durMap[mDur[1].toUpperCase()] || '4n';
+                    if (modifier === '.') baseDur += '.'; 
+                    else if (modifier === '_T') baseDur = baseDur.replace('n', 't');
+                    d = baseDur;
+                    currentPrefix = sub.slice(0, -durPart.length);
+                }
+                
+                if (i === 0) {
+                    firstPrefix = currentPrefix;
+                    const uprefix = firstPrefix.toUpperCase();
+                    if (uprefix === 'R' || (firstPrefix === '' && mDur)) {
+                        isRest = true;
+                    }
+                }
+                totalDurSeconds += Tone.Time(d).toSeconds();
+            }
+
+            if (isRest) {
+                if (isScheduled) currentTimeOffset += totalDurSeconds;
+                else await new Promise(r => setTimeout(r, totalDurSeconds * 1000));
             } else {
+                const prefix = firstPrefix;
+                const d = totalDurSeconds; // Seconds as number
                 const isStrictNote = prefix.match(/^[A-G][#b]?[0-8]$/i);
                 const isLooseNote = prefix.match(/^[A-G][#b]?$/i);
+                
                 const playFunc = async () => {
                     const finalTarget = target || this.audioEngine.currentInstrumentName;
                     const instr = this.audioEngine.instruments[finalTarget];
@@ -165,12 +189,12 @@ export class SequencerService {
                 };
 
                 if (isScheduled) {
-                    playFunc(); // Fire instantly for scheduling
-                    currentTimeOffset += durSeconds;
+                    playFunc(); 
+                    currentTimeOffset += totalDurSeconds;
                 } else {
                     await playFunc();
                     if (this.audioEngine.isExecutionActive === false) break;
-                    await new Promise(r => setTimeout(r, durSeconds * 1000));
+                    await new Promise(r => setTimeout(r, totalDurSeconds * 1000));
                 }
             }
         }

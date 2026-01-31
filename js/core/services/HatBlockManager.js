@@ -16,10 +16,14 @@ export class HatBlockManager {
     }
 
     /**
-     * Resets the manager's tracking state. 
-     * Called when the audio engine is reset to ensure full re-registration.
+     * Resets the manager's tracking state and unregisters all active listeners.
+     * Called when the audio engine is reset to ensure no stale logic remains.
      */
     reset() {
+        // Must unregister each listener properly before clearing the map
+        Object.keys(this.blockListeners).forEach(blockId => {
+            this.unregisterById(blockId);
+        });
         this.blockListeners = {};
     }
 
@@ -61,18 +65,19 @@ export class HatBlockManager {
                 if (block.type === 'sb_serial_data_received') {
                     const varId = block.getFieldValue('DATA');
                     const newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
-                    if (current.code !== newCode || current.varName !== newVarName) changed = true;
+                    // Use trimmed code comparison to avoid whitespace issues
+                    if (current.code.trim() !== newCode.trim() || current.varName !== newVarName) changed = true;
                 } else if (block.type === 'sb_midi_note_received') {
                     const varId = block.getFieldValue('NOTE');
                     const newVarName = block.workspace.getVariableMap().getVariableById(varId)?.name || "";
-                    if (current.code !== newCode || current.varName !== newVarName) changed = true;
+                    if (current.code.trim() !== newCode.trim() || current.varName !== newVarName) changed = true;
                 } else if (block.type === 'sb_key_action_event') {
                     const newKeyCode = block.getFieldValue('KEY_CODE');
                     const newTriggerMode = block.getFieldValue('TRIGGER_MODE');
-                    if (current.code !== newCode || current.keyCode !== newKeyCode || current.triggerMode !== newTriggerMode) changed = true;
+                    if (current.code.trim() !== newCode.trim() || current.keyCode !== newKeyCode || current.triggerMode !== newTriggerMode) changed = true;
                 } else if (block.type === 'sb_when_broadcast_received') {
                     const newMsg = block.getFieldValue('MSG');
-                    if (current.code !== newCode || current.msg !== newMsg) changed = true;
+                    if (current.code.trim() !== newCode.trim() || current.msg !== newMsg) changed = true;
                 }
 
                 if (!changed) return; 

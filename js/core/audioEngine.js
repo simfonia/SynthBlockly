@@ -254,6 +254,28 @@ export const audioEngine = {
     playMelodyString: async function(str, target, startTime) { await this.sequencerService.playMelodyString(str, target, startTime); },
     playChordByName: function(name, dur, vel, time, target) { this.sequencerService.playChordByName(name, dur, vel, time, target); },
 
+    playChordByNameAttack: function(name, vel) {
+        const notes = this.chords[name];
+        const instr = this.instruments[this.currentInstrumentName];
+        if (notes && instr && instr.triggerAttack) {
+            if (instr instanceof Tone.Sampler && !instr.loaded) return null;
+            const transposed = notes.map(n => this.getTransposedNote(n));
+            instr.triggerAttack(transposed, Tone.now(), vel);
+            return triggerAdsrOn();
+        }
+        return null;
+    },
+
+    playChordByNameRelease: function(name, noteId) {
+        const notes = this.chords[name];
+        const instr = this.instruments[this.currentInstrumentName];
+        if (notes && instr && instr.triggerRelease) {
+            const transposed = notes.map(n => this.getTransposedNote(n));
+            instr.triggerRelease(transposed, Tone.now());
+            triggerAdsrOff(noteId);
+        }
+    },
+
     playCountIn: async function(measures = 1, beats = 4, beatValue = 4, volume = 0.8) {
         await ensureAudioStarted();
         const boosted = volume * 10;

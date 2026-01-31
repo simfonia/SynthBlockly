@@ -275,7 +275,7 @@ export const MSG_EN = {
     'SB_PLAY_BACKGROUND_NOISE_TOOLTIP': 'Starts playing a background noise of the specified type and volume.',
     'SB_PLAY_CHORD_BY_NAME_MESSAGE': 'Play named chord %1 duration %2 velocity %3',
     'SB_PLAY_CHORD_BY_NAME_TOOLTIP': 'Use a pre-defined chord name (e.g., CM7) to play.',
-    'SB_PLAY_CHORD_NOTES_MESSAGE': 'Play direct note list %1 duration %2 velocity %3',
+    'SB_PLAY_CHORD_NOTES_MESSAGE': 'Play chord notes %1 duration %2 velocity %3',
     'SB_PLAY_CHORD_NOTES_TOOLTIP': 'Directly enter a list of notes (e.g., C4,E4,G4) to play, no definition needed.',
     'SB_PLAY_DRUM_MESSAGE_WITH_VELOCITY': 'Play Electronic Drum (Synth) %1 Velocity %2',
     'SB_PLAY_DRUM_TOOLTIP': 'Trigger a synth-based drum sound.',

@@ -1,6 +1,6 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
   <block type="sb_comment" id="guide" x="10" y="10">
-    <field name="COMMENT">【Bossa Nova 風格】&amp;#10;1. 經典和弦：Dm7 -&gt; G7 -&gt; CM7 -&gt; A7。&amp;#10;2. 流暢度：鋼琴利用切分音營造慵懶感，低音使用根音-五音交替。&amp;#10;3. 演奏：點擊執行後，可隨 Bossa Nova 節奏進行即興亂彈！</field>
+    <field name="COMMENT">【使用步進音序器編寫 Bossa Nova 節奏】&amp;#10;1. 經典和弦：Dm7 -&gt; G7 -&gt; CM7 -&gt; A7。&amp;#10;2. 節奏與風格：鋼琴利用切分音營造慵懶感，低音使用根音-五音交替。&amp;#10;3. 享受音樂的魅力：點擊執行後可隨節奏即興演奏！</field>
   </block>
   <block type="sb_instrument_container" id="L}}L{^[X?}Ci]$p+sBL3" x="10" y="130">
     <field name="NAME">Sax</field>

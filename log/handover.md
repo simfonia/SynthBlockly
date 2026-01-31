@@ -195,3 +195,16 @@
 
 ## 關鍵技術細節 (Prompt for next me)
 「語系重構已完成，積木現在透過 %{BKY_...} 延遲解析翻譯文字。鋼琴取樣邏輯在 InstrumentService.js 中，新增的 JSON URL fetch 邏輯也位於該處。接下來的重點是切換到 #processing 專案，將 Java 端的音訊抽象層對齊目前的規格。」
+==================================================
+2026-01-30
+
+1. 本次 Bug 修復重點：
+- **監聽器洩漏 (Listener Leak)**：修正 HatBlockManager.reset() 漏掉 unregisterById 的問題。解決了代碼修改後舊邏輯殘留、導致聲音堆疊且時值設定失效的嚴重缺陷。
+- **發音數爆炸**：提升 PolySynth 最大發音數至 64，並優化了 playChordByName 在互動模式下的即時排程。
+- **互動 API 補齊**：新增 playChordByNameAttack/Release，修復範例 03 在鍵盤操作下的崩潰。
+
+2. 待辦任務 (Next Steps)：
+- **自動 Fallback 樂器**：當積木指定的樂器不存在時，自動導向 DefaultSynth 或第一個可用音源。
+- **音序器視覺優化**：讓步進音序器在執行時能有目前進度的 Highlight 效果。
+- **Serial 資料格式檢查**：優化更強健的位元資料比對邏輯。
+

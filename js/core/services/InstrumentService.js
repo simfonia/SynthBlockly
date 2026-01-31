@@ -28,10 +28,10 @@ export class InstrumentService {
         if (this.instruments[name]) this.instruments[name].dispose();
         let i;
         switch(type) {
-            case 'PolySynth': i = new Tone.PolySynth(Tone.Synth); break;
-            case 'AMSynth': i = new Tone.PolySynth(Tone.AMSynth); break;
-            case 'FMSynth': i = new Tone.PolySynth(Tone.FMSynth); break;
-            case 'DuoSynth': i = new Tone.PolySynth(Tone.DuoSynth); break;
+            case 'PolySynth': i = new Tone.PolySynth(Tone.Synth, { maxPolyphony: 64 }); break;
+            case 'AMSynth': i = new Tone.PolySynth(Tone.AMSynth, { maxPolyphony: 64 }); break;
+            case 'FMSynth': i = new Tone.PolySynth(Tone.FMSynth, { maxPolyphony: 64 }); break;
+            case 'DuoSynth': i = new Tone.PolySynth(Tone.DuoSynth, { maxPolyphony: 64 }); break;
             case 'SineWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' } }); break;
             case 'SquareWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'square' } }); break;
             case 'TriangleWave': i = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' } }); break;
