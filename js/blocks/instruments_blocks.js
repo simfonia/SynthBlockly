@@ -127,14 +127,16 @@ export function registerBlocks() {
             this.jsonInit({
                 "message0": "%{BKY_SB_INSTRUMENT_CONTAINER_MESSAGE}",
                 "args0": [
-                    { "type": "field_input", "name": "NAME", "text": "MyInstrument" },
+                    { "type": "field_input", "name": "NAME", "text": "MyInstrument" }
+                ],
+                "message1": "%{BKY_SB_CONTROLS_DO}",
+                "args1": [
                     { "type": "input_statement", "name": "STACK" }
                 ],
                 "inputsInline": true,
-                "colour": "%{BKY_SB_CAT_SYNTHBLOCKLY_HUE}",
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
                 "tooltip": "%{BKY_SB_INSTRUMENT_CONTAINER_TOOLTIP}"
             });
-            this.hat = 'cap';
         }
     };
 
@@ -142,14 +144,15 @@ export function registerBlocks() {
         init: function () {
             this.jsonInit({
                 "message0": "%{BKY_SB_MASTER_CONTAINER_MESSAGE}",
-                "args0": [
+                "args0": [],
+                "message1": "%{BKY_SB_CONTROLS_DO}",
+                "args1": [
                     { "type": "input_statement", "name": "STACK" }
                 ],
                 "inputsInline": true,
-                "colour": "%{BKY_SB_CAT_TOOLS_HUE}",
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
                 "tooltip": "%{BKY_SB_MASTER_CONTAINER_TOOLTIP}"
             });
-            this.hat = 'cap';
         }
     };
 
@@ -365,7 +368,7 @@ export function registerBlocks() {
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "%{BKY_SB_CAT_PERFORMANCE_HUE}",
+                "colour": "%{BKY_SB_CAT_INSTRUMENTS_HUE}",
                 "tooltip": "%{BKY_SB_SELECT_CURRENT_INSTRUMENT_TOOLTIP}"
             });
         }
@@ -420,7 +423,7 @@ export function registerBlocks() {
             });
             this.appendDummyInput().appendField(dropdown, "NAME");
             this.setOutput(true, "String");
-            this.setColour(Blockly.Msg['SB_CAT_TOOLS_HUE']);
+            this.setColour("%{BKY_SB_CAT_INSTRUMENTS_HUE}");
         }
     };
 }

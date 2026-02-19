@@ -22,6 +22,7 @@ import { registerBlocks as registerSamplerBlocks } from './sampler_blocks.js'; /
 import { registerBlocks as registerSfxBlocks } from './sfx_blocks.js'; // NEW
 import { registerBlocks as registerMelodyBlocks } from './melody_blocks.js'; // NEW
 import { registerBlocks as registerToolsBlocks } from './tools_blocks.js'; // NEW
+import { registerBlocks as registerVariablesBlocks } from './variables_blocks.js'; // NEW
 
 import { registerGenerators as registerInstrumentGenerators } from './instruments_generators.js';
 import { registerGenerators as registerMidiGenerators } from './midi_generators.js';
@@ -123,6 +124,7 @@ export async function registerAll() {
         registerSfxBlocks(Blockly); // NEW
         registerMelodyBlocks(Blockly); // NEW
         registerToolsBlocks(Blockly); // NEW
+        registerVariablesBlocks(Blockly); // NEW
         console.log('Blocks registered.');
 
         // 4. Register Custom Generators
